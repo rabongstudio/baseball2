@@ -1,0 +1,557 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>선수 관리</title>
+
+<style>
+  :root{
+    --bg:#f5f6f8; --card:#fff; --line:#e5e7eb; --text:#111827; --muted:#6b7280;
+    --brand:#2563eb; --brand2:#1d4ed8; --ok:#16a34a; --err:#dc2626;
+  }
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto;background:var(--bg);color:var(--text);}
+  .container{max-width:420px;margin:0 auto;padding:14px 14px 24px;}
+  .topbar{display:flex;align-items:center;justify-content:space-between;margin:6px 0 12px;gap:10px;}
+  .title{font-size:22px;font-weight:900;}
+  .muted{color:var(--muted);font-size:12px;line-height:1.4;}
+  .card{background:var(--card);border-radius:16px;padding:14px;box-shadow:0 2px 10px rgba(0,0,0,.06);}
+  .list{display:flex;flex-direction:column;gap:10px;}
+  .item{
+    background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px;
+    display:flex;justify-content:space-between;gap:10px;
+  }
+  .item:active{background:#f9fafb}
+  .left{min-width:0}
+  .h1{font-weight:900;font-size:14px}
+  .sub{font-size:12px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .pill{font-weight:900;font-size:12px;padding:6px 10px;border-radius:999px;border:1px solid var(--line);align-self:flex-start;}
+  .pill.on{color:#2563eb;border-color:#bfdbfe;background:#eff6ff;}
+  .pill.off{color:#6b7280;background:#f9fafb;}
+  .fab{
+    width:44px;height:44px;border-radius:999px;border:none;background:var(--brand);color:#fff;
+    font-size:26px;font-weight:900;display:flex;align-items:center;justify-content:center;flex:0 0 auto;
+  }
+  .fab:active{background:var(--brand2)}
+  .smallBtn{border:1px solid var(--line);background:#fff;border-radius:12px;padding:10px 12px;font-weight:900;}
+  .smallBtn:active{background:#f9fafb}
+
+  input, textarea, select{
+    width:100%; box-sizing:border-box;
+    margin-top:8px; padding:14px;
+    font-size:16px; border:1px solid var(--line); border-radius:12px; background:#fff;
+  }
+  textarea{resize:none}
+  label{display:block;margin-top:12px;font-size:13px;font-weight:900;}
+  .btn{
+    width:100%; margin-top:14px; padding:16px;
+    border:none; border-radius:14px; background:var(--brand); color:#fff;
+    font-size:18px; font-weight:900;
+  }
+  .btn:active{background:var(--brand2)}
+  .btn.ghost{background:#fff;color:var(--text);border:1px solid var(--line);}
+  .btn.danger{background:#dc2626;}
+  .btn.danger:active{background:#b91c1c;}
+  .row2{display:flex;gap:10px}
+  .row2>div{flex:1}
+  .row2>button{flex:1}
+
+  .chipRow{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+  .chip{
+    border:1px solid var(--line); background:#fff; color:var(--text);
+    padding:10px 12px; border-radius:999px; font-weight:900; font-size:13px;
+  }
+  .chip.active{border-color:var(--brand); color:var(--brand); background:#eff6ff;}
+  .section{margin-top:14px;padding-top:10px;border-top:1px dashed var(--line)}
+  .msg{margin-top:10px;text-align:center;font-size:13px}
+  .ok{color:var(--ok);font-weight:900}
+  .err{color:var(--err);font-weight:900}
+  .hidden{display:none}
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body>
+<div class="container">
+
+  <!-- LIST VIEW -->
+  <div id="viewList">
+    <div class="topbar">
+      <div>
+        <div class="title">👦 선수 관리</div>
+        <div class="muted">리스트 선택=수정, ➕=신규 등록</div>
+      </div>
+      <button class="fab" id="btnNew" aria-label="새 선수">+</button>
+      <a href="index.html" style="text-decoration:none"><button class="smallBtn">홈</button></a>
+    </div>
+
+   <!-- <div class="card" style="margin-bottom:12px">
+      <div class="muted">검색(이름/등번호)</div>
+      <input id="q" placeholder="예: 민준, 7" />
+      <button class="btn ghost" id="btnSearch">검색</button>
+    </div>-->
+
+    <div class="card">
+      <div class="muted" id="listHint">불러오는 중...</div>
+      <div class="list" id="playerList"></div>
+    </div>
+  </div>
+
+  <!-- FORM VIEW -->
+  <div id="viewForm" class="hidden">
+    <div class="topbar">
+      <div>
+        <div class="title" id="formTitle">선수 등록</div>
+        <div class="muted" id="formSub">신규 또는 수정 저장</div>
+      </div>
+      <button class="smallBtn" id="btnBack">목록</button>
+    </div>
+
+    <div class="card">
+      <div class="muted" id="modeInfo"></div>
+
+      <div class="section" style="border-top:none;padding-top:0;margin-top:0">
+        <label>선수명 *</label>
+        <input id="name" placeholder="예: 김민준" />
+
+        <div class="row2">
+          <div>
+            <label>등번호</label>
+            <input id="jersey" type="number" min="0" step="1" placeholder="예: 7" />
+          </div>
+          <div>
+            <label>학년/나이대 *</label>
+            <input id="grade" placeholder="예: 초4, 중1" />
+          </div>
+        </div>
+
+        <div class="row2">
+          <div>
+            <label>생년</label>
+            <input id="birthYear" type="number" min="1900" max="2100" placeholder="예: 2015" />
+          </div>
+          <div>
+            <label>주 포지션 *</label>
+            <input id="primaryPos" placeholder="예: SS, CF, P" />
+          </div>
+        </div>
+
+        <div class="row2">
+          <div>
+            <label>투(throws) *</label>
+            <select id="throws">
+              <option value="우">R (우투)</option>
+              <option value="좌">L (좌투)</option>
+              <option value="양">S (양투)</option>
+            </select>
+          </div>
+          <div>
+            <label>타(bats) *</label>
+            <select id="bats">
+              <option value="우">R (우타)</option>
+              <option value="좌">L (좌타)</option>
+              <option value="양">S (양타)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <label>키(cm)</label>
+        <input id="height" type="number" min="0" step="1" placeholder="예: 142" />
+
+        <label>몸무게(kg)</label>
+        <input id="weight" type="number" min="0" step="1" placeholder="예: 36" />
+
+        <label>서브 포지션(복수 가능)</label>
+        <input id="secondaryPos" placeholder="예: 2B,LF (콤마로 입력)" />
+
+        <label>주특기/스타일 태그</label>
+        <div class="chipRow" id="tagChips"></div>
+        <input id="tags" placeholder="선택된 태그가 자동으로 들어가요" />
+
+        <label>사진 URL(옵션)</label>
+        <input id="photoUrl" placeholder="https://..." />
+      </div>
+
+      <div class="section">
+        <label>활성(재적)</label>
+        <div class="row2">
+          <button type="button" class="btn ghost" id="btnActiveOn">활성</button>
+          <button type="button" class="btn ghost" id="btnActiveOff">비활성</button>
+        </div>
+      </div>
+
+      <button class="btn" id="btnSave">저장하기</button>
+
+      <div class="row2">
+        <button class="btn ghost" id="btnReset">초기화</button>
+        <button class="btn danger hidden" id="btnDelete">삭제</button>
+      </div>
+
+      <div class="msg muted" id="msg"></div>
+    </div>
+  </div>
+
+</div>
+<script>
+  // ✅ 여기에 본인 Supabase 정보 입력
+  const SUPABASE_URL = 'https://dmxkznmliiyffoltdcxd.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRteGt6bm1saWl5ZmZvbHRkY3hkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDMwNTc2NzksImV4cCI6MjA1ODYzMzY3OX0.NUQgOp8NGHEZ0RDQ4sbuH7YCJpfYqF3UyEK3sPtu5-o';
+  const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  async function requireLogin() {
+    const { data, error } = await client.auth.getSession();
+    if (error) {
+      console.error(error);
+      location.href = `auth.html?next=${encodeURIComponent(location.pathname.split('/').pop() + location.search)}`;
+      return null;
+    }
+    const session = data?.session;
+    if (!session) {
+      location.href = `auth.html?next=${encodeURIComponent(location.pathname.split('/').pop() + location.search)}`;
+      return null;
+    }
+    return session;
+  }
+
+  const el = (id) => document.getElementById(id);
+  const setMsg = (html) => el("msg").innerHTML = html;
+
+  // 상태
+  let mode = "create";     // create | edit
+  let editingId = null;
+  let isActive = true;
+
+  const TAGS = ["장타형","컨택형","빠른발","수비형","강견","제구형","파워피처"];
+
+  // ---------- view ----------
+  function showList(){
+    el("viewList").classList.remove("hidden");
+    el("viewForm").classList.add("hidden");
+    setMsg("");
+  }
+  function showForm(){
+    el("viewList").classList.add("hidden");
+    el("viewForm").classList.remove("hidden");
+    setMsg("");
+  }
+
+  // ---------- tags chips ----------
+  function renderTagChips(){
+    const wrap = el("tagChips");
+    wrap.innerHTML = "";
+    TAGS.forEach(t => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "chip";
+      b.textContent = t;
+      b.addEventListener("click", () => toggleTag(t, b));
+      wrap.appendChild(b);
+    });
+  }
+
+  function parseTags(str){
+    return (str || "")
+      .split(",")
+      .map(s => s.trim())
+      .filter(Boolean);
+  }
+
+  function syncChipsFromInput(){
+    const selected = new Set(parseTags(el("tags").value));
+    [...el("tagChips").children].forEach(btn => {
+      btn.classList.toggle("active", selected.has(btn.textContent));
+    });
+  }
+
+  function toggleTag(tag, btn){
+    const arr = parseTags(el("tags").value);
+    const set = new Set(arr);
+    if(set.has(tag)) set.delete(tag);
+    else set.add(tag);
+    const next = [...set].join(",");
+    el("tags").value = next;
+    btn.classList.toggle("active");
+  }
+
+  el("tags").addEventListener("input", syncChipsFromInput);
+
+  // ---------- active toggles ----------
+  function setActiveState(val){
+    isActive = val;
+    el("btnActiveOn").classList.toggle("active", val);
+    el("btnActiveOff").classList.toggle("active", !val);
+    // 버튼을 칩처럼 보이게
+    el("btnActiveOn").style.borderColor = val ? "#2563eb" : "#e5e7eb";
+    el("btnActiveOn").style.color = val ? "#2563eb" : "#111827";
+    el("btnActiveOff").style.borderColor = !val ? "#2563eb" : "#e5e7eb";
+    el("btnActiveOff").style.color = !val ? "#2563eb" : "#111827";
+  }
+  el("btnActiveOn").addEventListener("click", () => setActiveState(true));
+  el("btnActiveOff").addEventListener("click", () => setActiveState(false));
+
+  // ---------- list ----------
+  function cardLine(p){
+    const num = (p.jersey_number ?? "") !== "" ? `#${p.jersey_number}` : "#-";
+    const pos = p.primary_position ? p.primary_position : "-";
+    const tb = `${p.throws || "R"}투${p.bats || "R"}타`;
+    const hw = (p.height_cm || p.weight_kg) ? `${p.height_cm || "-"}cm · ${p.weight_kg || "-"}kg` : "신체정보 없음";
+    return `${pos} · ${tb} · ${hw}`;
+  }
+
+  async function loadList(query=""){
+    el("playerList").innerHTML = "";
+    el("listHint").textContent = "불러오는 중...";
+
+    let q = client
+      .from("baseball_players")
+      .select("id, name, jersey_number, grade, primary_position, throws, bats, height_cm, weight_kg, is_active, tags")
+      .order("is_active", { ascending: false })
+      .order("grade", { ascending: true })
+      .order("jersey_number", { ascending: true, nullsFirst: false })
+      .order("name", { ascending: true });
+
+    if(query){
+      // 간단 검색: 이름 ilike 또는 등번호 일치(숫자면)
+      const trimmed = query.trim();
+      const asNum = Number(trimmed);
+      if(Number.isFinite(asNum) && trimmed !== ""){
+        q = q.or(`name.ilike.%${trimmed}%,jersey_number.eq.${asNum}`);
+      } else {
+        q = q.ilike("name", `%${trimmed}%`);
+      }
+    }
+
+    const { data, error } = await q;
+
+    if(error){
+      el("listHint").innerHTML = "<span class='err'>불러오기 실패: </span>" + error.message;
+      return;
+    }
+
+    if(!data || data.length === 0){
+      el("listHint").textContent = query ? "검색 결과가 없어요." : "등록된 선수가 없어요. + 로 추가하세요.";
+      return;
+    }
+
+    el("listHint").textContent = "";
+
+    data.forEach(p => {
+      const item = document.createElement("div");
+      item.className = "item";
+      const activePill = p.is_active ? `<div class="pill on">활성</div>` : `<div class="pill off">비활성</div>`;
+      const num = (p.jersey_number ?? "") !== "" ? `#${p.jersey_number}` : "#-";
+      item.innerHTML = `
+        <div class="left">
+          <div class="h1">${num} · ${p.name} (${p.grade})</div>
+          <div class="sub">${cardLine(p)}</div>
+          <div class="sub">${p.tags ? ("태그: " + p.tags) : ""}</div>
+        </div>
+        ${activePill}
+      `;
+      item.addEventListener("click", () => openEdit(p.id));
+      el("playerList").appendChild(item);
+    });
+  }
+
+  // ---------- form ----------
+  function resetForm(){
+    el("name").value = "";
+    el("jersey").value = "";
+    el("grade").value = "";
+    el("birthYear").value = "";
+    el("primaryPos").value = "";
+    el("throws").value = "R";
+    el("bats").value = "R";
+
+    el("height").value = "";
+    el("weight").value = "";
+    el("secondaryPos").value = "";
+    el("tags").value = "";
+    el("photoUrl").value = "";
+    syncChipsFromInput();
+
+    setActiveState(true);
+    setMsg("");
+  }
+
+  function enterCreate(){
+    mode = "create";
+    editingId = null;
+
+    el("formTitle").textContent = "➕ 선수 신규 등록";
+    el("formSub").textContent = "기본정보 + 추천정보";
+    el("modeInfo").textContent = "모드: 신규";
+    el("btnDelete").classList.add("hidden");
+
+    resetForm();
+    showForm();
+  }
+
+  async function openEdit(id){
+    mode = "edit";
+    editingId = id;
+
+    el("formTitle").textContent = "✏️ 선수 수정";
+    el("formSub").textContent = `ID #${id}`;
+    el("modeInfo").textContent = `모드: 수정 (#${id})`;
+    el("btnDelete").classList.remove("hidden");
+
+    showForm();
+    setMsg("불러오는 중...");
+
+    const { data, error } = await client
+      .from("baseball_players")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    if(error){
+      setMsg("<span class='err'>불러오기 실패: </span>" + error.message);
+      return;
+    }
+
+    el("name").value = data.name ?? "";
+    el("jersey").value = data.jersey_number ?? "";
+    el("grade").value = data.grade ?? "";
+    el("birthYear").value = data.birth_year ?? "";
+    el("primaryPos").value = data.primary_position ?? "";
+    el("throws").value = data.throws ?? "R";
+    el("bats").value = data.bats ?? "R";
+
+    el("height").value = data.height_cm ?? "";
+    el("weight").value = data.weight_kg ?? "";
+    el("secondaryPos").value = data.secondary_positions ?? "";
+    el("tags").value = data.tags ?? "";
+    el("photoUrl").value = data.photo_url ?? "";
+    syncChipsFromInput();
+
+    setActiveState(!!data.is_active);
+
+    setMsg("");
+  }
+
+  function collectPayload(){
+    const name = el("name").value.trim();
+    const grade = el("grade").value.trim();
+    const primary_position = el("primaryPos").value.trim();
+
+    if(!name || !grade || !primary_position){
+      return { error: "필수값: 선수명, 학년/나이대, 주 포지션" };
+    }
+
+    const jersey_number_raw = el("jersey").value;
+    const jersey_number = jersey_number_raw === "" ? null : Number(jersey_number_raw);
+
+    const birth_year_raw = el("birthYear").value;
+    const birth_year = birth_year_raw === "" ? null : Number(birth_year_raw);
+
+    const height_raw = el("height").value;
+    const height_cm = height_raw === "" ? null : Number(height_raw);
+
+    const weight_raw = el("weight").value;
+    const weight_kg = weight_raw === "" ? null : Number(weight_raw);
+
+    return {
+      name,
+      jersey_number,
+      grade,
+      birth_year,
+      primary_position,
+      secondary_positions: el("secondaryPos").value.trim() || null,
+      throws: el("throws").value,
+      bats: el("bats").value,
+      height_cm,
+      weight_kg,
+      tags: el("tags").value.trim() || null,
+      photo_url: el("photoUrl").value.trim() || null,
+      is_active: isActive
+    };
+  }
+
+  // ---------- actions ----------
+  el("btnNew").addEventListener("click", enterCreate);
+  el("btnBack").addEventListener("click", async () => { showList(); await loadList(el("q").value); });
+  el("btnReset").addEventListener("click", resetForm);
+
+  //el("btnSearch").addEventListener("click", async () => loadList(el("q").value));
+  //el("q").addEventListener("keydown", async (e) => {
+  //  if(e.key === "Enter") await loadList(el("q").value);
+  //});
+
+  el("btnSave").addEventListener("click", async () => {
+    setMsg("저장 중...");
+
+    const payload = collectPayload();
+    if(payload.error){
+      setMsg("<span class='err'>" + payload.error + "</span>");
+      return;
+    }
+
+    if(mode === "create"){
+      const { data, error } = await client
+        .from("baseball_players")
+        .insert(payload)
+        .select("id, name, grade")
+        .single();
+
+      if(error){
+        setMsg("<span class='err'>저장 실패: </span><span class='muted'>" + error.message + "</span>");
+        return;
+      }
+
+      setMsg(`<span class='ok'>✅ 신규 저장 완료!</span><br><span class='muted'>#${data.id} · ${data.name} (${data.grade})</span>`);
+      await openEdit(data.id); // 저장 후 수정모드로 전환
+      return;
+    }
+
+    const { data, error } = await client
+      .from("baseball_players")
+      .update(payload)
+      .eq("id", editingId)
+      .select("id, name, grade")
+      .single();
+
+    if(error){
+      setMsg("<span class='err'>수정 실패: </span><span class='muted'>" + error.message + "</span>");
+      return;
+    }
+
+    setMsg(`<span class='ok'>✅ 수정 완료!</span><br><span class='muted'>#${data.id} · ${data.name} (${data.grade})</span>`);
+  });
+
+  el("btnDelete").addEventListener("click", async () => {
+    if(mode !== "edit" || !editingId) return;
+    const ok = confirm(`#${editingId} 선수를 삭제할까요?`);
+    if(!ok) return;
+
+    setMsg("삭제 중...");
+    const { error } = await client
+      .from("baseball_players")
+      .delete()
+      .eq("id", editingId);
+
+    if(error){
+      setMsg("<span class='err'>삭제 실패: </span><span class='muted'>" + error.message + "</span>");
+      return;
+    }
+
+    setMsg("<span class='ok'>✅ 삭제 완료</span>");
+    showList();
+    await loadList(el("q").value);
+  });
+
+  // init
+  (async function init(){
+    const session = await requireLogin();
+    if (!session) return;
+    renderTagChips();
+    setActiveState(true);
+    showList();
+    await loadList();
+  })();
+</script>
+</body>
+</html>

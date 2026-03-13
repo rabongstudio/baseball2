@@ -1,0 +1,729 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>경기별 선수 기록 입력</title>
+
+<style>
+  :root{
+    --bg:#f5f6f8; --card:#fff; --line:#e5e7eb; --text:#111827; --muted:#6b7280;
+    --brand:#2563eb; --brand2:#1d4ed8; --ok:#16a34a; --err:#dc2626;
+  }
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto;background:var(--bg);color:var(--text);}
+  .container{max-width:420px;margin:0 auto;padding:14px 14px 26px;}
+  .topbar{display:flex;align-items:center;justify-content:space-between;margin:6px 0 12px;gap:10px;}
+  .title{font-size:22px;font-weight:900;}
+  .sub{font-size:12px;color:var(--muted);line-height:1.4;}
+  .card{background:var(--card);border-radius:16px;padding:14px;box-shadow:0 2px 10px rgba(0,0,0,.06);margin-top:12px;}
+  .list{display:flex;flex-direction:column;gap:10px;}
+  .item{
+    background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px;
+    display:flex;justify-content:space-between;gap:10px;
+  }
+  .item:active{background:#f9fafb}
+  .left{min-width:0}
+  .h1{font-weight:900;font-size:14px}
+  .muted2{font-size:12px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .badge{font-weight:1000;font-size:12px;padding:6px 10px;border-radius:999px;border:1px solid var(--line);align-self:flex-start;}
+  .badge.W{color:#2563eb;border-color:#bfdbfe;background:#eff6ff;}
+  .badge.L{color:#dc2626;border-color:#fecaca;background:#fef2f2;}
+  .badge.D{color:#6b7280;border-color:#e5e7eb;background:#f9fafb;}
+
+  .btn{
+    width:100%; margin-top:12px; padding:16px;
+    border:none; border-radius:14px; background:var(--brand); color:#fff;
+    font-size:16px; font-weight:900;
+  }
+  .btn:active{background:var(--brand2)}
+  .btn.ghost{background:#fff;color:var(--text);border:1px solid var(--line);}
+  .btn.danger{background:#dc2626;}
+  .btn.danger:active{background:#b91c1c;}
+  .row2{display:flex;gap:10px}
+  .row2>button{flex:1}
+  .smallBtn{border:1px solid var(--line);background:#fff;border-radius:12px;padding:10px 12px;font-weight:900;}
+  .smallBtn:active{background:#f9fafb}
+  .hidden{display:none}
+
+  label{display:block;margin-top:12px;font-size:13px;font-weight:900;}
+  input, textarea, select{
+    width:100%; box-sizing:border-box;
+    margin-top:8px; padding:14px; font-size:16px;
+    border:1px solid var(--line); border-radius:12px; background:#fff;
+  }
+  textarea{resize:none}
+
+  .chipRow{display:flex;gap:10px;margin-top:8px}
+  .chipBtn{
+    flex:1;padding:12px;border-radius:12px;border:1px solid var(--line);
+    background:#fff;font-weight:1000;font-size:14px;
+  }
+  .chipBtn.active{border-color:var(--brand);color:var(--brand);background:#eff6ff;}
+
+  .section{margin-top:14px;padding-top:10px;border-top:1px dashed var(--line)}
+  .msg{margin-top:10px;text-align:center;font-size:13px}
+  .ok{color:var(--ok);font-weight:900}
+  .err{color:var(--err);font-weight:900}
+  .hint{font-size:12px;color:var(--muted);margin-top:6px}
+
+  .monthHeader{
+    margin: 12px 2px 6px;
+    font-weight: 1000;
+    font-size: 14px;
+    color: #111827;
+  }
+  .monthSub{
+    font-size: 12px;
+    color: #6b7280;
+    margin-left: 6px;
+    font-weight: 800;
+  }
+
+  .pill{font-weight:1000;font-size:12px;padding:6px 10px;border-radius:999px;border:1px solid var(--line);align-self:flex-start;}
+  .pill.on{color:#2563eb;border-color:#bfdbfe;background:#eff6ff;}
+  .pill.off{color:#6b7280;background:#f9fafb;}
+
+  .grid2{display:flex;gap:10px}
+  .grid2>div{flex:1}
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body>
+<div class="container">
+
+  <!-- VIEW 1: GAME LIST -->
+  <div id="viewGames">
+    <div class="topbar">
+      <div>
+        <div class="title">📋 경기 선택</div>
+        <div class="sub">경기를 선택하면 참여선수를 추가하고, 선수별 기록을 입력/수정할 수 있어요.</div>
+      </div>
+      <a href="index.html" style="text-decoration:none"><button class="smallBtn">홈</button></a>
+    </div>
+
+    <div class="card">
+      <div class="sub">경기 목록(년-월 구분)</div>
+      <div class="hint" id="gamesHint">불러오는 중...</div>
+      <div class="list" id="gamesList"></div>
+    </div>
+  </div>
+
+  <!-- VIEW 2: GAME DETAIL + PLAYER LIST -->
+  <div id="viewGamePlayers" class="hidden">
+    <div class="topbar">
+      <div>
+        <div class="title">👥 참여 선수</div>
+        <div class="sub" id="gameHeader">-</div>
+      </div>
+      <button class="smallBtn" id="btnBackGames">경기목록</button>
+    </div>
+
+    <div class="card">
+      <button class="btn" id="btnAddPlayer">➕ 선수 추가</button>
+      <div class="hint">선수를 추가하거나, 선수 카드를 눌러 기록을 입력/수정하세요.</div>
+
+      <div class="section">
+        <div class="h1">현재 등록 선수</div>
+        <div class="hint" id="recordsHint">불러오는 중...</div>
+        <div class="list" id="recordsList"></div>
+      </div>
+    </div>
+
+    <!-- Add player panel -->
+    <div class="card hidden" id="addPanel">
+      <div class="h1">선수 추가</div>
+      <div class="hint">검색 후 선수 카드를 누르면 해당 경기에 선수가 추가되고, 바로 기록 입력 화면으로 이동합니다.</div>
+      <input id="playerSearch" placeholder="이름 또는 등번호로 검색" />
+      <div class="list" id="playerPickList"></div>
+      <button class="btn ghost" id="btnCloseAdd">닫기</button>
+    </div>
+  </div>
+
+  <!-- VIEW 3: EDIT RECORD -->
+  <div id="viewEdit" class="hidden">
+    <div class="topbar">
+      <div>
+        <div class="title">✍️ 선수 기록</div>
+        <div class="sub" id="editHeader">-</div>
+      </div>
+      <button class="smallBtn" id="btnBackPlayers">선수목록</button>
+    </div>
+
+    <div class="card">
+      <div class="sub" id="editModeInfo">-</div>
+
+      <div class="section" style="border-top:none;padding-top:0;margin-top:0">
+        <div class="h1">라인업</div>
+
+        <label>선발/교체</label>
+        <div class="chipRow">
+          <button type="button" class="chipBtn active" id="btnStarter">선발</button>
+          <button type="button" class="chipBtn" id="btnSub">교체</button>
+        </div>
+
+        <div class="grid2">
+          <div>
+            <label>타순</label>
+            <input id="battingOrder" type="number" min="1" step="1" placeholder="예: 1~9" />
+          </div>
+          <div>
+            <label>포지션</label>
+            <input id="position" placeholder="예: SS, CF, P" />
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="h1">타격</div>
+        <div class="grid2">
+          <div><label>타수</label><input id="ab" type="number" min="0" step="1" value="0"></div>
+          <div><label>안타</label><input id="h" type="number" min="0" step="1" value="0"></div>
+        </div>
+        <div class="grid2">
+          <div><label>타점</label><input id="rbi" type="number" min="0" step="1" value="0"></div>
+          <div><label>득점</label><input id="r" type="number" min="0" step="1" value="0"></div>
+        </div>
+        <div class="grid2">
+          <div><label>볼넷</label><input id="bb" type="number" min="0" step="1" value="0"></div>
+          <div><label>삼진</label><input id="so" type="number" min="0" step="1" value="0"></div>
+        </div>
+        <div class="grid2">
+          <div><label>사구</label><input id="hbp" type="number" min="0" step="1" value="0"></div>
+          <div><label>도루</label><input id="sb" type="number" min="0" step="1" value="0"></div>
+        </div>
+        <div class="grid2">
+          <div><label>땅볼</label><input id="gb" type="number" min="0" step="1" value="0"></div>
+          <div><label>플라이</label><input id="fb" type="number" min="0" step="1" value="0"></div>
+        </div>
+
+        <div class="section">
+          <div class="h1">장타/희생</div>
+          <div class="grid2">
+            <div><label>2루타</label><input id="doubles" type="number" min="0" step="1" value="0"></div>
+            <div><label>3루타</label><input id="triples" type="number" min="0" step="1" value="0"></div>
+          </div>
+          <div class="grid2">
+            <div><label>홈런</label><input id="hr" type="number" min="0" step="1" value="0"></div>
+            <div><label>희생플라이</label><input id="sf" type="number" min="0" step="1" value="0"></div>
+          </div>
+          <div><label>희생번트</label><input id="sh" type="number" min="0" step="1" value="0"></div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="h1">투구</div>
+        <div class="grid2">
+          <div><label>이닝 (예: 2.1)</label><input id="ip" type="number" min="0" step="0.1" value="0"></div>
+          <div><label>자책</label><input id="er" type="number" min="0" step="1" value="0"></div>
+        </div>
+        <div class="grid2">
+          <div><label>삼진(투수)</label><input id="pk" type="number" min="0" step="1" value="0"></div>
+          <div><label>볼넷(투수)</label><input id="pbb" type="number" min="0" step="1" value="0"></div>
+        </div>
+        <div class="grid2">
+          <div><label>피안타</label><input id="ph" type="number" min="0" step="1" value="0"></div>
+          <div><label>투구수</label><input id="pitches" type="number" min="0" step="1" value="0"></div>
+        </div>
+        <label>최고구속(km/h)</label>
+        <input id="maxVel" type="number" min="0" step="1" placeholder="예: 118" />
+      </div>
+
+      <div class="section">
+        <div class="h1">수비</div>
+        <label>실책</label>
+        <input id="e" type="number" min="0" step="1" value="0" />
+      </div>
+
+      <div class="section">
+        <div class="h1">한 줄 메모</div>
+        <textarea id="playerMemo" rows="3" placeholder="예: 컨택 좋음 / 송구 흔들림 / 주루 판단 좋음"></textarea>
+      </div>
+
+      <button class="btn" id="btnSave">저장하기</button>
+      <div class="row2">
+        <button class="btn ghost" id="btnReset">되돌리기</button>
+        <button class="btn danger" id="btnRemoveFromGame">경기에서 제외(삭제)</button>
+      </div>
+      <div class="msg sub" id="msg"></div>
+    </div>
+  </div>
+
+</div>
+<script>
+  // ✅ 여기에 본인 Supabase 정보 입력
+  const SUPABASE_URL = 'https://dmxkznmliiyffoltdcxd.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRteGt6bm1saWl5ZmZvbHRkY3hkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDMwNTc2NzksImV4cCI6MjA1ODYzMzY3OX0.NUQgOp8NGHEZ0RDQ4sbuH7YCJpfYqF3UyEK3sPtu5-o';
+  const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  async function requireLogin() {
+    const { data, error } = await client.auth.getSession();
+    if (error) {
+      console.error(error);
+      location.href = `auth.html?next=${encodeURIComponent(location.pathname.split('/').pop() + location.search)}`;
+      return null;
+    }
+    const session = data?.session;
+    if (!session) {
+      location.href = `auth.html?next=${encodeURIComponent(location.pathname.split('/').pop() + location.search)}`;
+      return null;
+    }
+    return session;
+  }
+
+  const el = (id) => document.getElementById(id);
+  const setMsg = (html) => el("msg").innerHTML = html;
+
+  // ---------- state ----------
+  let currentGameId = null;
+  let currentGame = null;
+  let currentRecord = null; // record row
+  let currentPlayer = null; // embedded player
+  let isStarter = true;
+
+  let playersCache = [];    // all players
+  let recordsCache = [];    // records for game
+
+  // ---------- view helpers ----------
+  function show(viewId){
+    ["viewGames","viewGamePlayers","viewEdit"].forEach(v => el(v).classList.add("hidden"));
+    el(viewId).classList.remove("hidden");
+    setMsg("");
+  }
+
+  function ymKey(dateStr){ return (dateStr||"").slice(0,7) || "0000-00"; }
+  function ymTitle(key){
+    const [y,m] = key.split("-");
+    return `${y}년 ${String(Number(m))}월`;
+  }
+
+  function setActive(btnOn, btnOff){
+    btnOn.classList.add("active");
+    btnOff.classList.remove("active");
+  }
+
+  function n(id){
+    const v = Number(el(id).value);
+    return Number.isFinite(v) ? v : 0;
+  }
+
+  function textVal(id){
+    return (el(id).value || "").trim();
+  }
+
+  function safeNum(x){ return Number.isFinite(Number(x)) ? Number(x) : 0; }
+
+  function recordSummaryKorean(rec){
+    const bo = rec.batting_order ? `${rec.batting_order}번` : "타순-";
+    const pos = rec.position || (rec.baseball_players?.primary_position) || "-";
+    const starter = rec.is_starter ? "선발" : "교체";
+
+    const batting = `타격: 타수${safeNum(rec.ab)} 안타${safeNum(rec.h)} 타점${safeNum(rec.rbi)} 득점${safeNum(rec.r)} 볼넷${safeNum(rec.bb)} 삼진${safeNum(rec.so)} 사구${safeNum(rec.hbp)} 도루${safeNum(rec.sb)}`;
+    const extra = `장타/희생: 2루타${safeNum(rec.doubles)} 3루타${safeNum(rec.triples)} 홈런${safeNum(rec.hr)} 희플${safeNum(rec.sf)} 희번${safeNum(rec.sh)}`;
+    const pitching = `투구: 이닝${safeNum(rec.ip)} 자책${safeNum(rec.er)} 삼진${safeNum(rec.pk)} 볼넷${safeNum(rec.pbb)} 피안타${safeNum(rec.ph)} 투구수${safeNum(rec.pitches)}`;
+    const fielding = `수비: 실책${safeNum(rec.e)}`;
+
+    return `라인업: ${bo} · ${pos} · ${starter} / ${batting} / ${extra} / ${pitching} / ${fielding}`;
+  }
+
+  // ---------- Load Games ----------
+  async function loadGames(){
+    el("gamesList").innerHTML = "";
+    el("gamesHint").textContent = "불러오는 중...";
+
+    const { data, error } = await client
+      .from("baseball_games")
+      .select("id, game_date, opponent, tournament, stadium, our_score, opp_score, result")
+      .order("game_date", { ascending: false })
+      .order("id", { ascending: false });
+
+    if(error){
+      el("gamesHint").textContent = "불러오기 실패: " + error.message;
+      return;
+    }
+    if(!data || data.length === 0){
+      el("gamesHint").textContent = "경기가 없어요. games.html에서 먼저 경기 결과를 등록하세요.";
+      return;
+    }
+
+    el("gamesHint").textContent = "";
+
+    // group by year-month
+    const groups = new Map();
+    data.forEach(g => {
+      const key = ymKey(g.game_date);
+      if(!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(g);
+    });
+
+    for(const [key, arr] of groups.entries()){
+      const header = document.createElement("div");
+      header.className = "monthHeader";
+      header.innerHTML = `${ymTitle(key)} <span class="monthSub">(${arr.length}경기)</span>`;
+      el("gamesList").appendChild(header);
+
+      arr.forEach(g => {
+        const item = document.createElement("div");
+        item.className = "item";
+        item.innerHTML = `
+          <div class="left">
+            <div class="h1">#${g.id} · ${g.game_date} vs ${g.opponent}</div>
+            <div class="muted2">${(g.tournament||"")}${g.stadium ? (" · " + g.stadium) : ""} · 스코어 ${g.our_score}-${g.opp_score}</div>
+          </div>
+          <div class="badge ${g.result}">${g.result}</div>
+        `;
+        item.addEventListener("click", () => openGame(g.id));
+        el("gamesList").appendChild(item);
+      });
+    }
+  }
+
+  // ---------- Open Game ----------
+  async function openGame(gameId){
+    currentGameId = gameId;
+    show("viewGamePlayers");
+    el("addPanel").classList.add("hidden");
+    el("recordsList").innerHTML = "";
+    el("recordsHint").textContent = "불러오는 중...";
+
+    // 1) game info
+    const gRes = await client
+      .from("baseball_games")
+      .select("id, game_date, opponent, tournament, stadium, our_score, opp_score, result")
+      .eq("id", gameId)
+      .single();
+
+    if(gRes.error){
+      el("recordsHint").textContent = "경기 불러오기 실패: " + gRes.error.message;
+      return;
+    }
+    currentGame = gRes.data;
+    el("gameHeader").textContent =
+      `#${currentGame.id} · ${currentGame.game_date} vs ${currentGame.opponent} · 결과 ${currentGame.result} (스코어 ${currentGame.our_score}-${currentGame.opp_score})`;
+
+    // 2) players cache (for adding)
+    await loadPlayersCache();
+
+    // 3) records for game
+    await loadRecordsForGame();
+  }
+
+  async function loadPlayersCache(){
+    if(playersCache.length > 0) return;
+    const { data, error } = await client
+      .from("baseball_players")
+      .select("id, name, jersey_number, grade, primary_position, throws, bats, is_active")
+      .order("is_active", { ascending: false })
+      .order("jersey_number", { ascending: true, nullsFirst: false })
+      .order("name", { ascending: true });
+
+    if(error){
+      console.log(error);
+      playersCache = [];
+      return;
+    }
+    playersCache = data || [];
+  }
+
+  async function loadRecordsForGame(){
+    el("recordsList").innerHTML = "";
+    el("recordsHint").textContent = "불러오는 중...";
+
+    const { data, error } = await client
+      .from("baseball_game_player_records")
+      .select(`
+        id, game_id, player_id,
+        is_starter, batting_order, position,
+        ab, h, rbi, r, bb, so, hbp, sb,
+        doubles, triples, hr, sf, sh, gb, fb,
+        ip, er, pk, pbb, ph, pitches, max_vel,
+        e, player_memo,
+        baseball_players ( id, name, jersey_number, grade, primary_position, throws, bats )
+      `)
+      .eq("game_id", currentGameId)
+      .order("batting_order", { ascending: true, nullsFirst: false })
+      .order("player_id", { ascending: true });
+
+    if(error){
+      el("recordsHint").textContent = "선수 기록 불러오기 실패: " + error.message;
+      return;
+    }
+
+    recordsCache = data || [];
+    if(recordsCache.length === 0){
+      el("recordsHint").textContent = "등록된 선수가 없어요. 위의 [선수 추가]로 참여선수를 먼저 등록하세요.";
+      return;
+    }
+
+    el("recordsHint").textContent = "";
+    recordsCache.forEach(rec => {
+      const p = rec.baseball_players || {};
+      const num = (p.jersey_number ?? "") !== "" ? `#${p.jersey_number}` : "#-";
+
+      const summary = recordSummaryKorean(rec);
+
+      const item = document.createElement("div");
+      item.className = "item";
+      item.innerHTML = `
+        <div class="left">
+          <div class="h1">${num} · ${p.name || "선수"} (${p.grade || "-"})</div>
+          <div class="muted2">${summary}</div>
+          <div class="muted2">${rec.player_memo ? ("메모: " + rec.player_memo) : ""}</div>
+        </div>
+        <div class="pill ${rec.is_starter ? "on" : "off"}">${rec.is_starter ? "선발" : "교체"}</div>
+      `;
+      item.addEventListener("click", () => openRecord(rec));
+      el("recordsList").appendChild(item);
+    });
+  }
+
+  // ---------- Add Player Panel ----------
+  el("btnAddPlayer").addEventListener("click", () => {
+    el("addPanel").classList.remove("hidden");
+    el("playerSearch").value = "";
+    renderPlayerPickList("");
+  });
+
+  el("btnCloseAdd").addEventListener("click", () => {
+    el("addPanel").classList.add("hidden");
+  });
+
+  el("playerSearch").addEventListener("input", (e) => {
+    renderPlayerPickList(e.target.value);
+  });
+
+  function renderPlayerPickList(query){
+    const q = (query||"").trim().toLowerCase();
+    const picked = new Set((recordsCache||[]).map(r => r.player_id));
+
+    const list = el("playerPickList");
+    list.innerHTML = "";
+
+    const filtered = (playersCache||[])
+      .filter(p => !picked.has(p.id))
+      .filter(p => {
+        if(!q) return true;
+        const num = (p.jersey_number ?? "").toString();
+        return (p.name||"").toLowerCase().includes(q) || num === q;
+      })
+      .slice(0, 50);
+
+    if(filtered.length === 0){
+      const div = document.createElement("div");
+      div.className = "hint";
+      div.textContent = "추가할 수 있는 선수가 없어요(이미 추가됨) 또는 검색 결과가 없어요.";
+      list.appendChild(div);
+      return;
+    }
+
+    filtered.forEach(p => {
+      const item = document.createElement("div");
+      item.className = "item";
+      const num = (p.jersey_number ?? "") !== "" ? `#${p.jersey_number}` : "#-";
+      item.innerHTML = `
+        <div class="left">
+          <div class="h1">${num} · ${p.name} (${p.grade})</div>
+          <div class="muted2">${p.primary_position} · ${p.throws}투${p.bats}타</div>
+        </div>
+        <div class="badge D">추가</div>
+      `;
+      item.addEventListener("click", () => addPlayerToGame(p.id));
+      list.appendChild(item);
+    });
+  }
+
+  async function addPlayerToGame(playerId){
+    const payload = {
+      game_id: currentGameId,
+      player_id: playerId,
+      is_starter: true,
+      batting_order: null,
+      position: null
+    };
+
+    const { error } = await client
+      .from("baseball_game_player_records")
+      .upsert(payload, { onConflict: "game_id,player_id" });
+
+    if(error){
+      alert("선수 추가 실패: " + error.message);
+      return;
+    }
+
+    await loadRecordsForGame();
+    const rec = recordsCache.find(r => r.player_id === playerId);
+    if(rec) openRecord(rec);
+  }
+
+  // ---------- Open / Edit Record ----------
+  function openRecord(rec){
+    currentRecord = rec;
+    currentPlayer = rec.baseball_players || {};
+    isStarter = !!rec.is_starter;
+
+    show("viewEdit");
+
+    const num = (currentPlayer.jersey_number ?? "") !== "" ? `#${currentPlayer.jersey_number}` : "#-";
+    el("editHeader").textContent =
+      `경기 #${currentGameId} · ${num} ${currentPlayer.name || ""} (${currentPlayer.grade || ""})`;
+
+    el("editModeInfo").textContent =
+      `저장하면 즉시 반영됩니다.`;
+
+    if(isStarter) setActive(el("btnStarter"), el("btnSub"));
+    else setActive(el("btnSub"), el("btnStarter"));
+
+    el("battingOrder").value = rec.batting_order ?? "";
+    el("position").value = rec.position ?? "";
+
+    el("ab").value = rec.ab ?? 0;
+    el("h").value = rec.h ?? 0;
+    el("rbi").value = rec.rbi ?? 0;
+    el("r").value = rec.r ?? 0;
+    el("bb").value = rec.bb ?? 0;
+    el("so").value = rec.so ?? 0;
+    el("hbp").value = rec.hbp ?? 0;
+    el("sb").value = rec.sb ?? 0;
+
+    el("doubles").value = rec.doubles ?? 0;
+    el("triples").value = rec.triples ?? 0;
+    el("hr").value = rec.hr ?? 0;
+    el("sf").value = rec.sf ?? 0;
+    el("sh").value = rec.sh ?? 0;
+    
+    el("gb").value = rec.gb ?? 0;
+    el("fb").value = rec.fb ?? 0;
+    
+    el("ip").value = rec.ip ?? 0;
+    el("er").value = rec.er ?? 0;
+    el("pk").value = rec.pk ?? 0;
+    el("pbb").value = rec.pbb ?? 0;
+    el("ph").value = rec.ph ?? 0;
+    el("pitches").value = rec.pitches ?? 0;
+    el("maxVel").value = rec.max_vel ?? "";
+
+    el("e").value = rec.e ?? 0;
+
+    el("playerMemo").value = rec.player_memo ?? "";
+
+    setMsg("");
+  }
+
+  el("btnStarter").addEventListener("click", () => { isStarter = true; setActive(el("btnStarter"), el("btnSub")); });
+  el("btnSub").addEventListener("click", () => { isStarter = false; setActive(el("btnSub"), el("btnStarter")); });
+
+  el("btnBackGames").addEventListener("click", () => {
+    currentGameId = null;
+    currentGame = null;
+    recordsCache = [];
+    el("addPanel").classList.add("hidden");
+    show("viewGames");
+  });
+
+  el("btnBackPlayers").addEventListener("click", async () => {
+    show("viewGamePlayers");
+    await loadRecordsForGame();
+  });
+
+  el("btnReset").addEventListener("click", () => {
+    if(currentRecord) openRecord(currentRecord);
+  });
+
+  el("btnSave").addEventListener("click", async () => {
+    if(!currentGameId || !currentPlayer?.id){
+      setMsg("<span class='err'>저장 대상이 없어요.</span>");
+      return;
+    }
+    setMsg("저장 중...");
+
+    const boRaw = el("battingOrder").value;
+    const batting_order = boRaw === "" ? null : Number(boRaw);
+
+    const maxVelRaw = el("maxVel").value;
+
+    const payload = {
+      game_id: currentGameId,
+      player_id: currentPlayer.id,
+
+      is_starter: isStarter,
+      batting_order,
+      position: textVal("position") || null,
+
+      ab: n("ab"),
+      h: n("h"),
+      rbi: n("rbi"),
+      r: n("r"),
+      bb: n("bb"),
+      so: n("so"),
+      hbp: n("hbp"),
+      sb: n("sb"),
+
+      doubles: n("doubles"),
+      triples: n("triples"),
+      hr: n("hr"),
+      sf: n("sf"),
+      sh: n("sh"),
+      gb: n("gb"),
+      fb: n("fb"),
+      ip: n("ip"),
+      er: n("er"),
+      pk: n("pk"),
+      pbb: n("pbb"),
+      ph: n("ph"),
+      pitches: n("pitches"),
+      max_vel: (maxVelRaw === "" ? null : Number(maxVelRaw)),
+
+      e: n("e"),
+
+      player_memo: textVal("playerMemo") || null
+    };
+
+    const { error } = await client
+      .from("baseball_game_player_records")
+      .upsert(payload, { onConflict: "game_id,player_id" });
+
+    if(error){
+      setMsg("<span class='err'>저장 실패: </span><span class='sub'>" + error.message + "</span>");
+      return;
+    }
+
+    setMsg("<span class='ok'>✅ 저장 완료</span>");
+
+    await loadRecordsForGame();
+    const updated = recordsCache.find(r => r.player_id === currentPlayer.id);
+    if(updated) currentRecord = updated;
+  });
+
+  el("btnRemoveFromGame").addEventListener("click", async () => {
+    if(!currentGameId || !currentPlayer?.id) return;
+    const ok = confirm("이 선수를 이 경기에서 제외(기록 삭제)할까요?");
+    if(!ok) return;
+
+    setMsg("삭제 중...");
+    const { error } = await client
+      .from("baseball_game_player_records")
+      .delete()
+      .eq("game_id", currentGameId)
+      .eq("player_id", currentPlayer.id);
+
+    if(error){
+      setMsg("<span class='err'>삭제 실패: </span><span class='sub'>" + error.message + "</span>");
+      return;
+    }
+
+    setMsg("<span class='ok'>✅ 삭제 완료</span>");
+    show("viewGamePlayers");
+    await loadRecordsForGame();
+  });
+
+  // init
+  (async function init(){
+    const session = await requireLogin();
+    if (!session) return;
+    show("viewGames");
+    await loadGames();
+  })();
+</script>
+</body>
+</html>
