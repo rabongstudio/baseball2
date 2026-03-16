@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>선수 관리 · ELITEREC</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+KR:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--black:#0a0c10;--panel:#181c24;--border:rgba(255,255,255,.07);--border2:rgba(255,255,255,.13);--text:#f0f2f5;--muted:#7a8294;--muted2:#4a5060;--brand:#e8ff47;--brand-dim:rgba(232,255,71,.12);--ok:#4ade80;--ok-bg:rgba(74,222,128,.1);--err:#f87171;--err-bg:rgba(248,113,113,.1);}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--black);color:var(--text);min-height:100vh;padding-bottom:40px}
+.header{position:sticky;top:0;z-index:100;background:rgba(10,12,16,.85);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 16px}
+.header-inner{max-width:480px;margin:0 auto;height:56px;display:flex;align-items:center;justify-content:space-between}
+.logo{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:1px;color:var(--brand);line-height:1}
+.logo span{color:var(--text)}
+.back-btn{padding:7px 16px;border-radius:8px;border:1px solid var(--border2);background:transparent;color:var(--text);font-family:'Noto Sans KR',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;text-decoration:none}
+.back-btn:hover{border-color:var(--brand);color:var(--brand)}
+.container{max-width:480px;margin:0 auto;padding:20px 16px 40px}
+.page-title{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:.5px;margin-bottom:4px}
+.page-sub{font-size:13px;color:var(--muted);margin-bottom:20px}
+.hint-text{font-size:12px;color:var(--muted);margin-bottom:10px}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:14px;margin-bottom:8px;cursor:pointer;transition:border-color .15s}
+.card:hover{border-color:var(--border2)}
+.card.static{cursor:default}.card.static:hover{border-color:var(--border)}
+.player-item{display:flex;align-items:center;gap:12px}
+.player-num{width:40px;height:40px;border-radius:10px;background:var(--brand-dim);display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--brand);flex-shrink:0}
+.player-info{flex:1;min-width:0}
+.player-name{font-size:14px;font-weight:700}
+.player-meta{font-size:12px;color:var(--muted);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.status-pill{font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;flex-shrink:0}
+.status-pill.on{background:var(--ok-bg);color:var(--ok)}
+.status-pill.off{background:rgba(148,163,184,.1);color:var(--muted)}
+.fab{position:fixed;bottom:28px;right:20px;width:52px;height:52px;border-radius:999px;border:none;background:var(--brand);color:var(--black);font-size:28px;font-weight:900;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 20px rgba(232,255,71,.3);transition:all .15s;z-index:50}
+.fab:hover{background:#d4ea3a;transform:scale(1.05)}
+label{display:block;margin-top:14px;font-size:12px;font-weight:700;letter-spacing:.5px;color:var(--muted);text-transform:uppercase}
+input,textarea,select{width:100%;margin-top:6px;padding:13px 16px;border:1px solid var(--border2);border-radius:12px;font-size:15px;background:rgba(255,255,255,.05);color:var(--text);font-family:'Noto Sans KR',sans-serif;transition:border-color .15s}
+input:focus,textarea:focus,select:focus{outline:none;border-color:var(--brand)}
+select option{background:var(--panel)}
+.row2{display:flex;gap:10px}.row2>div{flex:1}
+.divider{height:1px;background:var(--border);margin:16px 0}
+.section-label{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin:16px 0 4px}
+.chip-wrap{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.chip{border:1px solid var(--border2);background:transparent;color:var(--muted);padding:8px 14px;border-radius:999px;font-family:'Noto Sans KR',sans-serif;font-weight:700;font-size:13px;cursor:pointer;transition:all .15s}
+.chip.active{border-color:var(--brand);color:var(--brand);background:var(--brand-dim)}
+.toggle-row{display:flex;gap:8px;margin-top:8px}
+.toggle-btn{flex:1;padding:12px;border-radius:12px;border:1px solid var(--border2);background:transparent;color:var(--muted);font-family:'Noto Sans KR',sans-serif;font-weight:700;font-size:14px;cursor:pointer;transition:all .15s}
+.toggle-btn.active{border-color:var(--ok);color:var(--ok);background:var(--ok-bg)}
+.toggle-btn.active-off{border-color:var(--err);color:var(--err);background:var(--err-bg)}
+.btn{width:100%;margin-top:14px;padding:14px;border:none;border-radius:14px;font-family:'Noto Sans KR',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all .15s}
+.btn.primary{background:var(--brand);color:var(--black)}.btn.primary:hover{background:#d4ea3a}
+.btn.ghost{background:transparent;border:1px solid var(--border2);color:var(--text)}.btn.ghost:hover{background:rgba(255,255,255,.05)}
+.btn.danger{background:var(--err-bg);border:1px solid var(--err);color:var(--err)}.btn.danger:hover{background:rgba(248,113,113,.2)}
+.msg{margin-top:12px;font-size:13px;line-height:1.5;text-align:center}
+.msg .ok{color:var(--ok)}.msg .err{color:var(--err)}
+.hidden{display:none!important}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/config.js"></script>
+</head>
+<body>
+<header class="header">
+  <div class="header-inner">
+    <div class="logo">ELITE<span>REC</span></div>
+    <a href="index.html" class="back-btn">← 홈</a>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- LIST VIEW -->
+  <div id="viewList">
+    <div class="page-title">선수 관리</div>
+    <div class="page-sub">리스트 선택=수정 · + 버튼=신규 등록</div>
+    <div class="hint-text" id="listHint">불러오는 중...</div>
+    <div id="playerList"></div>
+  </div>
+
+  <!-- FORM VIEW -->
+  <div id="viewForm" class="hidden">
+    <div class="page-title" id="formTitle">선수 등록</div>
+    <div class="page-sub" id="formSub">기본정보 + 추가정보</div>
+
+    <div class="card static">
+      <div class="section-label">기본 정보</div>
+      <label>선수명 *</label>
+      <input id="name" placeholder="예: 김민준" />
+      <div class="row2">
+        <div><label>등번호</label><input id="jersey" type="number" min="0" step="1" placeholder="예: 7" /></div>
+        <div><label>학년 *</label><input id="grade" placeholder="예: 초4, 중1" /></div>
+      </div>
+      <div class="row2">
+        <div><label>생년</label><input id="birthYear" type="number" min="1900" max="2100" placeholder="예: 2015" /></div>
+        <div><label>주 포지션 *</label><input id="primaryPos" placeholder="예: SS, CF, P" /></div>
+      </div>
+      <div class="row2">
+        <div><label>투 *</label><select id="throws"><option value="우">R (우투)</option><option value="좌">L (좌투)</option><option value="양">S (양투)</option></select></div>
+        <div><label>타 *</label><select id="bats"><option value="우">R (우타)</option><option value="좌">L (좌타)</option><option value="양">S (양타)</option></select></div>
+      </div>
+
+      <div class="divider"></div>
+      <div class="section-label">신체 정보</div>
+      <div class="row2">
+        <div><label>키 (cm)</label><input id="height" type="number" min="0" step="1" placeholder="예: 142" /></div>
+        <div><label>몸무게 (kg)</label><input id="weight" type="number" min="0" step="1" placeholder="예: 36" /></div>
+      </div>
+
+      <div class="divider"></div>
+      <div class="section-label">추가 정보</div>
+      <label>서브 포지션</label>
+      <input id="secondaryPos" placeholder="예: 2B,LF (콤마로 입력)" />
+
+      <label>스타일 태그</label>
+      <div class="chip-wrap" id="tagChips"></div>
+      <input id="tags" placeholder="선택된 태그가 자동으로 들어가요" style="margin-top:10px" />
+
+      <label>사진 URL (선택)</label>
+      <input id="photoUrl" placeholder="https://..." />
+
+      <div class="divider"></div>
+      <div class="section-label">활성 상태</div>
+      <div class="toggle-row">
+        <button type="button" class="toggle-btn" id="btnActiveOn">활성 (재적)</button>
+        <button type="button" class="toggle-btn" id="btnActiveOff">비활성</button>
+      </div>
+
+      <button class="btn primary" id="btnSave">저장하기</button>
+      <div class="row2" style="margin-top:10px">
+        <button class="btn ghost" id="btnReset">초기화</button>
+        <button class="btn danger hidden" id="btnDelete">삭제</button>
+      </div>
+      <button class="btn ghost" id="btnBack" style="margin-top:8px">← 목록으로</button>
+      <div class="msg" id="msg"></div>
+    </div>
+  </div>
+
+</div>
+
+<button class="fab" id="btnNew" aria-label="새 선수">+</button>
+
+<script>
+const client=window.sb;
+async function requireLogin(){const{data,error}=await client.auth.getSession();if(error||!data?.session){location.href=`auth.html?next=${encodeURIComponent(location.pathname.split('/').pop()+location.search)}`;return null;}return data.session;}
+const el=(id)=>document.getElementById(id);
+const setMsg=(html)=>el('msg').innerHTML=html;
+let mode='create',editingId=null,isActive=true;
+const TAGS=['장타형','컨택형','빠른발','수비형','강견','제구형','파워피처'];
+
+function showList(){el('viewList').classList.remove('hidden');el('viewForm').classList.add('hidden');setMsg('');el('btnNew').style.display='flex';}
+function showForm(){el('viewList').classList.add('hidden');el('viewForm').classList.remove('hidden');setMsg('');el('btnNew').style.display='none';}
+
+function renderTagChips(){
+  const wrap=el('tagChips');wrap.innerHTML='';
+  TAGS.forEach(t=>{const b=document.createElement('button');b.type='button';b.className='chip';b.textContent=t;b.addEventListener('click',()=>toggleTag(t,b));wrap.appendChild(b);});
+}
+function parseTags(str){return(str||'').split(',').map(s=>s.trim()).filter(Boolean);}
+function syncChipsFromInput(){const sel=new Set(parseTags(el('tags').value));[...el('tagChips').children].forEach(btn=>btn.classList.toggle('active',sel.has(btn.textContent)));}
+function toggleTag(tag,btn){const arr=parseTags(el('tags').value);const set=new Set(arr);if(set.has(tag))set.delete(tag);else set.add(tag);el('tags').value=[...set].join(',');btn.classList.toggle('active');}
+el('tags').addEventListener('input',syncChipsFromInput);
+
+function setActiveState(val){
+  isActive=val;
+  el('btnActiveOn').className=`toggle-btn${val?' active':''}`;
+  el('btnActiveOff').className=`toggle-btn${!val?' active-off':''}`;
+}
+el('btnActiveOn').addEventListener('click',()=>setActiveState(true));
+el('btnActiveOff').addEventListener('click',()=>setActiveState(false));
+
+async function loadList(){
+  el('playerList').innerHTML='';el('listHint').textContent='불러오는 중...';
+  const{data:{user}}=await client.auth.getUser();
+  if(!user){el('listHint').textContent='로그인이 필요해요.';return;}
+  const{data,error}=await client.from('baseball_players').select('id,name,jersey_number,grade,primary_position,throws,bats,height_cm,weight_kg,is_active,tags').eq('owner_user_id',user.id).order('is_active',{ascending:false}).order('grade',{ascending:true}).order('jersey_number',{ascending:true,nullsFirst:false}).order('name',{ascending:true});
+  if(error){el('listHint').textContent='불러오기 실패: '+error.message;return;}
+  if(!data||!data.length){el('listHint').textContent='등록된 선수가 없어요. + 버튼으로 추가하세요.';return;}
+  el('listHint').textContent='';
+  data.forEach(p=>{
+    const item=document.createElement('div');item.className='card';
+    const num=(p.jersey_number??'')!==''?p.jersey_number:'-';
+    const meta=`${p.primary_position||'-'} · ${p.throws||'R'}투${p.bats||'R'}타${p.height_cm?` · ${p.height_cm}cm`:''}${p.weight_kg?`/${p.weight_kg}kg`:''}`;
+    item.innerHTML=`<div class="player-item"><div class="player-num">${num}</div><div class="player-info"><div class="player-name">${p.name} <span style="color:var(--muted);font-size:12px">(${p.grade})</span></div><div class="player-meta">${meta}</div>${p.tags?`<div class="player-meta" style="color:var(--brand)">${p.tags}</div>`:''}</div><div class="status-pill ${p.is_active?'on':'off'}">${p.is_active?'활성':'비활성'}</div></div>`;
+    item.addEventListener('click',()=>openEdit(p.id));el('playerList').appendChild(item);
+  });
+}
+
+function resetForm(){el('name').value='';el('jersey').value='';el('grade').value='';el('birthYear').value='';el('primaryPos').value='';el('throws').value='우';el('bats').value='우';el('height').value='';el('weight').value='';el('secondaryPos').value='';el('tags').value='';el('photoUrl').value='';syncChipsFromInput();setActiveState(true);setMsg('');}
+
+// 1계정 1선수 제한
+async function enterCreate(){
+  const{data:{user}}=await client.auth.getUser();
+  if(user){
+    const{data:existing}=await client.from('baseball_players').select('id').eq('owner_user_id',user.id).maybeSingle();
+    if(existing){
+      alert('이미 등록된 선수가 있어요. 기존 선수를 선택해 수정하세요.');
+      return;
+    }
+  }
+  mode='create';editingId=null;el('formTitle').textContent='선수 신규 등록';el('formSub').textContent='기본정보 + 추가정보';el('btnDelete').classList.add('hidden');resetForm();showForm();
+}
+
+async function openEdit(id){
+  mode='edit';editingId=id;el('formTitle').textContent='선수 수정';el('formSub').textContent=`ID #${id}`;el('btnDelete').classList.remove('hidden');showForm();setMsg('불러오는 중...');
+  const{data,error}=await client.from('baseball_players').select('*').eq('id',id).single();
+  if(error){setMsg(`<span class="err">불러오기 실패: ${error.message}</span>`);return;}
+  el('name').value=data.name??'';el('jersey').value=data.jersey_number??'';el('grade').value=data.grade??'';el('birthYear').value=data.birth_year??'';el('primaryPos').value=data.primary_position??'';el('throws').value=data.throws??'우';el('bats').value=data.bats??'우';el('height').value=data.height_cm??'';el('weight').value=data.weight_kg??'';el('secondaryPos').value=data.secondary_positions??'';el('tags').value=data.tags??'';el('photoUrl').value=data.photo_url??'';syncChipsFromInput();setActiveState(!!data.is_active);setMsg('');
+}
+
+function collectPayload(){
+  const name=el('name').value.trim(),grade=el('grade').value.trim(),primary_position=el('primaryPos').value.trim();
+  if(!name||!grade||!primary_position)return{error:'필수값: 선수명, 학년/나이대, 주 포지션'};
+  return{name,jersey_number:el('jersey').value===''?null:Number(el('jersey').value),grade,birth_year:el('birthYear').value===''?null:Number(el('birthYear').value),primary_position,secondary_positions:el('secondaryPos').value.trim()||null,throws:el('throws').value,bats:el('bats').value,height_cm:el('height').value===''?null:Number(el('height').value),weight_kg:el('weight').value===''?null:Number(el('weight').value),tags:el('tags').value.trim()||null,photo_url:el('photoUrl').value.trim()||null,is_active:isActive};
+}
+
+el('btnNew').addEventListener('click',enterCreate);
+el('btnBack').addEventListener('click',async()=>{showList();await loadList();});
+el('btnReset').addEventListener('click',resetForm);
+
+el('btnSave').addEventListener('click',async()=>{
+  setMsg('저장 중...');
+  const payload=collectPayload();
+  if(payload.error){setMsg(`<span class="err">${payload.error}</span>`);return;}
+  if(mode==='create'){
+    const{data,error}=await client.from('baseball_players').insert(payload).select('id,name,grade').single();
+    if(error){setMsg(`<span class="err">저장 실패: ${error.message}</span>`);return;}
+    setMsg(`<span class="ok">✅ 저장 완료! #${data.id} · ${data.name} (${data.grade})</span>`);await openEdit(data.id);return;
+  }
+  const{data,error}=await client.from('baseball_players').update(payload).eq('id',editingId).select('id,name,grade').single();
+  if(error){setMsg(`<span class="err">수정 실패: ${error.message}</span>`);return;}
+  setMsg(`<span class="ok">✅ 수정 완료! ${data.name} (${data.grade})</span>`);
+});
+
+el('btnDelete').addEventListener('click',async()=>{
+  if(mode!=='edit'||!editingId)return;
+  if(!confirm(`#${editingId} 선수를 삭제할까요?`))return;
+  setMsg('삭제 중...');
+  const{error}=await client.from('baseball_players').delete().eq('id',editingId);
+  if(error){setMsg(`<span class="err">삭제 실패: ${error.message}</span>`);return;}
+  setMsg('<span class="ok">✅ 삭제 완료</span>');showList();await loadList();
+});
+
+(async function init(){const session=await requireLogin();if(!session)return;renderTagChips();setActiveState(true);showList();await loadList();})();
+</script>
+</body>
+</html>

@@ -1,0 +1,524 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>야구기록</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+KR:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --black: #0a0c10;
+  --dark: #11141a;
+  --panel: #181c24;
+  --border: rgba(255,255,255,.07);
+  --border2: rgba(255,255,255,.12);
+  --text: #f0f2f5;
+  --muted: #7a8294;
+  --muted2: #4a5060;
+  --brand: #e8ff47;
+  --brand-dim: rgba(232,255,71,.12);
+  --brand-dim2: rgba(232,255,71,.06);
+  --win: #4ade80;
+  --win-bg: rgba(74,222,128,.1);
+  --loss: #f87171;
+  --loss-bg: rgba(248,113,113,.1);
+  --draw: #94a3b8;
+  --draw-bg: rgba(148,163,184,.1);
+  --red: #ff4d4d;
+  --shadow: 0 4px 24px rgba(0,0,0,.4);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background: var(--black);
+  color: var(--text);
+  min-height: 100vh;
+  padding-bottom: 40px;
+}
+
+/* ── 상단 헤더 ── */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(10,12,16,.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 16px;
+}
+.header-inner {
+  max-width: 480px;
+  margin: 0 auto;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.logo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 28px;
+  letter-spacing: 1px;
+  color: var(--brand);
+  line-height: 1;
+}
+.logo span { color: var(--text); }
+#authArea { display: flex; gap: 8px; }
+.auth-btn {
+  padding: 7px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--border2);
+  background: transparent;
+  color: var(--text);
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all .15s;
+}
+.auth-btn:hover { border-color: var(--brand); color: var(--brand); }
+.auth-btn.primary {
+  background: var(--brand);
+  color: var(--black);
+  border-color: var(--brand);
+}
+.auth-btn.primary:hover { background: #d4ea3a; }
+
+/* ── 메인 컨테이너 ── */
+.container { max-width: 480px; margin: 0 auto; padding: 20px 16px; }
+
+/* ── 히어로 섹션 ── */
+.hero {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 24px;
+  margin-bottom: 16px;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '⚾';
+  position: absolute;
+  right: -10px;
+  top: -10px;
+  font-size: 100px;
+  opacity: .04;
+  transform: rotate(20deg);
+  pointer-events: none;
+}
+.hero-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--brand);
+  margin-bottom: 8px;
+}
+.hero-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 42px;
+  line-height: 1;
+  letter-spacing: .5px;
+  margin-bottom: 8px;
+}
+.hero-sub {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.6;
+  margin-bottom: 18px;
+}
+.hero-btns { display: flex; gap: 10px; }
+.hero-btn {
+  flex: 1;
+  padding: 13px;
+  border-radius: 12px;
+  border: none;
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all .15s;
+}
+.hero-btn.solid { background: var(--brand); color: var(--black); }
+.hero-btn.solid:hover { background: #d4ea3a; }
+.hero-btn.ghost {
+  background: transparent;
+  border: 1px solid var(--border2);
+  color: var(--text);
+}
+.hero-btn.ghost:hover { border-color: var(--brand); color: var(--brand); }
+
+/* ── 섹션 타이틀 ── */
+.section-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 24px 0 12px;
+}
+
+
+
+/* ── 통계 그리드 ── */
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.stat-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 16px;
+}
+.stat-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .5px;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+.stat-value {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 34px;
+  line-height: 1;
+  color: var(--text);
+  letter-spacing: .5px;
+}
+.stat-value.brand { color: var(--brand); }
+.stat-sub {
+  font-size: 11px;
+  color: var(--muted2);
+  margin-top: 6px;
+}
+
+/* ── 빠른 메뉴 ── */
+.quick-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.quick-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 18px;
+  cursor: pointer;
+  transition: all .15s;
+  display: flex;
+  flex-direction: column;
+}
+.quick-card:hover { border-color: var(--border2); transform: translateY(-1px); }
+.quick-card:active { transform: translateY(0); }
+.quick-emoji { font-size: 24px; margin-bottom: 10px; }
+.quick-name { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+.quick-desc { font-size: 12px; color: var(--muted); line-height: 1.4; flex: 1; }
+.quick-arrow {
+  margin-top: 14px;
+  font-size: 18px;
+  color: var(--brand);
+  font-weight: 900;
+}
+
+/* 넓은 카드 (2열 span) */
+.quick-card.wide {
+  grid-column: span 2;
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
+}
+.quick-card.wide .quick-emoji { margin-bottom: 0; font-size: 28px; }
+.quick-card.wide .quick-body { flex: 1; }
+.quick-card.wide .quick-body .quick-name { margin-bottom: 4px; }
+.quick-card.wide .quick-arrow { margin-top: 0; }
+
+/* ── 최근 경기 ── */
+.recent-list { display: flex; flex-direction: column; gap: 8px; }
+.game-item {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: border-color .15s;
+}
+.game-item:hover { border-color: var(--border2); }
+.result-badge {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+.result-badge.W { background: var(--win-bg); color: var(--win); }
+.result-badge.L { background: var(--loss-bg); color: var(--loss); }
+.result-badge.D { background: var(--draw-bg); color: var(--draw); }
+.game-info { flex: 1; min-width: 0; }
+.game-vs {
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.game-meta { font-size: 12px; color: var(--muted); margin-top: 3px; }
+.game-score {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px;
+  letter-spacing: 1px;
+  color: var(--text);
+  flex-shrink: 0;
+}
+
+/* ── 빈 상태 ── */
+.empty {
+  text-align: center;
+  padding: 32px 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+.empty-icon { font-size: 32px; margin-bottom: 10px; }
+
+/* ── 로딩 ── */
+@keyframes pulse { 0%,100%{opacity:.3} 50%{opacity:.7} }
+.skeleton {
+  background: var(--panel);
+  border-radius: 14px;
+  animation: pulse 1.4s ease infinite;
+}
+
+/* ── 전체 보기 버튼 ── */
+.view-all {
+  width: 100%;
+  margin-top: 10px;
+  padding: 13px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all .15s;
+}
+.view-all:hover { border-color: var(--border2); color: var(--text); }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/config.js"></script>
+</head>
+<body>
+
+<!-- 헤더 -->
+<header class="header">
+  <div class="header-inner">
+    <div class="logo">ELITE<span>REC</span></div>
+    <div id="authArea"></div>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- 히어로 -->
+  <div class="hero">
+    <div class="hero-label">엘리트 야구 기록 시스템</div>
+    <div class="hero-title" id="heroTitle">선수의 기록을<br>한눈에</div>
+    <div class="hero-sub" id="heroSub">경기 결과, 선수 성적, 대회별 통계를<br>정확하게 관리합니다.</div>
+    <div class="hero-btns" id="heroBtns">
+      <button class="hero-btn solid" onclick="goProtected('report.html')">경기 리포트</button>
+      <button class="hero-btn ghost" onclick="goProtected('playerReport.html')">선수 리포트</button>
+    </div>
+  </div>
+
+
+
+  <!-- 올해/이번달 요약 -->
+  <div class="section-title">시즌 요약</div>
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-label">올해 승 · 패 · 무</div>
+      <div class="stat-value" id="yWLD" style="font-size:26px">—</div>
+      <div class="stat-sub" id="yearLabel">로그인 후 표시</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">이번달 승 · 패 · 무</div>
+      <div class="stat-value" id="mWLD" style="font-size:26px">—</div>
+      <div class="stat-sub" id="monthLabel">로그인 후 표시</div>
+    </div>
+  </div>
+
+  <!-- 최근 경기 -->
+  <div class="section-title">최근 경기</div>
+  <div id="recentHint" class="empty" style="display:none">
+    <div class="empty-icon">⚾</div>
+    로그인하면 최근 경기 목록을<br>확인할 수 있어요.
+  </div>
+  <div class="recent-list" id="recentList"></div>
+  <button class="view-all" id="btnViewAll" onclick="goProtected('report.html')" style="display:none">전체 경기 보기</button>
+
+  <!-- 빠른 메뉴 -->
+  <div class="section-title">바로가기</div>
+  <div class="quick-grid">    
+    <div class="quick-card" onclick="goProtected('report.html')">
+      <div class="quick-emoji">📊</div>
+      <div class="quick-name">경기 리포트</div>
+      <div class="quick-desc">대회별 경기 목록과 상세 기록</div>
+      <div class="quick-arrow">→</div>
+    </div>
+    <div class="quick-card" onclick="goProtected('playerReport.html')">
+      <div class="quick-emoji">👤</div>
+      <div class="quick-name">선수 리포트</div>
+      <div class="quick-desc">선수별 대회 성적 및 경기 기록</div>
+      <div class="quick-arrow">→</div>
+    </div>
+    <div class="quick-card" onclick="goProtected('createGame.html')">
+      <div class="quick-emoji">⚾</div>
+      <div class="quick-name">경기 등록</div>
+      <div class="quick-desc">새 경기 결과 등록</div>
+      <div class="quick-arrow">→</div>
+    </div>
+    <div class="quick-card" onclick="goProtected('records.html')">
+      <div class="quick-emoji">✍️</div>
+      <div class="quick-name">선수기록 입력</div>
+      <div class="quick-desc">경기 선택 후 선수별 타격·투구 기록 입력</div>
+      <div class="quick-arrow">→</div>
+    </div>
+    <div class="quick-card wide" onclick="goProtected('createPlayer.html')">
+      <div class="quick-emoji">🗂️</div>
+      <div class="quick-body">
+        <div class="quick-name">선수 관리</div>
+        <div class="quick-desc">선수 정보 변경 및 관리</div>
+      </div>
+      <div class="quick-arrow">→</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const client = window.sb;
+const el = (id) => document.getElementById(id);
+const num = (v) => Number.isFinite(Number(v)) ? Number(v) : 0;
+let currentSession = null;
+
+function badgeClass(r){ return r==='W'?'W':r==='L'?'L':'D'; }
+function todayYM(){ const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; }
+function rangeFromYM(ym){ const [y,m]=ym.split('-').map(Number); const s=new Date(y,m-1,1),e=new Date(y,m,1); const i=d=>d.toISOString().slice(0,10); return {start:i(s),end:i(e)}; }
+
+
+function goProtected(path){
+  if(!currentSession){ location.href=`auth.html?next=${encodeURIComponent(path)}`; return; }
+  location.href=path;
+}
+
+async function getOptionalSession(){
+  const {data,error}=await client.auth.getSession();
+  if(error){ console.error(error); return null; }
+  return data?.session||null;
+}
+
+function renderAuthButtons(session){
+  const area=el('authArea');
+  if(!session){
+    area.innerHTML=`<button class="auth-btn primary" onclick="location.href='auth.html'">로그인</button>`;
+  } else {
+    area.innerHTML=`<button class="auth-btn" onclick="logout()">로그아웃</button>`;
+  }
+}
+
+async function logout(){ await client.auth.signOut(); location.href='index.html'; }
+
+function renderGuestHome(){
+  el('yWLD').textContent='—';
+  el('yearLabel').textContent='로그인 후 표시';
+  el('mWLD').textContent='—';
+  el('monthLabel').textContent='로그인 후 표시';
+  el('recentHint').style.display='block';
+  el('recentList').innerHTML='';
+  el('btnViewAll').style.display='none';
+}
+
+
+
+async function loadYearlySummary(){
+  const year=new Date().getFullYear();
+  const start=`${year}-01-01`, end=`${year+1}-01-01`;
+  const {data:games,error}=await client.from('baseball_games').select('result').gte('game_date',start).lt('game_date',end);
+  if(error){ el('yearLabel').textContent='불러오기 실패'; return; }
+  const list=games||[];
+  let w=0,l=0,d=0;
+  list.forEach(g=>{ if(g.result==='W')w++; else if(g.result==='L')l++; else d++; });
+  el('yWLD').textContent=`${w}·${l}·${d}`;
+  el('yearLabel').textContent=`${year}년 기준`;
+}
+
+async function loadMonthlySummary(){
+  const ym=todayYM();
+  const {start,end}=rangeFromYM(ym);
+  const {data:games,error}=await client.from('baseball_games').select('result').gte('game_date',start).lt('game_date',end);
+  if(error){ el('monthLabel').textContent='불러오기 실패'; return; }
+  const list=games||[];
+  let w=0,l=0,d=0;
+  list.forEach(g=>{ if(g.result==='W')w++; else if(g.result==='L')l++; else d++; });
+  el('mWLD').textContent=`${w}·${l}·${d}`;
+  el('monthLabel').textContent=`${ym} 기준`;
+}
+
+async function loadRecentGames(){
+  el('recentList').innerHTML='';
+  const {data,error}=await client.from('baseball_games')
+    .select('id,game_date,opponent,tournament,our_score,opp_score,result')
+    .order('game_date',{ascending:false}).order('id',{ascending:false}).limit(5);
+  if(error){
+    el('recentHint').style.display='block';
+    el('recentHint').innerHTML=`<div class="empty-icon">⚠️</div>불러오기 실패: ${error.message}`;
+    return;
+  }
+  const list=data||[];
+  if(!list.length){
+    el('recentHint').style.display='block';
+    el('recentHint').innerHTML=`<div class="empty-icon">⚾</div>등록된 경기가 없어요.`;
+    return;
+  }
+  el('recentHint').style.display='none';
+  el('btnViewAll').style.display='block';
+  list.forEach(g=>{
+    const item=document.createElement('div');
+    item.className='game-item';
+    const bc=badgeClass(g.result);
+    item.innerHTML=`
+      <div class="result-badge ${bc}">${g.result}</div>
+      <div class="game-info">
+        <div class="game-vs">vs ${g.opponent}</div>
+        <div class="game-meta">${g.game_date}${g.tournament?' · '+g.tournament:''}</div>
+      </div>
+      <div class="game-score">${num(g.our_score)}<span style="color:var(--muted);font-size:16px">:</span>${num(g.opp_score)}</div>
+    `;
+    item.onclick=()=>location.href=`report.html?game=${g.id}`;
+    el('recentList').appendChild(item);
+  });
+}
+
+async function init(){
+  currentSession=await getOptionalSession();
+  renderAuthButtons(currentSession);
+  if(!currentSession){ renderGuestHome(); return; }
+  await Promise.all([loadYearlySummary(), loadMonthlySummary(), loadRecentGames()]);
+}
+init();
+</script>
+</body>
+</html>

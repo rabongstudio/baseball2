@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>경기 관리 · ELITEREC</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+KR:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--black:#0a0c10;--panel:#181c24;--border:rgba(255,255,255,.07);--border2:rgba(255,255,255,.13);--text:#f0f2f5;--muted:#7a8294;--muted2:#4a5060;--brand:#e8ff47;--brand-dim:rgba(232,255,71,.12);--win:#4ade80;--win-bg:rgba(74,222,128,.1);--loss:#f87171;--loss-bg:rgba(248,113,113,.1);--draw:#94a3b8;--draw-bg:rgba(148,163,184,.1);--ok:#4ade80;--err:#f87171;}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--black);color:var(--text);min-height:100vh;padding-bottom:40px}
+
+.header{position:sticky;top:0;z-index:100;background:rgba(10,12,16,.85);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 16px}
+.header-inner{max-width:480px;margin:0 auto;height:56px;display:flex;align-items:center;justify-content:space-between}
+.logo{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:1px;color:var(--brand);line-height:1}
+.logo span{color:var(--text)}
+.back-btn{padding:7px 16px;border-radius:8px;border:1px solid var(--border2);background:transparent;color:var(--text);font-family:'Noto Sans KR',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;text-decoration:none;display:flex;align-items:center;gap:4px}
+.back-btn:hover{border-color:var(--brand);color:var(--brand)}
+
+.container{max-width:480px;margin:0 auto;padding:20px 16px 40px}
+.page-title{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:.5px;margin-bottom:4px}
+.page-sub{font-size:13px;color:var(--muted);margin-bottom:20px}
+
+.section-label{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin:20px 0 10px}
+
+.card{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:10px;cursor:pointer;transition:border-color .15s}
+.card:hover{border-color:var(--border2)}
+.card.static{cursor:default}
+.card.static:hover{border-color:var(--border)}
+
+.game-item{display:flex;align-items:center;gap:12px}
+.result-badge{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:18px;flex-shrink:0}
+.result-badge.W{background:var(--win-bg);color:var(--win)} .result-badge.L{background:var(--loss-bg);color:var(--loss)} .result-badge.D{background:var(--draw-bg);color:var(--draw)}
+.game-info{flex:1;min-width:0}
+.game-vs{font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.game-meta{font-size:12px;color:var(--muted);margin-top:3px}
+.game-score{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--text);flex-shrink:0}
+
+.month-header{font-size:12px;font-weight:700;letter-spacing:1px;color:var(--muted);text-transform:uppercase;padding:6px 2px 4px;margin-top:8px}
+
+.fab{position:fixed;bottom:28px;right:20px;width:52px;height:52px;border-radius:999px;border:none;background:var(--brand);color:var(--black);font-size:28px;font-weight:900;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 20px rgba(232,255,71,.3);transition:all .15s;z-index:50}
+.fab:hover{background:#d4ea3a;transform:scale(1.05)}
+
+label{display:block;margin-top:14px;font-size:12px;font-weight:700;letter-spacing:.5px;color:var(--muted);text-transform:uppercase}
+input,textarea,select{width:100%;margin-top:6px;padding:13px 16px;border:1px solid var(--border2);border-radius:12px;font-size:15px;background:rgba(255,255,255,.05);color:var(--text);font-family:'Noto Sans KR',sans-serif;transition:border-color .15s}
+input:focus,textarea:focus,select:focus{outline:none;border-color:var(--brand)}
+select option{background:var(--panel)}
+textarea{resize:none}
+
+.chip-row{display:flex;gap:8px;margin-top:8px}
+.chip-btn{flex:1;padding:12px;border-radius:12px;border:1px solid var(--border2);background:transparent;color:var(--muted);font-family:'Noto Sans KR',sans-serif;font-weight:700;font-size:14px;cursor:pointer;transition:all .15s}
+.chip-btn.active{border-color:var(--brand);color:var(--brand);background:var(--brand-dim)}
+
+.divider{height:1px;background:var(--border);margin:16px 0}
+.row2{display:flex;gap:10px} .row2>div{flex:1}
+
+.btn{width:100%;margin-top:14px;padding:14px;border:none;border-radius:14px;font-family:'Noto Sans KR',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all .15s}
+.btn.primary{background:var(--brand);color:var(--black)}
+.btn.primary:hover{background:#d4ea3a}
+.btn.ghost{background:transparent;border:1px solid var(--border2);color:var(--text)}
+.btn.ghost:hover{border-color:var(--border2);background:rgba(255,255,255,.05)}
+.btn.danger{background:var(--loss-bg);border:1px solid var(--loss);color:var(--loss)}
+.btn.danger:hover{background:rgba(248,113,113,.2)}
+
+.msg{margin-top:12px;font-size:13px;line-height:1.5;text-align:center}
+.msg .ok{color:var(--ok)} .msg .err{color:var(--err)}
+.hidden{display:none!important}
+
+.hint-text{font-size:12px;color:var(--muted);margin-top:8px}
+.score-display{display:flex;align-items:center;justify-content:center;gap:16px;padding:20px 0}
+.score-num{font-family:'Bebas Neue',sans-serif;font-size:48px;color:var(--text);line-height:1}
+.score-sep{font-size:20px;color:var(--muted);font-weight:700}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/config.js"></script>
+</head>
+<body>
+<header class="header">
+  <div class="header-inner">
+    <div class="logo">ELITE<span>REC</span></div>
+    <a href="index.html" class="back-btn">← 홈</a>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- LIST VIEW -->
+  <div id="viewList">
+    <div class="page-title">경기 관리</div>
+    <div class="page-sub">리스트에서 선택하면 수정 · + 버튼으로 신규 등록</div>
+    <div class="hint-text" id="listHint">불러오는 중...</div>
+    <div id="gameList"></div>
+  </div>
+
+  <!-- FORM VIEW -->
+  <div id="viewForm" class="hidden">
+    <div class="page-title" id="formTitle">경기 등록</div>
+    <div class="page-sub" id="formSub">경기 종료 후 결과를 입력하세요</div>
+
+    <div class="card static">
+      <label>경기 날짜 *</label>
+      <input id="gameDate" type="date" />
+
+      <div class="row2">
+        <div><label>시작 시간</label><input id="gameTime" type="time" /></div>
+        <div><label>이닝 *</label><input id="innings" type="number" min="1" step="1" value="7" /></div>
+      </div>
+
+      <label>상대팀 *</label>
+      <input id="opponentInput" placeholder="예: 서울 라이온즈" />
+
+      <div class="row2">
+        <div><label>대회명</label><input id="tournament" placeholder="예: 주말리그" /></div>
+        <div><label>구장</label><input id="stadium" placeholder="예: 잠실야구장" /></div>
+      </div>
+
+      <label>홈 / 원정</label>
+      <div class="chip-row">
+        <button type="button" class="chip-btn active" id="btnHome">홈</button>
+        <button type="button" class="chip-btn" id="btnAway">원정</button>
+      </div>
+
+      <label>날씨</label>
+      <input id="weather" placeholder="예: 맑음 / 흐림 / 비" />
+
+      <div class="divider"></div>
+
+      <div class="section-label">스코어</div>
+      <div class="row2">
+        <div><label>우리</label><input id="ourScore" type="number" min="0" step="1" value="0" /></div>
+        <div><label>상대</label><input id="oppScore" type="number" min="0" step="1" value="0" /></div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="section-label">팀 기록 (우리)</div>
+      <div class="row2">
+        <div><label>팀안타</label><input id="ourHits" type="number" min="0" step="1" value="0" /></div>
+        <div><label>팀실책</label><input id="ourErrors" type="number" min="0" step="1" value="0" /></div>
+      </div>
+      <label>팀홈런</label>
+      <input id="ourHr" type="number" min="0" step="1" value="0" />
+
+      <div class="divider"></div>
+
+      <div class="section-label">핵심 지표 (우리 / 상대)</div>
+      <div class="row2">
+        <div><label>우리 볼넷</label><input id="ourBB" type="number" min="0" step="1" value="0" /></div>
+        <div><label>상대 볼넷</label><input id="oppBB" type="number" min="0" step="1" value="0" /></div>
+      </div>
+      <div class="row2">
+        <div><label>우리 삼진</label><input id="ourK" type="number" min="0" step="1" value="0" /></div>
+        <div><label>상대 삼진</label><input id="oppK" type="number" min="0" step="1" value="0" /></div>
+      </div>
+      <div class="row2">
+        <div><label>우리 사구</label><input id="ourHBP" type="number" min="0" step="1" value="0" /></div>
+        <div><label>상대 사구</label><input id="oppHBP" type="number" min="0" step="1" value="0" /></div>
+      </div>
+      <div class="row2">
+        <div><label>우리 도루</label><input id="ourSB" type="number" min="0" step="1" value="0" /></div>
+        <div><label>상대 도루</label><input id="oppSB" type="number" min="0" step="1" value="0" /></div>
+      </div>
+
+      <div class="divider"></div>
+
+      <label>콜드게임</label>
+      <div class="chip-row">
+        <button type="button" class="chip-btn active" id="btnColdNo">아니오</button>
+        <button type="button" class="chip-btn" id="btnColdYes">예</button>
+      </div>
+
+      <label>종료 사유 (선택)</label>
+      <input id="endReason" placeholder="예: 우천 콜드 / 시간 종료" />
+
+      <label>메모</label>
+      <textarea id="memo" rows="3" placeholder="예: 3회 역전, 수비 실책이 아쉬움"></textarea>
+
+      <button class="btn primary" id="btnSave">저장하기</button>
+      <div class="row2" style="margin-top:10px">
+        <button class="btn ghost" id="btnReset">초기화</button>
+        <button class="btn danger hidden" id="btnDelete">삭제</button>
+      </div>
+      <button class="btn ghost" id="btnBack" style="margin-top:8px">← 목록으로</button>
+      <div class="msg" id="msg"></div>
+    </div>
+  </div>
+
+</div>
+
+<button class="fab" id="btnNew" aria-label="새 경기">+</button>
+
+<script>
+const client = window.sb;
+async function requireLogin(){
+  const {data,error}=await client.auth.getSession();
+  if(error||!data?.session){location.href=`auth.html?next=${encodeURIComponent(location.pathname.split('/').pop()+location.search)}`;return null;}
+  return data.session;
+}
+const el=(id)=>document.getElementById(id);
+const setMsg=(html)=>el('msg').innerHTML=html;
+let mode='create',editingId=null,isHome=true,isCold=false,mySchoolId=null;
+
+function showList(){el('viewList').classList.remove('hidden');el('viewForm').classList.add('hidden');setMsg('');}
+function showForm(){el('viewList').classList.add('hidden');el('viewForm').classList.remove('hidden');setMsg('');el('btnNew').style.display='none';}
+function hideFab(){el('btnNew').style.display='none';}
+function showFab(){el('btnNew').style.display='flex';}
+function setActive(on,off){on.classList.add('active');off.classList.remove('active');}
+function numVal(id){const v=Number(el(id).value);return Number.isFinite(v)?v:0;}
+
+el('btnHome').addEventListener('click',()=>{isHome=true;setActive(el('btnHome'),el('btnAway'));});
+el('btnAway').addEventListener('click',()=>{isHome=false;setActive(el('btnAway'),el('btnHome'));});
+el('btnColdNo').addEventListener('click',()=>{isCold=false;setActive(el('btnColdNo'),el('btnColdYes'));});
+el('btnColdYes').addEventListener('click',()=>{isCold=true;setActive(el('btnColdYes'),el('btnColdNo'));});
+
+function ymKey(d){return(d||'').slice(0,7)||'0000-00';}
+function ymTitle(k){const[y,m]=k.split('-');return`${y}년 ${Number(m)}월`;}
+
+async function loadList(){
+  el('gameList').innerHTML='';el('listHint').textContent='불러오는 중...';
+  const{data,error}=await client.from('baseball_games').select('id,game_date,opponent,tournament,stadium,our_score,opp_score,result').order('game_date',{ascending:false}).order('id',{ascending:false});
+  if(error){el('listHint').textContent='불러오기 실패: '+error.message;return;}
+  if(!data||!data.length){el('listHint').textContent='등록된 경기가 없어요. + 버튼으로 추가하세요.';return;}
+  el('listHint').textContent='';
+  const groups=new Map();
+  data.forEach(g=>{const k=ymKey(g.game_date);if(!groups.has(k))groups.set(k,[]);groups.get(k).push(g);});
+  for(const[k,games]of groups){
+    const h=document.createElement('div');h.className='month-header';h.textContent=`${ymTitle(k)} (${games.length}경기)`;el('gameList').appendChild(h);
+    games.forEach(g=>{
+      const item=document.createElement('div');item.className='card';
+      const bc=g.result==='W'?'W':g.result==='L'?'L':'D';
+      item.innerHTML=`<div class="game-item"><div class="result-badge ${bc}">${g.result||'D'}</div><div class="game-info"><div class="game-vs">vs ${g.opponent}</div><div class="game-meta">${g.game_date}${g.tournament?' · '+g.tournament:''}</div></div><div class="game-score">${g.our_score}<span style="color:var(--muted);font-size:16px">:</span>${g.opp_score}</div></div>`;
+      item.addEventListener('click',()=>openEdit(g.id));el('gameList').appendChild(item);
+    });
+  }
+}
+
+function resetForm({keepDate=false}={}){
+  const saved=el('gameDate').value;
+  el('gameDate').value=keepDate?saved:'';el('gameTime').value='';el('innings').value='7';el('opponentInput').value='';el('tournament').value='';el('stadium').value='';el('weather').value='';el('ourScore').value='0';el('oppScore').value='0';el('ourHits').value='0';el('ourErrors').value='0';el('ourHr').value='0';el('ourBB').value='0';el('oppBB').value='0';el('ourK').value='0';el('oppK').value='0';el('ourHBP').value='0';el('oppHBP').value='0';el('ourSB').value='0';el('oppSB').value='0';el('endReason').value='';el('memo').value='';
+  isHome=true;setActive(el('btnHome'),el('btnAway'));isCold=false;setActive(el('btnColdNo'),el('btnColdYes'));setMsg('');
+}
+
+function enterCreate(){
+  mode='create';editingId=null;
+  el('formTitle').textContent='경기 신규 등록';el('formSub').textContent='경기 종료 후 결과를 입력하세요';
+  el('btnDelete').classList.add('hidden');resetForm();showForm();
+}
+
+async function openEdit(id){
+  mode='edit';editingId=id;
+  el('formTitle').textContent='경기 수정';el('formSub').textContent=`ID #${id}`;
+  el('btnDelete').classList.remove('hidden');showForm();setMsg('불러오는 중...');
+  const{data,error}=await client.from('baseball_games').select('*').eq('id',id).single();
+  if(error){setMsg(`<span class="err">불러오기 실패: ${error.message}</span>`);return;}
+  el('gameDate').value=data.game_date??'';el('gameTime').value=data.game_time??'';el('innings').value=data.innings??7;el('opponentInput').value=data.opponent??'';el('tournament').value=data.tournament??'';el('stadium').value=data.stadium??'';el('weather').value=data.weather??'';el('ourScore').value=data.our_score??0;el('oppScore').value=data.opp_score??0;el('ourHits').value=data.our_hits??0;el('ourErrors').value=data.our_errors??0;el('ourHr').value=data.our_hr??0;el('ourBB').value=data.our_bb??0;el('oppBB').value=data.opp_bb??0;el('ourK').value=data.our_k??0;el('oppK').value=data.opp_k??0;el('ourHBP').value=data.our_hbp??0;el('oppHBP').value=data.opp_hbp??0;el('ourSB').value=data.our_sb??0;el('oppSB').value=data.opp_sb??0;el('endReason').value=data.end_reason??'';el('memo').value=data.memo??'';
+  isHome=!!data.is_home;isHome?setActive(el('btnHome'),el('btnAway')):setActive(el('btnAway'),el('btnHome'));
+  isCold=!!data.is_cold;isCold?setActive(el('btnColdYes'),el('btnColdNo')):setActive(el('btnColdNo'),el('btnColdYes'));
+  setMsg('');
+}
+
+function collectPayload(){
+  const game_date=el('gameDate').value,opponent=el('opponentInput').value.trim();
+  if(!game_date||!opponent)return{error:'필수값: 경기 날짜, 상대팀'};
+  return{game_date,game_time:el('gameTime').value||null,school_id:mySchoolId,innings:Math.max(1,numVal('innings')),opponent,tournament:el('tournament').value.trim()||null,stadium:el('stadium').value.trim()||null,is_home:isHome,weather:el('weather').value.trim()||null,is_cold:isCold,end_reason:el('endReason').value.trim()||null,our_score:numVal('ourScore'),opp_score:numVal('oppScore'),our_hits:numVal('ourHits'),our_errors:numVal('ourErrors'),our_hr:numVal('ourHr'),our_bb:numVal('ourBB'),opp_bb:numVal('oppBB'),our_k:numVal('ourK'),opp_k:numVal('oppK'),our_hbp:numVal('ourHBP'),opp_hbp:numVal('oppHBP'),our_sb:numVal('ourSB'),opp_sb:numVal('oppSB'),memo:el('memo').value.trim()||null};
+}
+
+el('btnNew').addEventListener('click',enterCreate);
+el('btnBack').addEventListener('click',async()=>{showList();showFab();await loadList();});
+el('btnReset').addEventListener('click',()=>resetForm({keepDate:true}));
+
+el('btnSave').addEventListener('click',async()=>{
+  setMsg('저장 중...');
+  const payload=collectPayload();
+  if(payload.error){setMsg(`<span class="err">${payload.error}</span>`);return;}
+  if(mode==='create'){
+    const{data,error}=await client.from('baseball_games').insert(payload).select('id,game_date,opponent,result,our_score,opp_score').single();
+    if(error){setMsg(`<span class="err">저장 실패: ${error.message}</span>`);return;}
+    setMsg(`<span class="ok">✅ 저장 완료! #${data.id} · ${data.game_date} vs ${data.opponent}</span>`);
+    await openEdit(data.id);return;
+  }
+  const{data,error}=await client.from('baseball_games').update(payload).eq('id',editingId).select('id,game_date,opponent,result,our_score,opp_score').single();
+  if(error){setMsg(`<span class="err">수정 실패: ${error.message}</span>`);return;}
+  setMsg(`<span class="ok">✅ 수정 완료! ${data.game_date} vs ${data.opponent} · ${data.result}</span>`);
+});
+
+el('btnDelete').addEventListener('click',async()=>{
+  if(mode!=='edit'||!editingId)return;
+  if(!confirm(`#${editingId} 경기를 삭제할까요?`))return;
+  setMsg('삭제 중...');
+  const{error}=await client.from('baseball_games').delete().eq('id',editingId);
+  if(error){setMsg(`<span class="err">삭제 실패: ${error.message}</span>`);return;}
+  setMsg('<span class="ok">✅ 삭제 완료</span>');showList();showFab();await loadList();
+});
+
+(async function init(){
+  const session=await requireLogin();if(!session)return;
+  // 내 school_id 로드
+  const {data:{user}}=await client.auth.getUser();
+  if(user){
+    const {data:profile}=await client.from('baseball_profiles').select('school_id').eq('id',user.id).single();
+    if(profile) mySchoolId=profile.school_id;
+  }
+  const params=new URLSearchParams(location.search);
+  const gameParam=params.get('game'),gameId=Number(gameParam);
+  if(gameParam&&Number.isFinite(gameId)&&gameId>0){await openEdit(gameId);return;}
+  showList();showFab();await loadList();
+})();
+</script>
+</body>
+</html>
