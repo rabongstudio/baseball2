@@ -386,7 +386,7 @@ body {
     </div>
     <div class="quick-card" onclick="goProtected('createGame.html')">
       <div class="quick-emoji">⚾</div>
-      <div class="quick-name">경기 등록</div>
+      <div class="quick-name">경기결과 입력</div>
       <div class="quick-desc">새 경기 결과 등록</div>
       <div class="quick-arrow">→</div>
     </div>
@@ -416,107 +416,85 @@ let currentSession = null;
 
 function badgeClass(r){ return r==='W'?'W':r==='L'?'L':'D'; }
 function todayYM(){ const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; }
-function rangeFromYM(ym){ const [y,m]=ym.split('-').map(Number); const s=new Date(y,m-1,1),e=new Date(y,m,1); const i=d=>d.toISOString().slice(0,10); return {start:i(s),end:i(e)}; }
-
 
 function goProtected(path){
   if(!currentSession){ location.href=`auth.html?next=${encodeURIComponent(path)}`; return; }
   location.href=path;
 }
 
-async function getOptionalSession(){
-  const {data,error}=await client.auth.getSession();
-  if(error){ console.error(error); return null; }
-  return data?.session||null;
-}
-
 function renderAuthButtons(session){
   const area=el('authArea');
-  if(!session){
-    area.innerHTML=`<button class="auth-btn primary" onclick="location.href='auth.html'">로그인</button>`;
-  } else {
-    area.innerHTML=`<button class="auth-btn" onclick="logout()">로그아웃</button>`;
-  }
+  area.innerHTML=session
+    ? `<button class="auth-btn" onclick="logout()">로그아웃</button>`
+    : `<button class="auth-btn primary" onclick="location.href='auth.html'">로그인</button>`;
 }
 
 async function logout(){ await client.auth.signOut(); location.href='index.html'; }
 
 function renderGuestHome(){
-  el('yWLD').textContent='—';
-  el('yearLabel').textContent='로그인 후 표시';
-  el('mWLD').textContent='—';
-  el('monthLabel').textContent='로그인 후 표시';
-  el('recentHint').style.display='block';
-  el('recentList').innerHTML='';
-  el('btnViewAll').style.display='none';
+  el('yWLD').textContent='—'; el('yearLabel').textContent='로그인 후 표시';
+  el('mWLD').textContent='—'; el('monthLabel').textContent='로그인 후 표시';
+  el('recentHint').style.display='block'; el('recentList').innerHTML=''; el('btnViewAll').style.display='none';
 }
 
-
-
-async function loadYearlySummary(){
+// 올해/이번달 요약 + 최근경기를 2번의 병렬 쿼리로 처리
+async function loadDashboard(){
   const year=new Date().getFullYear();
-  const start=`${year}-01-01`, end=`${year+1}-01-01`;
-  const {data:games,error}=await client.from('baseball_games').select('result').gte('game_date',start).lt('game_date',end);
-  if(error){ el('yearLabel').textContent='불러오기 실패'; return; }
-  const list=games||[];
-  let w=0,l=0,d=0;
-  list.forEach(g=>{ if(g.result==='W')w++; else if(g.result==='L')l++; else d++; });
-  el('yWLD').textContent=`${w}·${l}·${d}`;
-  el('yearLabel').textContent=`${year}년 기준`;
-}
-
-async function loadMonthlySummary(){
   const ym=todayYM();
-  const {start,end}=rangeFromYM(ym);
-  const {data:games,error}=await client.from('baseball_games').select('result').gte('game_date',start).lt('game_date',end);
-  if(error){ el('monthLabel').textContent='불러오기 실패'; return; }
-  const list=games||[];
-  let w=0,l=0,d=0;
-  list.forEach(g=>{ if(g.result==='W')w++; else if(g.result==='L')l++; else d++; });
-  el('mWLD').textContent=`${w}·${l}·${d}`;
-  el('monthLabel').textContent=`${ym} 기준`;
-}
+  const [y,m]=ym.split('-').map(Number);
+  const yearStart=`${year}-01-01`, yearEnd=`${year+1}-01-01`;
+  const monthStart=new Date(y,m-1,1).toISOString().slice(0,10);
+  const monthEnd=new Date(y,m,1).toISOString().slice(0,10);
 
-async function loadRecentGames(){
-  el('recentList').innerHTML='';
-  const {data,error}=await client.from('baseball_games')
-    .select('id,game_date,opponent,tournament,our_score,opp_score,result')
-    .order('game_date',{ascending:false}).order('id',{ascending:false}).limit(5);
-  if(error){
+  const [summaryRes,recentRes]=await Promise.all([
+    client.from('baseball_games').select('game_date,result').gte('game_date',yearStart).lt('game_date',yearEnd),
+    client.from('baseball_games').select('id,game_date,opponent,tournament,our_score,opp_score,result').order('game_date',{ascending:false}).order('id',{ascending:false}).limit(5)
+  ]);
+
+  // 올해/이번달 요약 (한 번에 계산)
+  if(!summaryRes.error){
+    const all=summaryRes.data||[];
+    let yw=0,yl=0,yd=0,mw=0,ml=0,md=0;
+    all.forEach(g=>{
+      const inMonth=g.game_date>=monthStart&&g.game_date<monthEnd;
+      if(g.result==='W'){yw++;if(inMonth)mw++;}
+      else if(g.result==='L'){yl++;if(inMonth)ml++;}
+      else{yd++;if(inMonth)md++;}
+    });
+    el('yWLD').textContent=`${yw}·${yl}·${yd}`; el('yearLabel').textContent=`${year}년 기준`;
+    el('mWLD').textContent=`${mw}·${ml}·${md}`; el('monthLabel').textContent=`${ym} 기준`;
+  } else {
+    el('yearLabel').textContent='불러오기 실패'; el('monthLabel').textContent='불러오기 실패';
+  }
+
+  // 최근 경기
+  if(recentRes.error){
     el('recentHint').style.display='block';
-    el('recentHint').innerHTML=`<div class="empty-icon">⚠️</div>불러오기 실패: ${error.message}`;
+    el('recentHint').innerHTML=`<div class="empty-icon">⚠️</div>불러오기 실패: ${recentRes.error.message}`;
     return;
   }
-  const list=data||[];
+  const list=recentRes.data||[];
   if(!list.length){
     el('recentHint').style.display='block';
     el('recentHint').innerHTML=`<div class="empty-icon">⚾</div>등록된 경기가 없어요.`;
     return;
   }
-  el('recentHint').style.display='none';
-  el('btnViewAll').style.display='block';
+  el('recentHint').style.display='none'; el('btnViewAll').style.display='block'; el('recentList').innerHTML='';
   list.forEach(g=>{
-    const item=document.createElement('div');
-    item.className='game-item';
+    const item=document.createElement('div'); item.className='game-item';
     const bc=badgeClass(g.result);
-    item.innerHTML=`
-      <div class="result-badge ${bc}">${g.result}</div>
-      <div class="game-info">
-        <div class="game-vs">vs ${g.opponent}</div>
-        <div class="game-meta">${g.game_date}${g.tournament?' · '+g.tournament:''}</div>
-      </div>
-      <div class="game-score">${num(g.our_score)}<span style="color:var(--muted);font-size:16px">:</span>${num(g.opp_score)}</div>
-    `;
+    item.innerHTML=`<div class="result-badge ${bc}">${g.result}</div><div class="game-info"><div class="game-vs">vs ${g.opponent}</div><div class="game-meta">${g.game_date}${g.tournament?' · '+g.tournament:''}</div></div><div class="game-score">${num(g.our_score)}<span style="color:var(--muted);font-size:16px">:</span>${num(g.opp_score)}</div>`;
     item.onclick=()=>location.href=`report.html?game=${g.id}`;
     el('recentList').appendChild(item);
   });
 }
 
 async function init(){
-  currentSession=await getOptionalSession();
+  const {data,error}=await client.auth.getSession();
+  currentSession=(!error&&data?.session)||null;
   renderAuthButtons(currentSession);
   if(!currentSession){ renderGuestHome(); return; }
-  await Promise.all([loadYearlySummary(), loadMonthlySummary(), loadRecentGames()]);
+  loadDashboard(); // 비동기 실행 - 화면 블로킹 없음
 }
 init();
 </script>
