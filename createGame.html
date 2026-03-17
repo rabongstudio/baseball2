@@ -336,6 +336,11 @@ el('btnDelete').addEventListener('click',async()=>{
 
 (async function init(){
   const session=await requireLogin();if(!session)return;
+  const {data:{user}}=await client.auth.getUser();
+  if(user){
+    const {data:profile}=await client.from('baseball_profiles').select('school_id').eq('id',user.id).maybeSingle();
+    if(profile) mySchoolId=profile.school_id;
+  }
   const params=new URLSearchParams(location.search);
   const gameParam=params.get('game'),gameId=Number(gameParam);
   if(gameParam&&Number.isFinite(gameId)&&gameId>0){await openEdit(gameId);return;}
