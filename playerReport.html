@@ -164,7 +164,7 @@ async function requireLogin(){const{data,error}=await client.auth.getSession();i
 const el=(id)=>document.getElementById(id);
 const num=(v)=>Number.isFinite(Number(v))?Number(v):0;
 const fmtRate=(x)=>(!Number.isFinite(x))?'.000':x.toFixed(3);
-let players=[],currentPlayer=null,currentTournament=null,selectedGameId=null;
+let players=[],currentPlayer=null,currentTournament=null,selectedGameId=null,myUserId=null;
 
 function showView(id,push=true){
   ['viewPlayers','viewTournaments','viewStats'].forEach(v=>el(v).classList.add('hidden'));
@@ -173,7 +173,7 @@ function showView(id,push=true){
 }
 
 async function loadPlayers(){
-  const{data,error}=await client.from('baseball_players').select('*').order('name');
+  const{data,error}=await client.from('baseball_players').select('*').eq('owner_user_id',myUserId).order('name');
   if(!error){players=data;renderPlayersList('');}
 }
 
@@ -257,6 +257,8 @@ el('btnGoGameReport').onclick=()=>{if(!selectedGameId)return alert('경기를 �
 
 (async function init(){
   const session=await requireLogin();if(!session)return;
+  const{data:{user}}=await client.auth.getUser();
+  if(user) myUserId=user.id;
   history.replaceState({view:'viewPlayers'},'','');
   await loadPlayers();
 })();
