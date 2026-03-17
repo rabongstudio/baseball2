@@ -47,6 +47,7 @@ textarea{resize:none}
 .btn.primary{background:var(--brand);color:var(--black)}.btn.primary:hover{background:#d4ea3a}
 .btn.ghost{background:transparent;border:1px solid var(--border2);color:var(--text)}.btn.ghost:hover{border-color:var(--border2);background:rgba(255,255,255,.05)}
 .btn.danger{background:var(--loss-bg);border:1px solid var(--loss);color:var(--loss)}.btn.danger:hover{background:rgba(248,113,113,.2)}
+.btn:disabled{opacity:.55;cursor:not-allowed}
 .msg{margin-top:12px;font-size:13px;line-height:1.5;text-align:center}
 .msg .ok{color:var(--ok)} .msg .err{color:var(--err)}
 .hidden{display:none!important}
@@ -64,7 +65,6 @@ textarea{resize:none}
 </header>
 
 <div class="container">
-  <!-- LIST VIEW -->
   <div id="viewList">
     <div class="page-title">경기 관리</div>
     <div class="page-sub">리스트에서 선택하면 수정 · + 버튼으로 신규 등록</div>
@@ -72,17 +72,19 @@ textarea{resize:none}
     <div id="gameList"></div>
   </div>
 
-  <!-- FORM VIEW -->
   <div id="viewForm" class="hidden">
     <div class="page-title" id="formTitle">경기 등록</div>
     <div class="page-sub" id="formSub">경기 종료 후 결과를 입력하세요</div>
+
     <div class="card static">
       <label>경기 날짜 *</label>
       <input id="gameDate" type="date" />
+
       <div class="row2">
         <div><label>시작 시간</label><input id="gameTime" type="time" /></div>
         <div><label>이닝 *</label><input id="innings" type="number" min="1" step="1" value="7" /></div>
       </div>
+
       <label>상대팀 구분 *</label>
       <select id="opponentCategory">
         <option value="">구분 선택</option>
@@ -92,69 +94,91 @@ textarea{resize:none}
         <option value="고등학교">고등학교</option>
         <option value="대학교">대학교/일반</option>
       </select>
+
       <label>상대팀 *</label>
       <select id="opponentInput" disabled>
         <option value="">구분을 먼저 선택해주세요</option>
       </select>
+
       <div class="row2">
         <div><label>대회명</label><input id="tournament" placeholder="예: 주말리그" /></div>
         <div><label>구장</label><input id="stadium" placeholder="예: 잠실야구장" /></div>
       </div>
+
       <label>홈 / 원정</label>
       <div class="chip-row">
         <button type="button" class="chip-btn active" id="btnHome">홈</button>
         <button type="button" class="chip-btn" id="btnAway">원정</button>
       </div>
+
       <label>날씨</label>
       <input id="weather" placeholder="예: 맑음 / 흐림 / 비" />
+
       <div class="divider"></div>
       <div class="section-label">스코어</div>
+
       <div class="row2">
         <div><label>우리</label><input id="ourScore" type="number" min="0" step="1" value="0" /></div>
         <div><label>상대</label><input id="oppScore" type="number" min="0" step="1" value="0" /></div>
       </div>
+
       <div class="divider"></div>
       <div class="section-label">팀 기록 (우리)</div>
+
       <div class="row2">
         <div><label>팀안타</label><input id="ourHits" type="number" min="0" step="1" value="0" /></div>
         <div><label>팀실책</label><input id="ourErrors" type="number" min="0" step="1" value="0" /></div>
       </div>
+
       <label>팀홈런</label>
       <input id="ourHr" type="number" min="0" step="1" value="0" />
+
       <div class="divider"></div>
       <div class="section-label">핵심 지표 (우리 / 상대)</div>
+
       <div class="row2">
         <div><label>우리 볼넷</label><input id="ourBB" type="number" min="0" step="1" value="0" /></div>
         <div><label>상대 볼넷</label><input id="oppBB" type="number" min="0" step="1" value="0" /></div>
       </div>
+
       <div class="row2">
         <div><label>우리 삼진</label><input id="ourK" type="number" min="0" step="1" value="0" /></div>
         <div><label>상대 삼진</label><input id="oppK" type="number" min="0" step="1" value="0" /></div>
       </div>
+
       <div class="row2">
         <div><label>우리 사구</label><input id="ourHBP" type="number" min="0" step="1" value="0" /></div>
         <div><label>상대 사구</label><input id="oppHBP" type="number" min="0" step="1" value="0" /></div>
       </div>
+
       <div class="row2">
         <div><label>우리 도루</label><input id="ourSB" type="number" min="0" step="1" value="0" /></div>
         <div><label>상대 도루</label><input id="oppSB" type="number" min="0" step="1" value="0" /></div>
       </div>
+
       <div class="divider"></div>
+
       <label>콜드게임</label>
       <div class="chip-row">
         <button type="button" class="chip-btn active" id="btnColdNo">아니오</button>
         <button type="button" class="chip-btn" id="btnColdYes">예</button>
       </div>
+
       <label>종료 사유 (선택)</label>
       <input id="endReason" placeholder="예: 우천 콜드 / 시간 종료" />
+
       <label>메모</label>
       <textarea id="memo" rows="3" placeholder="예: 3회 역전, 수비 실책이 아쉬움"></textarea>
+
       <button class="btn primary" id="btnSave">저장하기</button>
+
       <div class="row2" style="margin-top:10px">
         <button class="btn ghost" id="btnReset">초기화</button>
         <button class="btn danger hidden" id="btnDelete">삭제</button>
       </div>
+
       <button class="btn ghost" id="btnBack" style="margin-top:8px">← 목록으로</button>
+
       <div class="msg" id="msg"></div>
     </div>
   </div>
@@ -164,165 +188,532 @@ textarea{resize:none}
 
 <script>
 const client = window.sb;
+const el = (id) => document.getElementById(id);
+
+let mode = 'create';
+let editingId = null;
+let isHome = true;
+let isCold = false;
+let mySchoolId = null;
+let isAdmin = false;
+let currentView = 'list';
+let loadingList = false;
+let loadingForm = false;
+let saving = false;
+
+// 캐시: 경기목록 / 학교목록
+let gameListCache = null;
+let schoolCategoryCache = new Map();
+
+function setMsg(html=''){ el('msg').innerHTML = html; }
+function numVal(id){ const v = Number(el(id).value); return Number.isFinite(v) ? v : 0; }
+function setActive(on, off){ on.classList.add('active'); off.classList.remove('active'); }
+function hideFab(){ el('btnNew').style.display = 'none'; }
+function showFab(){ if(isAdmin) el('btnNew').style.display = 'flex'; }
+
+function ymKey(d){ return (d || '').slice(0, 7) || '0000-00'; }
+function ymTitle(k){
+  const [y, m] = k.split('-');
+  return `${y}년 ${Number(m)}월`;
+}
+
+function showList(pushState = true){
+  el('viewList').classList.remove('hidden');
+  el('viewForm').classList.add('hidden');
+  setMsg('');
+  currentView = 'list';
+  showFab();
+  if(pushState) history.pushState({ view:'list' }, '', location.pathname);
+}
+
+function showForm(pushState = true){
+  el('viewList').classList.add('hidden');
+  el('viewForm').classList.remove('hidden');
+  setMsg('');
+  currentView = 'form';
+  hideFab();
+  if(pushState){
+    const url = mode === 'edit' && editingId ? `${location.pathname}?game=${editingId}` : location.pathname;
+    history.pushState({ view:'form', gameId: editingId }, '', url);
+  }
+}
+
+function setButtonsDisabled(disabled){
+  el('btnSave').disabled = disabled;
+  el('btnDelete').disabled = disabled;
+  el('btnReset').disabled = disabled;
+}
+
+function requireLoginRedirect(){
+  location.href = `auth.html?next=${encodeURIComponent(location.pathname.split('/').pop() + location.search)}`;
+}
+
 async function requireLogin(){
-  const {data,error}=await client.auth.getSession();
-  if(error||!data?.session){location.href=`auth.html?next=${encodeURIComponent(location.pathname.split('/').pop()+location.search)}`;return null;}
-  return data.session;
+  const { data, error } = await client.auth.getUser();
+  if(error || !data?.user){
+    requireLoginRedirect();
+    return null;
+  }
+  return data.user;
 }
-const el=(id)=>document.getElementById(id);
-const setMsg=(html)=>el('msg').innerHTML=html;
-let mode='create',editingId=null,isHome=true,isCold=false,mySchoolId=null,isAdmin=false,currentView='list';
 
-function showList(pushState=true){
-  el('viewList').classList.remove('hidden');el('viewForm').classList.add('hidden');setMsg('');
-  currentView='list';
-  if(pushState) history.pushState({view:'list'},'',location.pathname);
+async function loadMyContext(){
+  const { data, error } = await client.rpc('baseball_my_context');
+  if(error) throw error;
+  return data;
 }
-function showForm(pushState=true){
-  el('viewList').classList.add('hidden');el('viewForm').classList.remove('hidden');setMsg('');el('btnNew').style.display='none';
-  currentView='form';
-  if(pushState) history.pushState({view:'form'},'',location.pathname);
+
+function resetForm({ keepDate = false } = {}){
+  const savedDate = el('gameDate').value;
+
+  el('gameDate').value = keepDate ? savedDate : '';
+  el('gameTime').value = '';
+  el('innings').value = '7';
+
+  el('opponentCategory').value = '';
+  el('opponentInput').innerHTML = '<option value="">구분을 먼저 선택해주세요</option>';
+  el('opponentInput').disabled = true;
+
+  el('tournament').value = '';
+  el('stadium').value = '';
+  el('weather').value = '';
+
+  el('ourScore').value = '0';
+  el('oppScore').value = '0';
+  el('ourHits').value = '0';
+  el('ourErrors').value = '0';
+  el('ourHr').value = '0';
+  el('ourBB').value = '0';
+  el('oppBB').value = '0';
+  el('ourK').value = '0';
+  el('oppK').value = '0';
+  el('ourHBP').value = '0';
+  el('oppHBP').value = '0';
+  el('ourSB').value = '0';
+  el('oppSB').value = '0';
+
+  el('endReason').value = '';
+  el('memo').value = '';
+
+  isHome = true;
+  isCold = false;
+  setActive(el('btnHome'), el('btnAway'));
+  setActive(el('btnColdNo'), el('btnColdYes'));
+  setMsg('');
 }
-function hideFab(){el('btnNew').style.display='none';}
-function showFab(){el('btnNew').style.display='flex';}
-function setActive(on,off){on.classList.add('active');off.classList.remove('active');}
-function numVal(id){const v=Number(el(id).value);return Number.isFinite(v)?v:0;}
 
-el('btnHome').addEventListener('click',()=>{isHome=true;setActive(el('btnHome'),el('btnAway'));});
-el('btnAway').addEventListener('click',()=>{isHome=false;setActive(el('btnAway'),el('btnHome'));});
-el('btnColdNo').addEventListener('click',()=>{isCold=false;setActive(el('btnColdNo'),el('btnColdYes'));});
-el('btnColdYes').addEventListener('click',()=>{isCold=true;setActive(el('btnColdYes'),el('btnColdNo'));});
+function applySchoolOptions(names = [], selected = ''){
+  const sel = el('opponentInput');
+  sel.innerHTML = '<option value="">학교 선택</option>';
+  sel.disabled = false;
 
-function ymKey(d){return(d||'').slice(0,7)||'0000-00';}
-function ymTitle(k){const[y,m]=k.split('-');return`${y}년 ${Number(m)}월`;}
+  names.forEach(name => {
+    const opt = document.createElement('option');
+    opt.value = name;
+    opt.textContent = name;
+    sel.appendChild(opt);
+  });
 
-async function loadList(){
-  el('gameList').innerHTML='';el('listHint').textContent='불러오는 중...';
-  const{data,error}=await client.from('baseball_games').select('id,game_date,opponent,tournament,stadium,our_score,opp_score,result').eq('school_id',mySchoolId).order('game_date',{ascending:false}).order('id',{ascending:false});
-  if(error){el('listHint').textContent='불러오기 실패: '+error.message;return;}
-  if(!data||!data.length){el('listHint').textContent='등록된 경기가 없어요. + 버튼으로 추가하세요.';return;}
-  el('listHint').textContent='';
-  const groups=new Map();
-  data.forEach(g=>{const k=ymKey(g.game_date);if(!groups.has(k))groups.set(k,[]);groups.get(k).push(g);});
-  for(const[k,games]of groups){
-    const h=document.createElement('div');h.className='month-header';h.textContent=`${ymTitle(k)} (${games.length}경기)`;el('gameList').appendChild(h);
-    games.forEach(g=>{
-      const item=document.createElement('div');item.className='card';
-      const bc=g.result==='W'?'W':g.result==='L'?'L':'D';
-      item.innerHTML=`<div class="game-item"><div class="result-badge ${bc}">${g.result||'D'}</div><div class="game-info"><div class="game-vs">vs ${g.opponent}</div><div class="game-meta">${g.game_date}${g.tournament?' · '+g.tournament:''}</div></div><div class="game-score">${g.our_score}<span style="color:var(--muted);font-size:16px">:</span>${g.opp_score}</div></div>`;
-      item.addEventListener('click',()=>{
-        if(!isAdmin){alert('관리자만 경기를 수정할 수 있어요.');return;}
+  if(selected) sel.value = selected;
+}
+
+function applySingleOpponentOption(name){
+  const sel = el('opponentInput');
+  sel.disabled = false;
+  sel.innerHTML = '';
+  const opt = document.createElement('option');
+  opt.value = name;
+  opt.textContent = name;
+  sel.appendChild(opt);
+  sel.value = name;
+}
+
+function fillFormFromGame(g, category = null, schools = []){
+  el('gameDate').value = g.game_date ?? '';
+  el('gameTime').value = g.game_time ?? '';
+  el('innings').value = g.innings ?? 7;
+
+  el('opponentCategory').value = category || '';
+
+  if(category && schools.length){
+    applySchoolOptions(schools, g.opponent || '');
+  } else if(g.opponent) {
+    applySingleOpponentOption(g.opponent);
+  } else {
+    el('opponentInput').innerHTML = '<option value="">구분을 먼저 선택해주세요</option>';
+    el('opponentInput').disabled = true;
+  }
+
+  el('tournament').value = g.tournament ?? '';
+  el('stadium').value = g.stadium ?? '';
+  el('weather').value = g.weather ?? '';
+
+  el('ourScore').value = g.our_score ?? 0;
+  el('oppScore').value = g.opp_score ?? 0;
+  el('ourHits').value = g.our_hits ?? 0;
+  el('ourErrors').value = g.our_errors ?? 0;
+  el('ourHr').value = g.our_hr ?? 0;
+  el('ourBB').value = g.our_bb ?? 0;
+  el('oppBB').value = g.opp_bb ?? 0;
+  el('ourK').value = g.our_k ?? 0;
+  el('oppK').value = g.opp_k ?? 0;
+  el('ourHBP').value = g.our_hbp ?? 0;
+  el('oppHBP').value = g.opp_hbp ?? 0;
+  el('ourSB').value = g.our_sb ?? 0;
+  el('oppSB').value = g.opp_sb ?? 0;
+  el('endReason').value = g.end_reason ?? '';
+  el('memo').value = g.memo ?? '';
+
+  isHome = !!g.is_home;
+  isCold = !!g.is_cold;
+
+  isHome ? setActive(el('btnHome'), el('btnAway')) : setActive(el('btnAway'), el('btnHome'));
+  isCold ? setActive(el('btnColdYes'), el('btnColdNo')) : setActive(el('btnColdNo'), el('btnColdYes'));
+}
+
+function collectPayload(){
+  const game_date = el('gameDate').value;
+  const opponent = el('opponentInput').value.trim();
+
+  if(!game_date || !opponent){
+    return { error: '필수값: 경기 날짜, 상대팀' };
+  }
+
+  return {
+    p_game_id: mode === 'edit' ? editingId : null,
+    p_game_date: game_date,
+    p_game_time: el('gameTime').value || null,
+    p_innings: Math.max(1, numVal('innings')),
+    p_opponent: opponent,
+    p_tournament: el('tournament').value.trim() || null,
+    p_stadium: el('stadium').value.trim() || null,
+    p_is_home: isHome,
+    p_weather: el('weather').value.trim() || null,
+    p_is_cold: isCold,
+    p_end_reason: el('endReason').value.trim() || null,
+    p_our_score: numVal('ourScore'),
+    p_opp_score: numVal('oppScore'),
+    p_our_hits: numVal('ourHits'),
+    p_our_errors: numVal('ourErrors'),
+    p_our_hr: numVal('ourHr'),
+    p_our_bb: numVal('ourBB'),
+    p_opp_bb: numVal('oppBB'),
+    p_our_k: numVal('ourK'),
+    p_opp_k: numVal('oppK'),
+    p_our_hbp: numVal('ourHBP'),
+    p_opp_hbp: numVal('oppHBP'),
+    p_our_sb: numVal('ourSB'),
+    p_opp_sb: numVal('oppSB'),
+    p_memo: el('memo').value.trim() || null
+  };
+}
+
+function renderGameList(rows){
+  el('gameList').innerHTML = '';
+
+  if(!rows || !rows.length){
+    el('listHint').textContent = '등록된 경기가 없어요. + 버튼으로 추가하세요.';
+    return;
+  }
+
+  el('listHint').textContent = '';
+
+  const groups = new Map();
+  rows.forEach(g => {
+    const key = ymKey(g.game_date);
+    if(!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(g);
+  });
+
+  for(const [key, games] of groups){
+    const h = document.createElement('div');
+    h.className = 'month-header';
+    h.textContent = `${ymTitle(key)} (${games.length}경기)`;
+    el('gameList').appendChild(h);
+
+    games.forEach(g => {
+      const item = document.createElement('div');
+      item.className = 'card';
+
+      const badgeClass = g.result === 'W' ? 'W' : g.result === 'L' ? 'L' : 'D';
+
+      item.innerHTML = `
+        <div class="game-item">
+          <div class="result-badge ${badgeClass}">${g.result || 'D'}</div>
+          <div class="game-info">
+            <div class="game-vs">vs ${g.opponent}</div>
+            <div class="game-meta">${g.game_date}${g.tournament ? ' · ' + g.tournament : ''}</div>
+          </div>
+          <div class="game-score">${g.our_score}<span style="color:var(--muted);font-size:16px">:</span>${g.opp_score}</div>
+        </div>
+      `;
+
+      item.addEventListener('click', () => {
+        if(!isAdmin){
+          alert('관리자만 경기를 수정할 수 있어요.');
+          return;
+        }
         openEdit(g.id);
-      });el('gameList').appendChild(item);
+      });
+
+      el('gameList').appendChild(item);
     });
   }
 }
 
-function resetForm({keepDate=false}={}){
-  const saved=el('gameDate').value;
-  el('gameDate').value=keepDate?saved:'';el('gameTime').value='';el('innings').value='7';el('opponentInput').value='';el('tournament').value='';el('stadium').value='';el('weather').value='';el('ourScore').value='0';el('oppScore').value='0';el('ourHits').value='0';el('ourErrors').value='0';el('ourHr').value='0';el('ourBB').value='0';el('oppBB').value='0';el('ourK').value='0';el('oppK').value='0';el('ourHBP').value='0';el('oppHBP').value='0';el('ourSB').value='0';el('oppSB').value='0';el('endReason').value='';el('memo').value='';el('opponentCategory').value='';el('opponentInput').innerHTML='<option value="">구분을 먼저 선택해주세요</option>';el('opponentInput').disabled=true;
-  isHome=true;setActive(el('btnHome'),el('btnAway'));isCold=false;setActive(el('btnColdNo'),el('btnColdYes'));setMsg('');
+function invalidateGameListCache(){
+  gameListCache = null;
+}
+
+async function loadList(forceReload = false){
+  if(loadingList || !mySchoolId) return;
+  loadingList = true;
+
+  try {
+    if(!forceReload && Array.isArray(gameListCache)){
+      renderGameList(gameListCache);
+      return;
+    }
+
+    el('listHint').textContent = '불러오는 중...';
+
+    const { data, error } = await client.rpc('baseball_game_list_simple', {
+      p_school_id: mySchoolId
+    });
+
+    if(error){
+      el('listHint').textContent = '불러오기 실패: ' + error.message;
+      return;
+    }
+
+    gameListCache = data || [];
+    renderGameList(gameListCache);
+  } finally {
+    loadingList = false;
+  }
 }
 
 function enterCreate(){
-  mode='create';editingId=null;
-  el('formTitle').textContent='경기 신규 등록';el('formSub').textContent='경기 종료 후 결과를 입력하세요';
-  el('btnDelete').classList.add('hidden');resetForm();showForm();
+  mode = 'create';
+  editingId = null;
+
+  el('formTitle').textContent = '경기 신규 등록';
+  el('formSub').textContent = '경기 종료 후 결과를 입력하세요';
+  el('btnDelete').classList.add('hidden');
+
+  resetForm();
+  showForm();
 }
 
 async function openEdit(id){
-  mode='edit';editingId=id;
-  el('formTitle').textContent='경기 수정';el('formSub').textContent=`ID #${id}`;
-  el('btnDelete').classList.toggle('hidden',!isAdmin);showForm();setMsg('불러오는 중...');
-  const{data,error}=await client.from('baseball_games').select('*').eq('id',id).single();
-  if(error){setMsg(`<span class="err">불러오기 실패: ${error.message}</span>`);return;}
-  el('gameDate').value=data.game_date??'';el('gameTime').value=data.game_time??'';el('innings').value=data.innings??7;
-  if(data.opponent){
-    const{data:school}=await client.from('baseball_schools').select('category').eq('name',data.opponent).maybeSingle();
-    if(school){
-      el('opponentCategory').value=school.category;
-      const{data:schools}=await client.from('baseball_schools').select('name').eq('category',school.category).order('name');
-      const sel=el('opponentInput');
-      sel.innerHTML='<option value="">학교 선택</option>';sel.disabled=false;
-      (schools||[]).forEach(s=>{const opt=document.createElement('option');opt.value=s.name;opt.textContent=s.name;sel.appendChild(opt);});
-      sel.value=data.opponent;
-    } else {
-      const sel=el('opponentInput');sel.disabled=false;
-      sel.innerHTML=`<option value="${data.opponent}">${data.opponent}</option>`;sel.value=data.opponent;
+  if(loadingForm) return;
+  loadingForm = true;
+
+  try {
+    mode = 'edit';
+    editingId = id;
+
+    el('formTitle').textContent = '경기 수정';
+    el('formSub').textContent = `ID #${id}`;
+    el('btnDelete').classList.toggle('hidden', !isAdmin);
+
+    showForm();
+    setMsg('불러오는 중...');
+
+    const { data, error } = await client.rpc('baseball_game_detail_with_schools', {
+      p_game_id: id
+    });
+
+    if(error){
+      setMsg(`<span class="err">불러오기 실패: ${error.message}</span>`);
+      return;
     }
+
+    if(!data?.game){
+      setMsg('<span class="err">경기 정보를 찾을 수 없습니다.</span>');
+      return;
+    }
+
+    if(data.category && Array.isArray(data.schools)){
+      schoolCategoryCache.set(data.category, data.schools);
+    }
+
+    fillFormFromGame(data.game, data.category || null, data.schools || []);
+    setMsg('');
+  } finally {
+    loadingForm = false;
   }
-  el('tournament').value=data.tournament??'';el('stadium').value=data.stadium??'';el('weather').value=data.weather??'';el('ourScore').value=data.our_score??0;el('oppScore').value=data.opp_score??0;el('ourHits').value=data.our_hits??0;el('ourErrors').value=data.our_errors??0;el('ourHr').value=data.our_hr??0;el('ourBB').value=data.our_bb??0;el('oppBB').value=data.opp_bb??0;el('ourK').value=data.our_k??0;el('oppK').value=data.opp_k??0;el('ourHBP').value=data.our_hbp??0;el('oppHBP').value=data.opp_hbp??0;el('ourSB').value=data.our_sb??0;el('oppSB').value=data.opp_sb??0;el('endReason').value=data.end_reason??'';el('memo').value=data.memo??'';
-  isHome=!!data.is_home;isHome?setActive(el('btnHome'),el('btnAway')):setActive(el('btnAway'),el('btnHome'));
-  isCold=!!data.is_cold;isCold?setActive(el('btnColdYes'),el('btnColdNo')):setActive(el('btnColdNo'),el('btnColdYes'));
-  setMsg('');
 }
 
-function collectPayload(){
-  const game_date=el('gameDate').value,opponent=el('opponentInput').value.trim();
-  if(!game_date||!opponent)return{error:'필수값: 경기 날짜, 상대팀'};
-  return{game_date,game_time:el('gameTime').value||null,school_id:mySchoolId,innings:Math.max(1,numVal('innings')),opponent,tournament:el('tournament').value.trim()||null,stadium:el('stadium').value.trim()||null,is_home:isHome,weather:el('weather').value.trim()||null,is_cold:isCold,end_reason:el('endReason').value.trim()||null,our_score:numVal('ourScore'),opp_score:numVal('oppScore'),our_hits:numVal('ourHits'),our_errors:numVal('ourErrors'),our_hr:numVal('ourHr'),our_bb:numVal('ourBB'),opp_bb:numVal('oppBB'),our_k:numVal('ourK'),opp_k:numVal('oppK'),our_hbp:numVal('ourHBP'),opp_hbp:numVal('oppHBP'),our_sb:numVal('ourSB'),opp_sb:numVal('oppSB'),memo:el('memo').value.trim()||null};
-}
+el('btnHome').addEventListener('click', () => {
+  isHome = true;
+  setActive(el('btnHome'), el('btnAway'));
+});
+
+el('btnAway').addEventListener('click', () => {
+  isHome = false;
+  setActive(el('btnAway'), el('btnHome'));
+});
+
+el('btnColdNo').addEventListener('click', () => {
+  isCold = false;
+  setActive(el('btnColdNo'), el('btnColdYes'));
+});
+
+el('btnColdYes').addEventListener('click', () => {
+  isCold = true;
+  setActive(el('btnColdYes'), el('btnColdNo'));
+});
 
 el('opponentCategory').addEventListener('change', async () => {
-  const cat=el('opponentCategory').value;
-  const sel=el('opponentInput');
-  sel.innerHTML='<option value="">학교 선택</option>';
-  if(!cat){sel.disabled=true;return;}
-  sel.disabled=false;
-  sel.innerHTML='<option value="">불러오는 중...</option>';
-  const{data,error}=await client.from('baseball_schools').select('name').eq('category',cat).order('name');
-  sel.innerHTML='<option value="">학교 선택</option>';
-  if(error){return;}
-  (data||[]).forEach(s=>{const opt=document.createElement('option');opt.value=s.name;opt.textContent=s.name;sel.appendChild(opt);});
-});
+  const cat = el('opponentCategory').value;
+  const sel = el('opponentInput');
 
-el('btnNew').addEventListener('click',enterCreate);
-el('btnBack').addEventListener('click',async()=>{showList();showFab();await loadList();});
-el('btnReset').addEventListener('click',()=>resetForm({keepDate:true}));
-
-el('btnSave').addEventListener('click',async()=>{
-  setMsg('저장 중...');
-  const payload=collectPayload();
-  if(payload.error){setMsg(`<span class="err">${payload.error}</span>`);return;}
-  if(mode==='create'){
-    const{data,error}=await client.from('baseball_games').insert(payload).select('id,game_date,opponent,result,our_score,opp_score').single();
-    if(error){setMsg(`<span class="err">저장 실패: ${error.message}</span>`);return;}
-    setMsg(`<span class="ok">✅ 저장 완료! #${data.id} · ${data.game_date} vs ${data.opponent}</span>`);
-    await openEdit(data.id);return;
+  if(!cat){
+    sel.innerHTML = '<option value="">구분을 먼저 선택해주세요</option>';
+    sel.disabled = true;
+    return;
   }
-  const{data,error}=await client.from('baseball_games').update(payload).eq('id',editingId).select('id,game_date,opponent,result,our_score,opp_score').single();
-  if(error){setMsg(`<span class="err">수정 실패: ${error.message}</span>`);return;}
-  setMsg(`<span class="ok">✅ 수정 완료! ${data.game_date} vs ${data.opponent} · ${data.result}</span>`);
+
+  // 학교목록 캐시 사용
+  if(schoolCategoryCache.has(cat)){
+    applySchoolOptions(schoolCategoryCache.get(cat));
+    return;
+  }
+
+  sel.disabled = false;
+  sel.innerHTML = '<option value="">불러오는 중...</option>';
+
+  const { data, error } = await client.rpc('baseball_schools_by_category', {
+    p_category: cat
+  });
+
+  sel.innerHTML = '<option value="">학교 선택</option>';
+
+  if(error){
+    return;
+  }
+
+  const names = (data || []).map(s => s.name);
+  schoolCategoryCache.set(cat, names);
+  applySchoolOptions(names);
 });
 
-el('btnDelete').addEventListener('click',async()=>{
-  if(mode!=='edit'||!editingId)return;
-  if(!confirm(`#${editingId} 경기를 삭제할까요?`))return;
+el('btnNew').addEventListener('click', enterCreate);
+
+el('btnBack').addEventListener('click', async () => {
+  showList();
+  await loadList(false); // 경기목록 캐시 사용
+});
+
+el('btnReset').addEventListener('click', () => resetForm({ keepDate: true }));
+
+el('btnSave').addEventListener('click', async () => {
+  if(saving) return;
+
+  const payload = collectPayload();
+  if(payload.error){
+    setMsg(`<span class="err">${payload.error}</span>`);
+    return;
+  }
+
+  saving = true;
+  setButtonsDisabled(true);
+  setMsg('저장 중...');
+
+  try {
+    const { data, error } = await client.rpc('baseball_game_save', payload);
+
+    if(error){
+      setMsg(`<span class="err">저장 실패: ${error.message}</span>`);
+      return;
+    }
+
+    invalidateGameListCache();
+
+    if(data?.mode === 'create'){
+      setMsg(`<span class="ok">✅ 저장 완료! #${data.id} · ${data.game_date} vs ${data.opponent}</span>`);
+      await openEdit(data.id);
+      return;
+    }
+
+    setMsg(`<span class="ok">✅ 수정 완료! ${data.game_date} vs ${data.opponent} · ${data.result}</span>`);
+  } finally {
+    saving = false;
+    setButtonsDisabled(false);
+  }
+});
+
+el('btnDelete').addEventListener('click', async () => {
+  if(mode !== 'edit' || !editingId) return;
+  if(!confirm(`#${editingId} 경기를 삭제할까요?`)) return;
+
+  setButtonsDisabled(true);
   setMsg('삭제 중...');
-  const{error}=await client.from('baseball_games').delete().eq('id',editingId);
-  if(error){setMsg(`<span class="err">삭제 실패: ${error.message}</span>`);return;}
-  setMsg('<span class="ok">✅ 삭제 완료</span>');showList();showFab();await loadList();
+
+  try {
+    const { data, error } = await client.rpc('baseball_game_delete', {
+      p_game_id: editingId
+    });
+
+    if(error){
+      setMsg(`<span class="err">삭제 실패: ${error.message}</span>`);
+      return;
+    }
+
+    invalidateGameListCache();
+
+    setMsg(`<span class="ok">✅ 삭제 완료 · ${data.game_date} vs ${data.opponent}</span>`);
+    mode = 'create';
+    editingId = null;
+    showList();
+    await loadList(true);
+  } finally {
+    setButtonsDisabled(false);
+  }
 });
 
-window.addEventListener('popstate',()=>{
-  if(currentView==='form'){
-    showList(false);showFab();loadList();
+window.addEventListener('popstate', async (e) => {
+  if(!e.state || e.state.view === 'list'){
+    showList(false);
+    await loadList(false); // 경기목록 캐시 사용
+  } else if(e.state.view === 'form' && e.state.gameId){
+    await openEdit(e.state.gameId);
   }
 });
 
 (async function init(){
-  const session=await requireLogin();if(!session)return;
-  const {data:{user}}=await client.auth.getUser();
-  if(user){
-    const {data:profile}=await client.from('baseball_profiles').select('school_id,role').eq('id',user.id).maybeSingle();
-    if(profile){mySchoolId=profile.school_id;isAdmin=profile.role==='admin';}
+  try {
+    const user = await requireLogin();
+    if(!user) return;
+
+    const ctx = await loadMyContext();
+
+    mySchoolId = ctx?.school_id || null;
+    isAdmin = ctx?.role === 'admin';
+
+    if(!isAdmin) hideFab();
+    else showFab();
+
+    if(!mySchoolId){
+      el('listHint').textContent = '학교 정보가 없어 경기를 불러올 수 없습니다.';
+      return;
+    }
+
+    const params = new URLSearchParams(location.search);
+    const gameId = Number(params.get('game'));
+
+    if(gameId){
+      await openEdit(gameId);
+      return;
+    }
+
+    history.replaceState({ view:'list' }, '', location.pathname);
+    showList(false);
+    await loadList(false);
+  } catch (err) {
+    el('listHint').textContent = '초기화 오류: ' + (err?.message || err);
   }
-  if(!isAdmin) el('btnNew').style.display='none';
-  const params=new URLSearchParams(location.search);
-  const gameParam=params.get('game'),gameId=Number(gameParam);
-  if(gameParam&&Number.isFinite(gameId)&&gameId>0){await openEdit(gameId);return;}
-  history.replaceState({view:'list'},'',location.pathname);
-  showList(false);if(isAdmin)showFab();await loadList();
 })();
 </script>
 </body>
