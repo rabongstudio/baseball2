@@ -241,7 +241,10 @@ async function loadList(){
       const item=document.createElement('div');item.className='card';
       const bc=g.result==='W'?'W':g.result==='L'?'L':'D';
       item.innerHTML=`<div class="game-item"><div class="result-badge ${bc}">${g.result||'D'}</div><div class="game-info"><div class="game-vs">vs ${g.opponent}</div><div class="game-meta">${g.game_date}${g.tournament?' · '+g.tournament:''}</div></div><div class="game-score">${g.our_score}<span style="color:var(--muted);font-size:16px">:</span>${g.opp_score}</div></div>`;
-      item.addEventListener('click',()=>openEdit(g.id));el('gameList').appendChild(item);
+      item.addEventListener('click',()=>{
+      if(!isAdmin){alert('관리자만 경기를 수정할 수 있어요.');return;}
+      openEdit(g.id);
+    });el('gameList').appendChild(item);
     });
   }
 }
@@ -311,7 +314,6 @@ el('btnBack').addEventListener('click',async()=>{showList();showFab();await load
 el('btnReset').addEventListener('click',()=>resetForm({keepDate:true}));
 
 el('btnSave').addEventListener('click',async()=>{
-  if(!isAdmin){setMsg('<span class="err">관리자만 저장할 수 있어요.</span>');return;}
   setMsg('저장 중...');
   const payload=collectPayload();
   if(payload.error){setMsg(`<span class="err">${payload.error}</span>`);return;}
@@ -327,7 +329,6 @@ el('btnSave').addEventListener('click',async()=>{
 });
 
 el('btnDelete').addEventListener('click',async()=>{
-  if(!isAdmin){setMsg('<span class="err">관리자만 삭제할 수 있어요.</span>');return;}
   if(mode!=='edit'||!editingId)return;
   if(!confirm(`#${editingId} 경기를 삭제할까요?`))return;
   setMsg('삭제 중...');
