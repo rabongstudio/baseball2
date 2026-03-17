@@ -181,7 +181,7 @@ async function requireLogin(){const{data,error}=await client.auth.getSession();i
 const el=(id)=>document.getElementById(id);
 const setMsg=(html)=>el('msg').innerHTML=html;
 let currentGameId=null,currentGame=null,currentRecord=null,currentPlayer=null,isStarter=true;
-let playersCache=[],recordsCache=[];
+let playersCache=[],recordsCache=[],myPlayerId=null,mySchoolId=null;
 
 function show(viewId){['viewGames','viewGamePlayers','viewEdit'].forEach(v=>el(v).classList.add('hidden'));el(viewId).classList.remove('hidden');setMsg('');}
 function ymKey(d){return(d||'').slice(0,7)||'0000-00';}
@@ -315,7 +315,19 @@ el('btnRemoveFromGame').addEventListener('click',async()=>{
   setMsg('<span class="ok">✅ 삭제 완료</span>');show('viewGamePlayers');await loadRecordsForGame();
 });
 
-(async function init(){const session=await requireLogin();if(!session)return;show('viewGames');await loadGames();})();
+(async function init(){
+  const session=await requireLogin();if(!session)return;
+  const{data:{user}}=await client.auth.getUser();
+  if(user){
+    const[playerRes,profileRes]=await Promise.all([
+      client.from('baseball_players').select('id').eq('owner_user_id',user.id).maybeSingle(),
+      client.from('baseball_profiles').select('school_id').eq('id',user.id).maybeSingle()
+    ]);
+    if(playerRes.data) myPlayerId=playerRes.data.id;
+    if(profileRes.data) mySchoolId=profileRes.data.school_id;
+  }
+  show('viewGames');await loadGames();
+})();
 </script>
 </body>
 </html>
