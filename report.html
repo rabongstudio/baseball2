@@ -56,7 +56,11 @@ select option{background:var(--panel)}
 .starter-pill.on{background:var(--win-bg);color:var(--win)}
 .starter-pill.off{background:var(--draw-bg);color:var(--draw)}
 .btn{width:100%;margin-top:10px;padding:13px;border:none;border-radius:12px;font-family:'Noto Sans KR',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all .15s}
-.btn.ghost{background:transparent;border:1px solid var(--border2);color:var(--text)}.btn.ghost:hover{background:rgba(255,255,255,.05);border-color:var(--border2)}
+.btn.ghost{background:transparent;border:1px solid var(--border2);color:var(--text)}
+.btn.ghost:hover{background:rgba(255,255,255,.05);border-color:var(--border2)}
+.btn.more{background:rgba(255,255,255,.04);border:1px solid var(--border);color:var(--text)}
+.btn.more:hover{background:rgba(255,255,255,.06)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
 .section-label{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin:20px 0 10px}
 .hint-text{font-size:12px;color:var(--muted);margin:8px 0}
 .hidden{display:none!important}
@@ -76,6 +80,7 @@ select option{background:var(--panel)}
 .stat-box .k{font-size:10px;color:var(--muted);margin-top:3px;font-weight:700}
 .memo-box{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:10px}
 .memo-text{font-size:13px;color:var(--text);line-height:1.6;margin-top:8px}
+.loading-box{padding:18px 14px;border:1px solid var(--border);border-radius:14px;background:var(--panel);font-size:13px;color:var(--muted);text-align:center}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/config.js"></script>
@@ -89,24 +94,27 @@ select option{background:var(--panel)}
 </header>
 
 <div class="container">
-  <!-- 목록 -->
   <div id="viewList">
     <div class="page-title">경기 리포트</div>
     <div class="page-sub">대회별 성적 및 라인업 요약</div>
+
     <div class="filter-bar">
       <div class="filter-label">대회 필터</div>
-      <select id="tournamentSel"></select>
+      <select id="tournamentSel">
+        <option value="__ALL__">전체 대회 보기</option>
+      </select>
       <div class="kpi-row">
         <div class="kpi"><div class="v" id="kpiGames">-</div><div class="l">TOTAL</div></div>
         <div class="kpi"><div class="v" id="kpiWLD">-</div><div class="l">W · L · D</div></div>
       </div>
     </div>
+
     <div class="section-label">경기 목록</div>
     <div class="hint-text" id="listHint">데이터를 불러오는 중...</div>
     <div id="gameList"></div>
+    <button class="btn more hidden" id="btnMoreGames">더 보기</button>
   </div>
 
-  <!-- 상세 -->
   <div id="viewDetail" class="hidden">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
       <div>
@@ -115,6 +123,7 @@ select option{background:var(--panel)}
       </div>
       <button class="back-btn" id="btnBack">← 뒤로</button>
     </div>
+
     <div class="score-hero">
       <div id="gResultBadge" class="score-result-badge D">-</div>
       <div class="score-teams">
@@ -123,6 +132,7 @@ select option{background:var(--panel)}
         <div class="score-num" id="gScoreAway">-</div>
       </div>
     </div>
+
     <div class="info-card">
       <div class="info-row"><span class="k">대회명</span><span class="v" id="gTournament">-</span></div>
       <div class="info-row"><span class="k">경기장</span><span class="v" id="gStadium">-</span></div>
@@ -130,7 +140,9 @@ select option{background:var(--panel)}
       <div class="info-row"><span class="k">날씨</span><span class="v" id="gWeather">-</span></div>
       <div class="info-row"><span class="k">안타 / 실책 / 홈런</span><span class="v" id="gTeamStats">-</span></div>
     </div>
+
     <button class="btn ghost" id="btnOpenInput">✏️ 경기 정보 수정</button>
+
     <div class="section-label">라인업 및 개인 기록</div>
     <div class="hint-text" id="recordsHint"></div>
     <div id="recordsList"></div>
@@ -138,7 +150,6 @@ select option{background:var(--panel)}
   </div>
 </div>
 
-<!-- 선수 모달 -->
 <div id="playerModal" class="overlay hidden">
   <div class="sheet">
     <div class="sheet-head">
@@ -153,115 +164,380 @@ select option{background:var(--panel)}
 </div>
 
 <script>
-const client=window.sb;
-async function requireLogin(){const{data,error}=await client.auth.getSession();if(error||!data?.session){location.href=`auth.html?next=${encodeURIComponent(location.pathname.split('/').pop()+location.search)}`;return null;}return data.session;}
-const el=(id)=>document.getElementById(id);
-let currentGameId=null,currentFilter={tournament:null},gamesCache=[],isAdmin=false,myUserId=null,myPlayerId=null,mySchoolId=null;
+const client = window.sb;
+const PAGE_SIZE = 20;
 
-function show(viewId,push=true){['viewList','viewDetail'].forEach(v=>el(v).classList.add('hidden'));el(viewId).classList.remove('hidden');if(push)history.pushState({view:viewId,gameId:currentGameId,tournament:currentFilter.tournament},'',viewId==='viewDetail'?`report.html?game=${currentGameId}`:'report.html');}
-function safe(v,fb='-'){return(v===null||v===undefined||v==='')? fb:v;}
-function num(v){return Number.isFinite(Number(v))?Number(v):0;}
+const el = (id) => document.getElementById(id);
+const safe = (v, fb='-') => (v === null || v === undefined || v === '') ? fb : v;
+const num = (v) => Number.isFinite(Number(v)) ? Number(v) : 0;
+const escapeHtml = (str='') => String(str)
+  .replaceAll('&', '&amp;')
+  .replaceAll('<', '&lt;')
+  .replaceAll('>', '&gt;')
+  .replaceAll('"', '&quot;')
+  .replaceAll("'", '&#39;');
 
-async function loadTournaments(){
-  const{data}=await client.from('baseball_games').select('tournament').eq('school_id',mySchoolId).order('tournament');
-  const sel=el('tournamentSel');sel.innerHTML='<option value="__ALL__">전체 대회 보기</option>';
-  const set=new Set();(data||[]).forEach(r=>{if(r.tournament)set.add(r.tournament.trim());});
-  [...set].sort().forEach(t=>{const opt=document.createElement('option');opt.value=t;opt.textContent=t;sel.appendChild(opt);});
-}
+let currentGameId = null;
+let currentFilter = { tournament: null };
+let currentTournaments = [];
+let isAdmin = false;
+let myUserId = null;
+let myPlayerId = null;
+let mySchoolId = null;
 
-async function loadGameList(){
-  el('gameList').innerHTML='';el('listHint').textContent='경기를 불러오고 있습니다...';
-  const tVal=el('tournamentSel').value;currentFilter.tournament=tVal!=='__ALL__'?tVal:null;
-  let q=client.from('baseball_games').select('*').eq('school_id',mySchoolId).order('game_date',{ascending:false});
-  if(currentFilter.tournament)q=q.eq('tournament',currentFilter.tournament);
-  const{data,error}=await q;
-  if(error){el('listHint').textContent='오류 발생: '+error.message;return;}
-  gamesCache=data||[];
-  el('listHint').textContent=gamesCache.length?'':'기록된 경기가 없습니다.';
-  el('kpiGames').textContent=gamesCache.length;
-  let w=0,l=0,d=0;gamesCache.forEach(g=>{if(g.result==='W')w++;else if(g.result==='L')l++;else d++;});
-  el('kpiWLD').textContent=`${w}·${l}·${d}`;
-  gamesCache.forEach(g=>{
-    const item=document.createElement('div');item.className='game-card';
-    const bc=g.result==='W'?'W':g.result==='L'?'L':'D';
-    item.innerHTML=`<div class="result-badge ${bc}">${g.result||'D'}</div><div class="game-info"><div class="game-vs">vs ${g.opponent}</div><div class="game-meta">${g.game_date}${g.stadium?' · '+g.stadium:''}</div></div><div class="game-score-text">${g.our_score}<span style="color:var(--muted);font-size:16px">:</span>${g.opp_score}</div>`;
-    item.onclick=()=>openDetail(g.id);el('gameList').appendChild(item);
-  });
-}
+let listOffset = 0;
+let listDone = false;
+let loadingList = false;
+let loadingDetail = false;
 
-async function openDetail(gameId,push=true){
-  currentGameId=gameId;show('viewDetail',push);el('recordsList').innerHTML='';
-  const{data:g}=await client.from('baseball_games').select('*').eq('id',gameId).single();
-  if(!g)return;
-  el('detailHeader').textContent=`${g.game_date} vs ${g.opponent}`;
-  el('gScoreHome').textContent=num(g.our_score);el('gScoreAway').textContent=num(g.opp_score);
-  const res=g.result||'D';
-  el('gResultBadge').textContent=res==='W'?'WIN':res==='L'?'LOSS':'DRAW';
-  el('gResultBadge').className=`score-result-badge ${res}`;
-  el('gTournament').textContent=safe(g.tournament);el('gStadium').textContent=safe(g.stadium);
-  el('gInnings').textContent=safe(g.innings)+'이닝';el('gWeather').textContent=safe(g.weather);
-  el('gTeamStats').textContent=`${num(g.our_hits)}안타 / ${num(g.our_errors)}실책 / ${num(g.our_hr)}홈런`;
-  el('btnOpenInput').onclick=()=>location.href=`createGame.html?game=${gameId}`;
-  el('btnOpenInput').style.display=isAdmin?'block':'none';
-  const{data:records}=await client.from('baseball_game_player_records').select('*,baseball_players(*)').eq('game_id',gameId).order('batting_order');
-  el('recordsHint').textContent=records?.length?'':'기록된 선수가 없습니다.';
-  records?.forEach(rec=>{
-    const p=rec.baseball_players||{};
-    const item=document.createElement('div');item.className='player-card';
-    const pnum=(p.jersey_number??'')!==''?p.jersey_number:'-';
-    item.innerHTML=`<div class="player-num">${pnum}</div><div class="player-info"><div class="player-name">${p.name} <span style="color:var(--muted);font-size:12px">(${p.grade||'-'}학년)</span></div><div class="player-meta">${rec.batting_order||'-'}번 · ${rec.position||'-'} | ${num(rec.ab)}타 ${num(rec.h)}안 ${num(rec.rbi)}점 / ${num(rec.ip)}이닝 ${num(rec.pk)}K</div></div><div class="starter-pill ${rec.is_starter?'on':'off'}">${rec.is_starter?'선발':'교체'}</div>`;
-    item.onclick=()=>{
-      if(rec.player_id!==myPlayerId){alert('본인 기록만 확인할 수 있어요.');return;}
-      openPlayerModal(g,rec);
-    };
-    el('recordsList').appendChild(item);
-  });
-}
+function show(viewId, push = true) {
+  ['viewList', 'viewDetail'].forEach(v => el(v).classList.add('hidden'));
+  el(viewId).classList.remove('hidden');
 
-function openPlayerModal(game,rec){
-  const p=rec.baseball_players||{};
-  const pnum=(p.jersey_number??'')!==''?`#${p.jersey_number}`:'#-';
-  el('pmTitle').textContent=`${pnum} ${p.name}`;
-  el('pmSub').textContent=`vs ${game.opponent} (${game.game_date})`;
-  const body=el('pmBody');body.innerHTML='';
-  const bSec=document.createElement('div');bSec.className='stat-section';
-  bSec.innerHTML=`<div class="stat-section-title">⚾ Batting</div><div class="stat-grid"></div>`;
-  [['타수',rec.ab],['안타',rec.h],['타점',rec.rbi],['득점',rec.r],['볼넷',rec.bb],['삼진',rec.so],['도루',rec.sb],['홈런',rec.hr]].forEach(([k,v])=>{
-    bSec.querySelector('.stat-grid').innerHTML+=`<div class="stat-box"><div class="v">${num(v)}</div><div class="k">${k}</div></div>`;
-  });body.appendChild(bSec);
-  if(num(rec.ip)>0||num(rec.pitches)>0){
-    const pSec=document.createElement('div');pSec.className='stat-section';
-    pSec.innerHTML=`<div class="stat-section-title">🥎 Pitching</div><div class="stat-grid"></div>`;
-    [['이닝',rec.ip],['자책',rec.er],['탈삼진',rec.pk],['볼넷',rec.pbb],['투구수',rec.pitches],['MAX',rec.max_vel]].forEach(([k,v])=>{
-      pSec.querySelector('.stat-grid').innerHTML+=`<div class="stat-box"><div class="v">${safe(v,0)}</div><div class="k">${k}</div></div>`;
-    });body.appendChild(pSec);
+  if (push) {
+    const url = (viewId === 'viewDetail' && currentGameId)
+      ? `report.html?game=${currentGameId}`
+      : 'report.html';
+
+    history.pushState(
+      { view: viewId, gameId: currentGameId, tournament: currentFilter.tournament },
+      '',
+      url
+    );
   }
-  const mSec=document.createElement('div');mSec.className='memo-box';
-  mSec.innerHTML=`<div class="stat-section-title">📝 Memo</div><div class="memo-text">${safe(rec.player_memo,'입력된 메모가 없습니다.')}</div>`;
+}
+
+function setListHint(text='') {
+  el('listHint').textContent = text;
+}
+
+function setRecordsHint(text='') {
+  el('recordsHint').textContent = text;
+}
+
+function renderTournamentOptions(tournaments, selectedValue = '__ALL__') {
+  const sel = el('tournamentSel');
+  sel.innerHTML = '<option value="__ALL__">전체 대회 보기</option>';
+
+  tournaments.forEach(t => {
+    const opt = document.createElement('option');
+    opt.value = t;
+    opt.textContent = t;
+    sel.appendChild(opt);
+  });
+
+  sel.value = selectedValue || '__ALL__';
+}
+
+function renderGameCard(g) {
+  const item = document.createElement('div');
+  item.className = 'game-card';
+
+  const resultClass = g.result === 'W' ? 'W' : g.result === 'L' ? 'L' : 'D';
+
+  item.innerHTML = `
+    <div class="result-badge ${resultClass}">${escapeHtml(safe(g.result, 'D'))}</div>
+    <div class="game-info">
+      <div class="game-vs">vs ${escapeHtml(safe(g.opponent))}</div>
+      <div class="game-meta">${escapeHtml(safe(g.game_date))}${g.stadium ? ' · ' + escapeHtml(g.stadium) : ''}</div>
+    </div>
+    <div class="game-score-text">${num(g.our_score)}<span style="color:var(--muted);font-size:16px">:</span>${num(g.opp_score)}</div>
+  `;
+
+  item.onclick = () => openDetail(g.id);
+  return item;
+}
+
+function renderPlayerCard(game, rec) {
+  const p = rec.baseball_players || {};
+  const item = document.createElement('div');
+  item.className = 'player-card';
+
+  const pnum = (p.jersey_number ?? '') !== '' ? p.jersey_number : '-';
+
+  item.innerHTML = `
+    <div class="player-num">${escapeHtml(String(pnum))}</div>
+    <div class="player-info">
+      <div class="player-name">
+        ${escapeHtml(safe(p.name))}
+        <span style="color:var(--muted);font-size:12px">(${escapeHtml(String(safe(p.grade)))}학년)</span>
+      </div>
+      <div class="player-meta">
+        ${escapeHtml(String(safe(rec.batting_order)))}번 · ${escapeHtml(safe(rec.position))}
+        | ${num(rec.ab)}타 ${num(rec.h)}안 ${num(rec.rbi)}점 / ${num(rec.ip)}이닝 ${num(rec.pk)}K
+      </div>
+    </div>
+    <div class="starter-pill ${rec.is_starter ? 'on' : 'off'}">${rec.is_starter ? '선발' : '교체'}</div>
+  `;
+
+  item.onclick = () => {
+    if (Number(rec.player_id) !== Number(myPlayerId)) {
+      alert('본인 기록만 확인할 수 있어요.');
+      return;
+    }
+    openPlayerModal(game, rec);
+  };
+
+  return item;
+}
+
+async function requireLogin() {
+  const { data, error } = await client.auth.getUser();
+
+  if (error || !data?.user) {
+    location.href = `auth.html?next=${encodeURIComponent(location.pathname.split('/').pop() + location.search)}`;
+    return null;
+  }
+
+  return data.user;
+}
+
+async function loadMyContext() {
+  const { data, error } = await client.rpc('baseball_my_context');
+  if (error) throw error;
+  return data;
+}
+
+async function loadGameList(reset = true) {
+  if (loadingList || !mySchoolId) return;
+  loadingList = true;
+
+  try {
+    if (reset) {
+      listOffset = 0;
+      listDone = false;
+      el('gameList').innerHTML = '';
+      el('btnMoreGames').classList.add('hidden');
+      setListHint('경기를 불러오고 있습니다...');
+    }
+
+    const tournamentValue = el('tournamentSel').value;
+    currentFilter.tournament = tournamentValue !== '__ALL__' ? tournamentValue : null;
+
+    const { data, error } = await client.rpc('baseball_report_list', {
+      p_school_id: mySchoolId,
+      p_tournament: currentFilter.tournament,
+      p_limit: PAGE_SIZE,
+      p_offset: listOffset
+    });
+
+    if (error) {
+      setListHint('오류 발생: ' + error.message);
+      return;
+    }
+
+    const tournaments = Array.isArray(data?.tournaments) ? data.tournaments : [];
+    const kpi = data?.kpi || {};
+    const rows = Array.isArray(data?.games) ? data.games : [];
+
+    if (reset) {
+      currentTournaments = tournaments.slice();
+      renderTournamentOptions(currentTournaments, currentFilter.tournament || '__ALL__');
+      el('kpiGames').textContent = num(kpi.total_games);
+      el('kpiWLD').textContent = `${num(kpi.wins)}·${num(kpi.losses)}·${num(kpi.draws)}`;
+    }
+
+    if (reset && rows.length === 0) {
+      setListHint('기록된 경기가 없습니다.');
+      return;
+    }
+
+    rows.forEach(g => {
+      el('gameList').appendChild(renderGameCard(g));
+    });
+
+    listOffset += rows.length;
+    listDone = rows.length < PAGE_SIZE;
+    setListHint('');
+
+    if (!listDone) el('btnMoreGames').classList.remove('hidden');
+    else el('btnMoreGames').classList.add('hidden');
+
+  } catch (err) {
+    setListHint('오류 발생: ' + (err?.message || err));
+  } finally {
+    loadingList = false;
+  }
+}
+
+async function openDetail(gameId, push = true) {
+  if (loadingDetail || !gameId) return;
+  loadingDetail = true;
+
+  try {
+    currentGameId = Number(gameId);
+    show('viewDetail', push);
+
+    setRecordsHint('기록을 불러오는 중...');
+    el('recordsList').innerHTML = '<div class="loading-box">선수 기록을 불러오고 있습니다...</div>';
+
+    const { data, error } = await client.rpc('baseball_report_detail', {
+      p_game_id: Number(gameId)
+    });
+
+    if (error) {
+      setRecordsHint('오류 발생: ' + error.message);
+      el('recordsList').innerHTML = '';
+      return;
+    }
+
+    const g = data?.game;
+    const records = Array.isArray(data?.records) ? data.records : [];
+
+    if (!g) {
+      el('detailHeader').textContent = '경기 정보를 찾을 수 없습니다.';
+      el('recordsList').innerHTML = '';
+      setRecordsHint('');
+      return;
+    }
+
+    el('detailHeader').textContent = `${safe(g.game_date)} vs ${safe(g.opponent)}`;
+    el('gScoreHome').textContent = num(g.our_score);
+    el('gScoreAway').textContent = num(g.opp_score);
+
+    const res = g.result || 'D';
+    el('gResultBadge').textContent = res === 'W' ? 'WIN' : res === 'L' ? 'LOSS' : 'DRAW';
+    el('gResultBadge').className = `score-result-badge ${res}`;
+
+    el('gTournament').textContent = safe(g.tournament);
+    el('gStadium').textContent = safe(g.stadium);
+    el('gInnings').textContent = `${num(g.innings)}이닝`;
+    el('gWeather').textContent = safe(g.weather);
+    el('gTeamStats').textContent = `${num(g.our_hits)}안타 / ${num(g.our_errors)}실책 / ${num(g.our_hr)}홈런`;
+
+    el('btnOpenInput').onclick = () => location.href = `createGame.html?game=${gameId}`;
+    el('btnOpenInput').style.display = isAdmin ? 'block' : 'none';
+
+    el('recordsList').innerHTML = '';
+    setRecordsHint(records.length ? '' : '기록된 선수가 없습니다.');
+
+    records.forEach(rec => {
+      el('recordsList').appendChild(renderPlayerCard(g, rec));
+    });
+
+  } catch (err) {
+    setRecordsHint('오류 발생: ' + (err?.message || err));
+    el('recordsList').innerHTML = '';
+  } finally {
+    loadingDetail = false;
+  }
+}
+
+function openPlayerModal(game, rec) {
+  const p = rec.baseball_players || {};
+  const pnum = (p.jersey_number ?? '') !== '' ? `#${p.jersey_number}` : '#-';
+
+  el('pmTitle').textContent = `${pnum} ${safe(p.name)}`;
+  el('pmSub').textContent = `vs ${safe(game.opponent)} (${safe(game.game_date)})`;
+
+  const body = el('pmBody');
+  body.innerHTML = '';
+
+  const bSec = document.createElement('div');
+  bSec.className = 'stat-section';
+  bSec.innerHTML = `<div class="stat-section-title">⚾ Batting</div><div class="stat-grid"></div>`;
+
+  [
+    ['타수', rec.ab],
+    ['안타', rec.h],
+    ['타점', rec.rbi],
+    ['득점', rec.r],
+    ['볼넷', rec.bb],
+    ['삼진', rec.so],
+    ['도루', rec.sb],
+    ['홈런', rec.hr]
+  ].forEach(([k, v]) => {
+    bSec.querySelector('.stat-grid').innerHTML += `
+      <div class="stat-box">
+        <div class="v">${num(v)}</div>
+        <div class="k">${k}</div>
+      </div>
+    `;
+  });
+  body.appendChild(bSec);
+
+  if (num(rec.ip) > 0 || num(rec.pitches) > 0) {
+    const pSec = document.createElement('div');
+    pSec.className = 'stat-section';
+    pSec.innerHTML = `<div class="stat-section-title">🥎 Pitching</div><div class="stat-grid"></div>`;
+
+    [
+      ['이닝', rec.ip],
+      ['자책', rec.er],
+      ['탈삼진', rec.pk],
+      ['볼넷', rec.pbb],
+      ['투구수', rec.pitches],
+      ['MAX', rec.max_vel]
+    ].forEach(([k, v]) => {
+      pSec.querySelector('.stat-grid').innerHTML += `
+        <div class="stat-box">
+          <div class="v">${safe(v, 0)}</div>
+          <div class="k">${k}</div>
+        </div>
+      `;
+    });
+    body.appendChild(pSec);
+  }
+
+  const mSec = document.createElement('div');
+  mSec.className = 'memo-box';
+  mSec.innerHTML = `
+    <div class="stat-section-title">📝 Memo</div>
+    <div class="memo-text">${escapeHtml(safe(rec.player_memo, '입력된 메모가 없습니다.')).replace(/\n/g, '<br>')}</div>
+  `;
   body.appendChild(mSec);
+
   el('playerModal').classList.remove('hidden');
 }
 
-el('pmClose').onclick=()=>el('playerModal').classList.add('hidden');
-el('tournamentSel').addEventListener('change',loadGameList);
-el('btnBack').onclick=()=>history.back();
-window.onpopstate=(e)=>{if(!e.state||e.state.view==='viewList'){show('viewList',false);loadGameList();}else if(e.state.view==='viewDetail')openDetail(e.state.gameId,false);};
+el('pmClose').onclick = () => el('playerModal').classList.add('hidden');
 
-(async function init(){
-  const session=await requireLogin();if(!session)return;
-  const {data:{user}}=await client.auth.getUser();
-  if(user){
-    myUserId=user.id;
-    const [profileRes,playerRes]=await Promise.all([
-      client.from('baseball_profiles').select('role,school_id').eq('id',user.id).single(),
-      client.from('baseball_players').select('id').eq('owner_user_id',user.id).maybeSingle()
-    ]);
-    if(profileRes.data){isAdmin=profileRes.data.role==='admin';mySchoolId=profileRes.data.school_id;}
-    if(playerRes.data) myPlayerId=playerRes.data.id;
+el('playerModal').addEventListener('click', (e) => {
+  if (e.target.id === 'playerModal') {
+    el('playerModal').classList.add('hidden');
   }
-  await loadTournaments();
-  const gid=new URLSearchParams(location.search).get('game');
-  if(gid)openDetail(Number(gid),false);else{show('viewList',false);loadGameList();}
+});
+
+el('tournamentSel').addEventListener('change', () => loadGameList(true));
+el('btnMoreGames').onclick = () => loadGameList(false);
+el('btnBack').onclick = () => history.back();
+
+window.onpopstate = async (e) => {
+  if (!e.state || e.state.view === 'viewList') {
+    show('viewList', false);
+  } else if (e.state.view === 'viewDetail' && e.state.gameId) {
+    await openDetail(e.state.gameId, false);
+  }
+};
+
+(async function init() {
+  try {
+    const user = await requireLogin();
+    if (!user) return;
+
+    const ctx = await loadMyContext();
+
+    myUserId = ctx?.user_id || user.id;
+    mySchoolId = ctx?.school_id || null;
+    myPlayerId = ctx?.player_id || null;
+    isAdmin = ctx?.role === 'admin';
+
+    if (!mySchoolId) {
+      setListHint('학교 정보가 없어 경기를 불러올 수 없습니다.');
+      return;
+    }
+
+    const gid = Number(new URLSearchParams(location.search).get('game'));
+
+    if (gid) {
+      await openDetail(gid, false);
+    } else {
+      show('viewList', false);
+      await loadGameList(true);
+    }
+  } catch (err) {
+    setListHint('초기화 오류: ' + (err?.message || err));
+  }
 })();
 </script>
 </body>
