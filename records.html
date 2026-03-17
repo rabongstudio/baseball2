@@ -352,11 +352,9 @@ window.addEventListener('popstate',()=>{
   if(currentView==='viewEdit'){
     currentRecord=null;
     show('viewGames',false);
-    history.pushState({view:'viewGames'},'',location.pathname);
   } else if(currentView==='viewGames'){
     currentGameId=null;currentGame=null;
     show('viewPlayers',false);
-    history.pushState({view:'viewPlayers'},'',location.pathname);
   } else {
     show('viewPlayers',false);
   }
