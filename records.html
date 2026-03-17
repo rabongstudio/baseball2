@@ -89,7 +89,7 @@ textarea{resize:none}
 
   <!-- VIEW 1: 선수 선택 -->
   <div id="viewPlayers">
-    <div class="page-title">기록 입력</div>
+    <div class="page-title">선수 선택</div>
     <div class="page-sub">먼저 선수를 선택해주세요.</div>
     <div class="hint-text" id="playersHint">불러오는 중...</div>
     <div id="playerSelectList"></div>
@@ -156,7 +156,7 @@ textarea{resize:none}
         <button class="btn ghost" id="btnReset">되돌리기</button>
         <button class="btn danger" id="btnRemoveFromGame">경기에서 제외</button>
       </div>
-      <button class="btn ghost" id="btnBackPlayers" style="margin-top:8px">← 선수 목록</button>
+      <button class="btn ghost" id="btnBackPlayers" style="margin-top:8px">← 경기 목록</button>
       <div class="msg" id="msg"></div>
     </div>
   </div>
@@ -169,7 +169,7 @@ async function requireLogin(){const{data,error}=await client.auth.getSession();i
 const el=(id)=>document.getElementById(id);
 const setMsg=(html)=>el('msg').innerHTML=html;
 let currentGameId=null,currentGame=null,currentRecord=null,currentPlayer=null,isStarter=true;
-let playersCache=[],recordsCache=[];
+let playersCache=[],recordsCache=[],myPlayerId=null,mySchoolId=null;
 
 function show(viewId, pushState=true){
   ['viewPlayers','viewGames','viewEdit'].forEach(v=>el(v).classList.add('hidden'));
@@ -245,12 +245,11 @@ async function openGame(gameId){
   if(rec){
     openRecord(rec);
   } else {
-    const{error:uErr}=await client.from('baseball_game_player_records')
-      .upsert({game_id:gameId,player_id:currentPlayer.id,is_starter:true},{onConflict:'game_id,player_id'});
-    if(uErr){alert('기록 초기화 실패: '+uErr.message);return;}
-    const{data:newRec}=await client.from('baseball_game_player_records')
+    const{data:newRec,error:uErr}=await client.from('baseball_game_player_records')
+      .upsert({game_id:gameId,player_id:currentPlayer.id,is_starter:true},{onConflict:'game_id,player_id'})
       .select('id,game_id,player_id,is_starter,batting_order,position,ab,h,rbi,r,bb,so,hbp,sb,doubles,triples,hr,sf,sh,gb,fb,ip,er,pk,pbb,ph,pitches,max_vel,e,player_memo,baseball_players(id,name,jersey_number,grade,primary_position,throws,bats)')
-      .eq('game_id',gameId).eq('player_id',currentPlayer.id).single();
+      .single();
+    if(uErr){alert('기록 초기화 실패: '+uErr.message);return;}
     if(newRec) openRecord(newRec);
   }
 }
@@ -305,7 +304,10 @@ async function addPlayerToGame(playerId){
 }
 
 function openRecord(rec){
-  currentRecord=rec;currentPlayer=rec.baseball_players||{};isStarter=!!rec.is_starter;
+  currentRecord=rec;
+  // openRecord가 직접 호출될 때는 currentPlayer가 이미 선수선택에서 세팅돼있음
+  if(rec.baseball_players) currentPlayer=rec.baseball_players;
+  isStarter=!!rec.is_starter;
   show('viewEdit');
   const num=(currentPlayer.jersey_number??'')!==''?`#${currentPlayer.jersey_number}`:'#-';
   el('editHeader').textContent=`경기 #${currentGameId} · ${num} ${currentPlayer.name||''} (${currentPlayer.grade||''})`;
@@ -332,9 +334,8 @@ el('btnSave').addEventListener('click',async()=>{
   const{error}=await client.from('baseball_game_player_records').upsert(payload,{onConflict:'game_id,player_id'});
   if(error){setMsg(`<span class="err">저장 실패: ${error.message}</span>`);return;}
   setMsg('<span class="ok">✅ 저장 완료</span>');
-  await loadRecordsForGame();
-  const updated=recordsCache.find(r=>r.player_id===currentPlayer.id);
-  if(updated)currentRecord=updated;
+  // payload로 currentRecord 직접 업데이트 (DB 재조회 불필요)
+  currentRecord={...currentRecord,...payload};
 });
 
 el('btnRemoveFromGame').addEventListener('click',async()=>{
@@ -348,9 +349,17 @@ el('btnRemoveFromGame').addEventListener('click',async()=>{
 
 window.addEventListener('popstate',(e)=>{
   const view=e.state?.view;
-  if(view==='viewEdit'){show('viewGames',false);}
-  else if(view==='viewGames'){show('viewPlayers',false);}
-  else{show('viewPlayers',false);}
+  if(view==='viewEdit'){
+    // 기록입력 → 경기선택
+    currentRecord=null;
+    show('viewGames',false);
+  } else if(view==='viewGames'){
+    // 경기선택 → 선수선택
+    currentGameId=null;currentGame=null;
+    show('viewPlayers',false);
+  } else {
+    show('viewPlayers',false);
+  }
 });
 
 (async function init(){
