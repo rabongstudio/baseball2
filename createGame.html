@@ -210,7 +210,7 @@ async function requireLogin(){
 }
 const el=(id)=>document.getElementById(id);
 const setMsg=(html)=>el('msg').innerHTML=html;
-let mode='create',editingId=null,isHome=true,isCold=false;
+let mode='create',editingId=null,isHome=true,isCold=false,mySchoolId=null,isAdmin=false;
 
 function showList(){el('viewList').classList.remove('hidden');el('viewForm').classList.add('hidden');setMsg('');}
 function showForm(){el('viewList').classList.add('hidden');el('viewForm').classList.remove('hidden');setMsg('');el('btnNew').style.display='none';}
@@ -261,7 +261,7 @@ function enterCreate(){
 async function openEdit(id){
   mode='edit';editingId=id;
   el('formTitle').textContent='경기 수정';el('formSub').textContent=`ID #${id}`;
-  el('btnDelete').classList.remove('hidden');showForm();setMsg('불러오는 중...');
+  el('btnDelete').classList.toggle('hidden',!isAdmin);showForm();setMsg('불러오는 중...');
   const{data,error}=await client.from('baseball_games').select('*').eq('id',id).single();
   if(error){setMsg(`<span class="err">불러오기 실패: ${error.message}</span>`);return;}
   el('gameDate').value=data.game_date??'';el('gameTime').value=data.game_time??'';el('innings').value=data.innings??7;// 상대팀 복원
@@ -311,6 +311,7 @@ el('btnBack').addEventListener('click',async()=>{showList();showFab();await load
 el('btnReset').addEventListener('click',()=>resetForm({keepDate:true}));
 
 el('btnSave').addEventListener('click',async()=>{
+  if(!isAdmin){setMsg('<span class="err">관리자만 저장할 수 있어요.</span>');return;}
   setMsg('저장 중...');
   const payload=collectPayload();
   if(payload.error){setMsg(`<span class="err">${payload.error}</span>`);return;}
@@ -326,6 +327,7 @@ el('btnSave').addEventListener('click',async()=>{
 });
 
 el('btnDelete').addEventListener('click',async()=>{
+  if(!isAdmin){setMsg('<span class="err">관리자만 삭제할 수 있어요.</span>');return;}
   if(mode!=='edit'||!editingId)return;
   if(!confirm(`#${editingId} 경기를 삭제할까요?`))return;
   setMsg('삭제 중...');
@@ -338,13 +340,18 @@ el('btnDelete').addEventListener('click',async()=>{
   const session=await requireLogin();if(!session)return;
   const {data:{user}}=await client.auth.getUser();
   if(user){
-    const {data:profile}=await client.from('baseball_profiles').select('school_id').eq('id',user.id).maybeSingle();
-    if(profile) mySchoolId=profile.school_id;
+    const {data:profile}=await client.from('baseball_profiles').select('school_id,role').eq('id',user.id).maybeSingle();
+    if(profile){
+      mySchoolId=profile.school_id;
+      isAdmin=profile.role==='admin';
+    }
   }
+  // admin 아니면 FAB 숨기기
+  if(!isAdmin) el('btnNew').style.display='none';
   const params=new URLSearchParams(location.search);
   const gameParam=params.get('game'),gameId=Number(gameParam);
   if(gameParam&&Number.isFinite(gameId)&&gameId>0){await openEdit(gameId);return;}
-  showList();showFab();await loadList();
+  showList();if(isAdmin)showFab();await loadList();
 })();
 </script>
 </body>
