@@ -89,7 +89,7 @@ textarea{resize:none}
 
   <!-- VIEW 1: 선수 선택 -->
   <div id="viewPlayers">
-    <div class="page-title">선수 선택</div>
+    <div class="page-title">기록 입력</div>
     <div class="page-sub">먼저 선수를 선택해주세요.</div>
     <div class="hint-text" id="playersHint">불러오는 중...</div>
     <div id="playerSelectList"></div>
@@ -156,7 +156,7 @@ textarea{resize:none}
         <button class="btn ghost" id="btnReset">되돌리기</button>
         <button class="btn danger" id="btnRemoveFromGame">경기에서 제외</button>
       </div>
-      <button class="btn ghost" id="btnBackPlayers" style="margin-top:8px">← 경기 목록</button>
+      <button class="btn ghost" id="btnBackPlayers" style="margin-top:8px">← 선수 목록</button>
       <div class="msg" id="msg"></div>
     </div>
   </div>
@@ -169,12 +169,13 @@ async function requireLogin(){const{data,error}=await client.auth.getSession();i
 const el=(id)=>document.getElementById(id);
 const setMsg=(html)=>el('msg').innerHTML=html;
 let currentGameId=null,currentGame=null,currentRecord=null,currentPlayer=null,isStarter=true;
-let playersCache=[],recordsCache=[],myPlayerId=null,mySchoolId=null;
+let playersCache=[],recordsCache=[],myPlayerId=null,mySchoolId=null,currentView='viewPlayers';
 
 function show(viewId, pushState=true){
   ['viewPlayers','viewGames','viewEdit'].forEach(v=>el(v).classList.add('hidden'));
   el(viewId).classList.remove('hidden');
   setMsg('');
+  currentView=viewId;
   if(pushState) history.pushState({view:viewId},'',location.pathname);
 }
 function ymKey(d){return(d||'').slice(0,7)||'0000-00';}
@@ -347,16 +348,15 @@ el('btnRemoveFromGame').addEventListener('click',async()=>{
   setMsg('<span class="ok">✅ 삭제 완료</span>');currentGameId=null;currentGame=null;show('viewGames');await loadGames();
 });
 
-window.addEventListener('popstate',(e)=>{
-  const view=e.state?.view;
-  if(view==='viewEdit'){
-    // 기록입력 → 경기선택
+window.addEventListener('popstate',()=>{
+  if(currentView==='viewEdit'){
     currentRecord=null;
     show('viewGames',false);
-  } else if(view==='viewGames'){
-    // 경기선택 → 선수선택
+    history.pushState({view:'viewGames'},'',location.pathname);
+  } else if(currentView==='viewGames'){
     currentGameId=null;currentGame=null;
     show('viewPlayers',false);
+    history.pushState({view:'viewPlayers'},'',location.pathname);
   } else {
     show('viewPlayers',false);
   }
