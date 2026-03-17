@@ -246,12 +246,13 @@ async function openGame(gameId){
   if(rec){
     openRecord(rec);
   } else {
-    const{data:newRec,error:uErr}=await client.from('baseball_game_player_records')
-      .upsert({game_id:gameId,player_id:currentPlayer.id,is_starter:true},{onConflict:'game_id,player_id'})
-      .select('id,game_id,player_id,is_starter,batting_order,position,ab,h,rbi,r,bb,so,hbp,sb,doubles,triples,hr,sf,sh,gb,fb,ip,er,pk,pbb,ph,pitches,max_vel,e,player_memo,baseball_players(id,name,jersey_number,grade,primary_position,throws,bats)')
-      .single();
-    if(uErr){alert('기록 초기화 실패: '+uErr.message);return;}
-    if(newRec) openRecord(newRec);
+    // 기록 없으면 빈 폼으로 보여주기 (저장 버튼 누를 때 insert)
+    openRecord({
+      game_id:gameId,
+      player_id:currentPlayer.id,
+      is_starter:true,
+      baseball_players:currentPlayer
+    });
   }
 }
 
