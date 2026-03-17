@@ -227,7 +227,9 @@ async function openGame(gameId){
 
 async function loadPlayersCache(){
   if(playersCache.length>0)return;
-  const{data,error}=await client.from('baseball_players').select('id,name,jersey_number,grade,primary_position,throws,bats,is_active').order('is_active',{ascending:false}).order('jersey_number',{ascending:true,nullsFirst:false}).order('name',{ascending:true});
+  const{data:{user}}=await client.auth.getUser();
+  if(!user){playersCache=[];return;}
+  const{data,error}=await client.from('baseball_players').select('id,name,jersey_number,grade,primary_position,throws,bats,is_active').eq('owner_user_id',user.id).order('is_active',{ascending:false}).order('jersey_number',{ascending:true,nullsFirst:false}).order('name',{ascending:true});
   if(error){playersCache=[];return;}
   playersCache=data||[];
 }
