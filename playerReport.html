@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="ko">
 <head>
@@ -22,33 +23,16 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--black);color:var(--t
 .section-label{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin:16px 0 8px}
 .hint-text{font-size:12px;color:var(--muted);margin:8px 0}
 
-/* 검색 */
-.search-bar{background:var(--panel);border:1px solid var(--border2);border-radius:12px;padding:12px 16px;font-size:15px;color:var(--text);font-family:'Noto Sans KR',sans-serif;width:100%;margin-bottom:14px}
-.search-bar:focus{outline:none;border-color:var(--brand)}
-.search-bar::placeholder{color:var(--muted2)}
-
-/* 선수 카드 */
-.player-card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin-bottom:8px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:border-color .15s}
-.player-card:hover,.player-card.selected{border-color:var(--brand)}
-.player-num{width:40px;height:40px;border-radius:12px;background:var(--brand-dim);display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--brand);flex-shrink:0}
-.player-info{flex:1;min-width:0}
-.player-name{font-size:14px;font-weight:700}
-.player-meta{font-size:12px;color:var(--muted);margin-top:3px}
-.arrow{color:var(--brand);font-size:20px;flex-shrink:0}
-
-/* 대회 카드 */
 .tour-card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;transition:border-color .15s}
 .tour-card:hover{border-color:var(--brand)}
 .tour-name{font-size:15px;font-weight:700}
 .tour-meta{font-size:12px;color:var(--muted);margin-top:4px}
 
-/* KPI 상단 8개 */
 .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
 .kpi{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:10px 4px;text-align:center}
 .kpi .v{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--brand);line-height:1}
 .kpi .l{font-size:10px;font-weight:700;color:var(--muted);margin-top:4px;letter-spacing:.3px}
 
-/* 상세 스탯 섹션 */
 .stat-section{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:10px}
 .stat-section.bat{border-left:3px solid var(--brand)}
 .stat-section.pit{border-left:3px solid var(--win)}
@@ -62,7 +46,6 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--black);color:var(--t
 .kv-row:last-child{border-bottom:none}
 .kv-row .k{color:var(--muted)}.kv-row .v{font-weight:700}
 
-/* 경기별 기록 */
 .game-rec-card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;transition:border-color .15s}
 .game-rec-card:hover,.game-rec-card.selected{border-color:var(--brand)}
 .game-rec-info{flex:1;min-width:0}
@@ -82,29 +65,21 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--black);color:var(--t
 <body>
 <header class="header">
   <div class="header-inner">
-    <div class="logo">ELITE<span>REC</span></div>
+    <div class="logo">ELITE<span> BASEBALL</span></div>
     <a href="index.html" class="back-btn">← 홈</a>
   </div>
 </header>
 
 <div class="container">
 
-  <!-- 선수 목록 -->
-  <div id="viewPlayers">
-    <div class="page-title">선수 리포트</div>
-    <div class="page-sub">선수를 선택하고 대회별 성적을 확인하세요</div>
-    <input class="search-bar" id="playerSearch" placeholder="🔍 이름 또는 등번호 검색" />
-    <div id="playersList"></div>
-  </div>
-
   <!-- 대회 선택 -->
-  <div id="viewTournaments" class="hidden">
+  <div id="viewTournaments">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
       <div>
         <div class="page-title">대회 선택</div>
         <div class="page-sub" id="playerHeader">-</div>
       </div>
-      <button class="back-btn" onclick="history.back()">← 뒤로</button>
+      <a href="index.html" class="back-btn">← 홈</a>
     </div>
     <div id="tourList"></div>
   </div>
@@ -116,10 +91,9 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--black);color:var(--t
         <div class="page-title">상세 리포트</div>
         <div class="page-sub" id="statsHeader">-</div>
       </div>
-      <button class="back-btn" onclick="history.back()">← 뒤로</button>
+      <button class="back-btn" id="btnBackToTours">← 뒤로</button>
     </div>
 
-    <!-- KPI 8개 -->
     <div class="kpi-grid">
       <div class="kpi"><div class="v" id="kpiAVG">.000</div><div class="l">타율</div></div>
       <div class="kpi"><div class="v" id="kpiOBP">.000</div><div class="l">출루율</div></div>
@@ -131,136 +105,325 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--black);color:var(--t
       <div class="kpi"><div class="v" id="kpiG">-</div><div class="l">경기수</div></div>
     </div>
 
-    <!-- 타격 -->
     <div class="stat-section bat">
       <div class="stat-section-title">⚾ Batting</div>
       <div class="stat-grid" id="batKV"></div>
     </div>
 
-    <!-- 투구 -->
     <div class="stat-section pit">
       <div class="stat-section-title">🥎 Pitching</div>
       <div class="stat-grid" id="pitKV"></div>
     </div>
 
-    <!-- 수비/메모 -->
     <div class="stat-section fld">
       <div class="stat-section-title">🧤 Fielding & Memo</div>
       <div id="fldKV"></div>
     </div>
 
-    <!-- 경기별 기록 -->
     <div class="section-label">경기별 기록</div>
     <div id="gamesList"></div>
     <button class="btn primary" id="btnGoGameReport">선택한 경기 리포트 보기 →</button>
-    <button class="btn ghost" style="margin-top:8px" onclick="history.back()">← 대회 목록</button>
+    <button class="btn ghost" style="margin-top:8px" id="btnBackToToursBottom">← 대회 목록</button>
   </div>
 
 </div>
 
 <script>
-const client=window.sb;
-async function requireLogin(){const{data,error}=await client.auth.getSession();if(error||!data?.session){location.href=`auth.html?next=${encodeURIComponent(location.pathname.split('/').pop()+location.search)}`;return null;}return data.session;}
-const el=(id)=>document.getElementById(id);
-const num=(v)=>Number.isFinite(Number(v))?Number(v):0;
-const fmtRate=(x)=>(!Number.isFinite(x))?'.000':x.toFixed(3);
-let players=[],currentPlayer=null,currentTournament=null,selectedGameId=null,myUserId=null;
+const client = window.sb;
+const el = (id)=>document.getElementById(id);
+const num = (v)=>Number.isFinite(Number(v)) ? Number(v) : 0;
+const fmtRate = (x)=>(!Number.isFinite(x)) ? '.000' : x.toFixed(3);
+const CACHE_TTL_MS = 60 * 1000;
 
-function showView(id,push=true){
-  ['viewPlayers','viewTournaments','viewStats'].forEach(v=>el(v).classList.add('hidden'));
+let currentPlayer = null;
+let currentTournament = null;
+let selectedGameId = null;
+let myUserId = null;
+let playerRecords = [];
+let gamesById = new Map();
+let recordsByTournament = new Map();
+let gamesByTournament = new Map();
+
+async function requireLogin(){
+  const { data, error } = await client.auth.getSession();
+  if(error || !data?.session){
+    location.href = `auth.html?next=${encodeURIComponent(location.pathname.split('/').pop()+location.search)}`;
+    return null;
+  }
+  return data.session;
+}
+
+function showView(id, push = true){
+  ['viewTournaments','viewStats'].forEach(v=>el(v).classList.add('hidden'));
   el(id).classList.remove('hidden');
-  if(push)history.pushState({view:id,player:currentPlayer,tournament:currentTournament},'','');
+  if(push){
+    history.pushState({ view:id, tournament:currentTournament }, '', '');
+  }
 }
 
-async function loadPlayers(){
-  const{data,error}=await client.from('baseball_players').select('*').eq('owner_user_id',myUserId).order('name');
-  if(!error){players=data;renderPlayersList('');}
+function getCacheKey(playerId){
+  return `playerReport:v2:${playerId}`;
 }
 
-function renderPlayersList(q){
-  el('playersList').innerHTML='';
-  players.filter(p=>p.name.includes(q)||(p.jersey_number||'').toString().includes(q)).forEach(p=>{
-    const item=document.createElement('div');item.className='player-card';
-    const pnum=(p.jersey_number??'')!==''?p.jersey_number:'-';
-    item.innerHTML=`<div class="player-num">${pnum}</div><div class="player-info"><div class="player-name">${p.name}</div><div class="player-meta">${p.primary_position||'-'} · ${p.grade||'-'}</div></div><div class="arrow">→</div>`;
-    item.onclick=()=>{currentPlayer=p;el('playerHeader').textContent=`${p.name} 선수`;showView('viewTournaments');loadPlayerTournaments(p.id);};
-    el('playersList').appendChild(item);
-  });
-  if(!el('playersList').children.length){el('playersList').innerHTML='<div class="hint-text">검색 결과가 없어요.</div>';}
+function loadCache(playerId){
+  try{
+    const raw = sessionStorage.getItem(getCacheKey(playerId));
+    if(!raw) return null;
+    const parsed = JSON.parse(raw);
+    if(!parsed?.savedAt || (Date.now() - parsed.savedAt) > CACHE_TTL_MS) return null;
+    return parsed;
+  }catch(_){
+    return null;
+  }
 }
 
-async function loadPlayerTournaments(pId){
-  const{data:recs}=await client.from('baseball_game_player_records').select('game_id').eq('player_id',pId);
-  const gIds=[...new Set((recs||[]).map(x=>x.game_id))];
-  const{data:gms}=await client.from('baseball_games').select('tournament,game_date').in('id',gIds);
-  const tours=[...new Set(gms.map(g=>g.tournament).filter(t=>t))].sort();
-  el('tourList').innerHTML='';
-  if(!tours.length){el('tourList').innerHTML='<div class="hint-text">참여한 대회 기록이 없어요.</div>';return;}
-  tours.forEach(t=>{
-    const item=document.createElement('div');item.className='tour-card';
-    const cnt=gIds.length;
-    item.innerHTML=`<div><div class="tour-name">🏆 ${t}</div><div class="tour-meta">경기 기록 ${cnt}개</div></div><div class="arrow">→</div>`;
-    item.onclick=()=>{currentTournament=t;el('statsHeader').textContent=`${currentPlayer.name} · ${t}`;showView('viewStats');loadPlayerTournamentStats(pId,t);};
+function saveCache(playerId, payload){
+  try{
+    sessionStorage.setItem(getCacheKey(playerId), JSON.stringify({ ...payload, savedAt: Date.now() }));
+  }catch(_){ }
+}
+
+async function loadMyPlayer(){
+  const { data, error } = await client
+    .from('baseball_players')
+    .select('id,name,jersey_number,primary_position,grade')
+    .eq('owner_user_id', myUserId)
+    .order('id', { ascending:true })
+    .limit(1)
+    .maybeSingle();
+
+  if(error) throw error;
+  currentPlayer = data || null;
+
+  if(!currentPlayer){
+    el('playerHeader').textContent = '등록된 선수가 없습니다';
+    el('tourList').innerHTML = '<div class="hint-text">내 계정에 연결된 선수가 아직 없어요.</div>';
+    return;
+  }
+
+  el('playerHeader').textContent = `${currentPlayer.name} 선수`;
+  await loadBootstrapData(currentPlayer.id);
+  renderTournamentList();
+}
+
+async function loadBootstrapData(playerId){
+  const cached = loadCache(playerId);
+  if(cached){
+    playerRecords = cached.playerRecords || [];
+    buildDataMaps(cached.games || []);
+    return;
+  }
+
+  const { data: recs, error: recErr } = await client
+    .from('baseball_game_player_records')
+    .select('game_id,ab,h,rbi,r,bb,so,hbp,sb,doubles,triples,hr,sf,sh,gb,fb,ip,er,pk,pbb,ph,pitches,max_vel,e,player_memo')
+    .eq('player_id', playerId);
+
+  if(recErr) throw recErr;
+
+  playerRecords = recs || [];
+  const gameIds = [...new Set(playerRecords.map(r => r.game_id).filter(Boolean))];
+
+  if(!gameIds.length){
+    buildDataMaps([]);
+    saveCache(playerId, { playerRecords, games: [] });
+    return;
+  }
+
+  const { data: games, error: gamesErr } = await client
+    .from('baseball_games')
+    .select('id,tournament,game_date,opponent,result,our_score,opp_score')
+    .in('id', gameIds)
+    .order('game_date', { ascending:false });
+
+  if(gamesErr) throw gamesErr;
+
+  buildDataMaps(games || []);
+  saveCache(playerId, { playerRecords, games: games || [] });
+}
+
+function buildDataMaps(games){
+  gamesById = new Map((games || []).map(g => [g.id, g]));
+  recordsByTournament = new Map();
+  gamesByTournament = new Map();
+
+  for(const record of playerRecords){
+    const game = gamesById.get(record.game_id);
+    if(!game?.tournament) continue;
+    const tour = game.tournament;
+
+    if(!recordsByTournament.has(tour)) recordsByTournament.set(tour, []);
+    recordsByTournament.get(tour).push(record);
+  }
+
+  for(const game of games || []){
+    if(!game?.tournament) continue;
+    if(!gamesByTournament.has(game.tournament)) gamesByTournament.set(game.tournament, []);
+    gamesByTournament.get(game.tournament).push(game);
+  }
+
+  for(const [tour, arr] of gamesByTournament.entries()){
+    arr.sort((a,b) => String(b.game_date || '').localeCompare(String(a.game_date || '')));
+    gamesByTournament.set(tour, arr);
+  }
+}
+
+function renderTournamentList(){
+  el('tourList').innerHTML = '';
+  const tours = [...gamesByTournament.entries()]
+    .map(([tour, games]) => ({
+      tour,
+      count: games.length,
+      latest: games[0]?.game_date || ''
+    }))
+    .sort((a,b)=> String(b.latest).localeCompare(String(a.latest)));
+
+  if(!tours.length){
+    el('tourList').innerHTML = '<div class="hint-text">참여한 대회 기록이 없어요.</div>';
+    return;
+  }
+
+  for(const meta of tours){
+    const item = document.createElement('div');
+    item.className = 'tour-card';
+    item.innerHTML = `
+      <div>
+        <div class="tour-name">🏆 ${meta.tour}</div>
+        <div class="tour-meta">경기 기록 ${meta.count}개${meta.latest ? ` · 최근 ${meta.latest}` : ''}</div>
+      </div>
+      <div class="arrow">→</div>`;
+    item.onclick = ()=>{
+      currentTournament = meta.tour;
+      selectedGameId = null;
+      el('statsHeader').textContent = `${currentPlayer.name} · ${meta.tour}`;
+      showView('viewStats');
+      renderTournamentStats(meta.tour);
+    };
     el('tourList').appendChild(item);
-  });
+  }
 }
 
-async function loadPlayerTournamentStats(pId,tour){
-  const{data:games}=await client.from('baseball_games').select('*').eq('tournament',tour).order('game_date');
-  const gIds=games.map(g=>g.id);
-  const{data:records}=await client.from('baseball_game_player_records').select('*').eq('player_id',pId).in('game_id',gIds);
-  const recMap=new Map(records.map(r=>[r.game_id,r]));
+function renderTournamentStats(tour){
+  const games = gamesByTournament.get(tour) || [];
+  const safeRecords = recordsByTournament.get(tour) || [];
 
-  let s={ab:0,h:0,rbi:0,r:0,bb:0,so:0,hbp:0,sb:0,d2:0,d3:0,hr:0,sf:0,sh:0,gb:0,fb:0,ip:0,er:0,pk:0,pbb:0,ph:0,pit:0,max_v:0,e:0,memos:[]};
-  records.forEach(r=>{
-    s.ab+=num(r.ab);s.h+=num(r.h);s.rbi+=num(r.rbi);s.r+=num(r.r);s.bb+=num(r.bb);s.so+=num(r.so);s.hbp+=num(r.hbp);s.sb+=num(r.sb);s.d2+=num(r.doubles);s.d3+=num(r.triples);s.hr+=num(r.hr);s.sf+=num(r.sf);s.sh+=num(r.sh);s.gb+=num(r.gb);s.fb+=num(r.fb);s.ip+=num(r.ip);s.er+=num(r.er);s.pk+=num(r.pk);s.pbb+=num(r.pbb);s.ph+=num(r.ph);s.pit+=num(r.pitches);
-    if(num(r.max_vel)>s.max_v)s.max_v=num(r.max_vel);s.e+=num(r.e);if(r.player_memo)s.memos.push(r.player_memo);
-  });
+  if(!games.length || !safeRecords.length){
+    resetStatsView();
+    el('gamesList').innerHTML = '<div class="hint-text">대회 경기 기록이 없어요.</div>';
+    return;
+  }
 
-  const avg=s.ab>0?s.h/s.ab:NaN;
-  const obp=(s.ab+s.bb+s.hbp+s.sf)>0?(s.h+s.bb+s.hbp)/(s.ab+s.bb+s.hbp+s.sf):NaN;
-  const slg=s.ab>0?((s.h-s.d2-s.d3-s.hr)+s.d2*2+s.d3*3+s.hr*4)/s.ab:NaN;
-  const era=s.ip>0?(s.er*9)/s.ip:NaN;
-  const whip=s.ip>0?(s.pbb+s.ph)/s.ip:NaN;
+  const recMap = new Map(safeRecords.map(r => [r.game_id, r]));
+  let s = { ab:0,h:0,rbi:0,r:0,bb:0,so:0,hbp:0,sb:0,d2:0,d3:0,hr:0,sf:0,sh:0,gb:0,fb:0,ip:0,er:0,pk:0,pbb:0,ph:0,pit:0,max_v:0,e:0,memos:[] };
 
-  el('kpiAVG').textContent=fmtRate(avg);el('kpiOBP').textContent=fmtRate(obp);el('kpiSLG').textContent=fmtRate(slg);
-  el('kpiOPS').textContent=(Number.isFinite(obp)&&Number.isFinite(slg))?(obp+slg).toFixed(3):'.000';
-  el('kpiERA').textContent=s.ip>0?era.toFixed(2):'-';el('kpiWHIP').textContent=s.ip>0?whip.toFixed(2):'-';
-  el('kpiSO').textContent=s.pk;el('kpiG').textContent=records.length;
+  for(const r of safeRecords){
+    s.ab+=num(r.ab); s.h+=num(r.h); s.rbi+=num(r.rbi); s.r+=num(r.r); s.bb+=num(r.bb); s.so+=num(r.so); s.hbp+=num(r.hbp); s.sb+=num(r.sb);
+    s.d2+=num(r.doubles); s.d3+=num(r.triples); s.hr+=num(r.hr); s.sf+=num(r.sf); s.sh+=num(r.sh); s.gb+=num(r.gb); s.fb+=num(r.fb);
+    s.ip+=num(r.ip); s.er+=num(r.er); s.pk+=num(r.pk); s.pbb+=num(r.pbb); s.ph+=num(r.ph); s.pit+=num(r.pitches);
+    if(num(r.max_vel) > s.max_v) s.max_v = num(r.max_vel);
+    s.e+=num(r.e);
+    if(r.player_memo) s.memos.push(r.player_memo);
+  }
+
+  const avg = s.ab>0 ? s.h/s.ab : NaN;
+  const obp = (s.ab+s.bb+s.hbp+s.sf)>0 ? (s.h+s.bb+s.hbp)/(s.ab+s.bb+s.hbp+s.sf) : NaN;
+  const slg = s.ab>0 ? ((s.h-s.d2-s.d3-s.hr)+s.d2*2+s.d3*3+s.hr*4)/s.ab : NaN;
+  const era = s.ip>0 ? (s.er*9)/s.ip : NaN;
+  const whip = s.ip>0 ? (s.pbb+s.ph)/s.ip : NaN;
+
+  el('kpiAVG').textContent = fmtRate(avg);
+  el('kpiOBP').textContent = fmtRate(obp);
+  el('kpiSLG').textContent = fmtRate(slg);
+  el('kpiOPS').textContent = (Number.isFinite(obp)&&Number.isFinite(slg)) ? (obp+slg).toFixed(3) : '.000';
+  el('kpiERA').textContent = s.ip>0 ? era.toFixed(2) : '-';
+  el('kpiWHIP').textContent = s.ip>0 ? whip.toFixed(2) : '-';
+  el('kpiSO').textContent = s.pk;
+  el('kpiG').textContent = safeRecords.length;
 
   const b=(k,v)=>`<div class="stat-box"><div class="v">${v}</div><div class="k">${k}</div></div>`;
-  el('batKV').innerHTML=b('타수',s.ab)+b('안타',s.h)+b('타점',s.rbi)+b('득점',s.r)+b('볼넷',s.bb)+b('삼진',s.so)+b('사구',s.hbp)+b('도루',s.sb)+b('2루타',s.d2)+b('3루타',s.d3)+b('홈런',s.hr)+b('희플',s.sf)+b('희번',s.sh)+b('땅볼',s.gb)+b('플라이',s.fb);
-  el('pitKV').innerHTML=b('이닝',s.ip.toFixed(1))+b('자책',s.er)+b('삼진',s.pk)+b('볼넷',s.pbb)+b('피안타',s.ph)+b('투구수',s.pit)+b('최고구속',s.max_v>0?s.max_v:'-');
-  el('fldKV').innerHTML=`<div class="kv-row"><span class="k">실책</span><span class="v">${s.e}</span></div><div class="kv-row"><span class="k">메모 요약</span><span class="v" style="font-size:12px;text-align:right;max-width:60%">${[...new Set(s.memos)].join(' / ')||'-'}</span></div>`;
+  el('batKV').innerHTML = b('타수',s.ab)+b('안타',s.h)+b('타점',s.rbi)+b('득점',s.r)+b('볼넷',s.bb)+b('삼진',s.so)+b('사구',s.hbp)+b('도루',s.sb)+b('2루타',s.d2)+b('3루타',s.d3)+b('홈런',s.hr)+b('희플',s.sf)+b('희번',s.sh)+b('땅볼',s.gb)+b('플라이',s.fb);
+  el('pitKV').innerHTML = b('이닝',s.ip.toFixed(1))+b('자책',s.er)+b('삼진',s.pk)+b('볼넷',s.pbb)+b('피안타',s.ph)+b('투구수',s.pit)+b('최고구속',s.max_v>0?s.max_v:'-');
+  el('fldKV').innerHTML = `<div class="kv-row"><span class="k">실책</span><span class="v">${s.e}</span></div><div class="kv-row"><span class="k">메모 요약</span><span class="v" style="font-size:12px;text-align:right;max-width:60%">${[...new Set(s.memos)].join(' / ')||'-'}</span></div>`;
 
-  el('gamesList').innerHTML='';
-  games.filter(g=>recMap.has(g.id)).forEach(g=>{
-    const r=recMap.get(g.id);
-    const item=document.createElement('div');item.className='game-rec-card';
-    const bc=g.result==='W'?'W':g.result==='L'?'L':'D';
-    item.innerHTML=`<div class="game-rec-info"><div class="game-rec-vs">vs ${g.opponent} <span style="color:var(--brand)">${num(g.our_score)}:${num(g.opp_score)}</span></div><div class="game-rec-meta">${g.game_date} · ${r.ab}타수 ${r.h}안타 ${r.rbi}타점</div></div><div class="result-pill ${bc}">${g.result}</div>`;
-    item.onclick=()=>{selectedGameId=g.id;[...el('gamesList').children].forEach(c=>c.classList.remove('selected'));item.classList.add('selected');};
+  el('gamesList').innerHTML = '';
+  for(const g of games){
+    if(!recMap.has(g.id)) continue;
+    const r = recMap.get(g.id);
+    const item = document.createElement('div');
+    item.className = 'game-rec-card';
+    const bc = g.result==='W' ? 'W' : g.result==='L' ? 'L' : 'D';
+    item.innerHTML = `
+      <div class="game-rec-info">
+        <div class="game-rec-vs">vs ${g.opponent} <span style="color:var(--brand)">${num(g.our_score)}:${num(g.opp_score)}</span></div>
+        <div class="game-rec-meta">${g.game_date} · ${num(r.ab)}타수 ${num(r.h)}안타 ${num(r.rbi)}타점</div>
+      </div>
+      <div class="result-pill ${bc}">${g.result}</div>`;
+    item.onclick = ()=>{
+      selectedGameId = g.id;
+      [...el('gamesList').children].forEach(c=>c.classList.remove('selected'));
+      item.classList.add('selected');
+    };
     el('gamesList').appendChild(item);
-  });
+  }
+
+  if(!el('gamesList').children.length){
+    el('gamesList').innerHTML = '<div class="hint-text">선수 기록이 있는 경기가 없어요.</div>';
+  }
 }
 
-window.onpopstate=(e)=>{
-  if(!e.state){showView('viewPlayers',false);return;}
-  currentPlayer=e.state.player;currentTournament=e.state.tournament;
-  showView(e.state.view,false);
-  if(e.state.view==='viewTournaments')loadPlayerTournaments(currentPlayer.id);
-  if(e.state.view==='viewStats')loadPlayerTournamentStats(currentPlayer.id,currentTournament);
+function resetStatsView(){
+  el('kpiAVG').textContent = '.000';
+  el('kpiOBP').textContent = '.000';
+  el('kpiSLG').textContent = '.000';
+  el('kpiOPS').textContent = '.000';
+  el('kpiERA').textContent = '-';
+  el('kpiWHIP').textContent = '-';
+  el('kpiSO').textContent = '-';
+  el('kpiG').textContent = '-';
+  el('batKV').innerHTML = '';
+  el('pitKV').innerHTML = '';
+  el('fldKV').innerHTML = '<div class="kv-row"><span class="k">안내</span><span class="v">-</span></div>';
+}
+
+window.onpopstate = (e)=>{
+  const state = e.state;
+  if(!state || state.view === 'viewTournaments'){
+    showView('viewTournaments', false);
+    return;
+  }
+
+  if(state.view === 'viewStats' && currentPlayer && state.tournament){
+    currentTournament = state.tournament;
+    el('statsHeader').textContent = `${currentPlayer.name} · ${state.tournament}`;
+    showView('viewStats', false);
+    renderTournamentStats(state.tournament);
+  }
 };
 
-el('playerSearch').oninput=(e)=>renderPlayersList(e.target.value);
-el('btnGoGameReport').onclick=()=>{if(!selectedGameId)return alert('경기를 선택해주세요.');location.href=`report.html?game=${selectedGameId}`;};
+el('btnGoGameReport').onclick = ()=>{
+  if(!selectedGameId) return alert('경기를 선택해주세요.');
+  location.href = `report.html?game=${selectedGameId}`;
+};
+el('btnBackToTours').onclick = ()=>history.back();
+el('btnBackToToursBottom').onclick = ()=>history.back();
 
 (async function init(){
-  const session=await requireLogin();if(!session)return;
-  const{data:{user}}=await client.auth.getUser();
-  if(user) myUserId=user.id;
-  history.replaceState({view:'viewPlayers'},'','');
-  await loadPlayers();
+  const session = await requireLogin();
+  if(!session) return;
+
+  const { data:{ user } } = await client.auth.getUser();
+  if(user) myUserId = user.id;
+
+  history.replaceState({ view:'viewTournaments', tournament:null }, '', '');
+  showView('viewTournaments', false);
+
+  try{
+    await loadMyPlayer();
+  }catch(err){
+    console.error(err);
+    el('playerHeader').textContent = '불러오기 실패';
+    el('tourList').innerHTML = `<div class="hint-text">데이터를 불러오지 못했어요. ${err?.message || ''}</div>`;
+  }
 })();
 </script>
 </body>
