@@ -58,6 +58,25 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--black);color:var(--t
 .btn.primary{background:var(--brand);color:var(--black)}.btn.primary:hover{background:#d4ea3a}
 .btn.ghost{background:transparent;border:1px solid var(--border2);color:var(--text)}.btn.ghost:hover{background:rgba(255,255,255,.05)}
 .hidden{display:none!important}
+
+.sheet-overlay{position:fixed;inset:0;background:rgba(0,0,0,.58);backdrop-filter:blur(4px);z-index:300;opacity:0;pointer-events:none;transition:opacity .22s ease}
+.sheet-overlay.open{opacity:1;pointer-events:auto}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:310;background:#12161d;border-top-left-radius:22px;border-top-right-radius:22px;border:1px solid var(--border2);border-bottom:none;box-shadow:0 -18px 40px rgba(0,0,0,.45);transform:translateY(100%);transition:transform .28s ease;max-height:84vh;overflow:auto}
+.sheet.open{transform:translateY(0)}
+.sheet-inner{max-width:480px;margin:0 auto;padding:14px 16px 28px}
+.sheet-handle{width:52px;height:5px;border-radius:999px;background:rgba(255,255,255,.18);margin:2px auto 14px}
+.sheet-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px}
+.sheet-title{font-size:20px;font-weight:900}
+.sheet-sub{font-size:12px;color:var(--muted);margin-top:4px}
+.sheet-close{padding:8px 12px;border-radius:10px;border:1px solid var(--border2);background:transparent;color:var(--text);font-weight:700;cursor:pointer}
+.sheet-score{display:flex;align-items:center;justify-content:space-between;background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin-bottom:12px}
+.sheet-score .vs{font-size:16px;font-weight:800}
+.sheet-score .score{font-family:'Bebas Neue',sans-serif;font-size:30px;color:var(--brand);line-height:1}
+.sheet-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.sheet-box{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:10px 6px;text-align:center}
+.sheet-box .v{font-family:'Bebas Neue',sans-serif;font-size:20px;line-height:1;color:var(--text)}
+.sheet-box .k{font-size:10px;color:var(--muted);margin-top:4px;font-weight:700}
+body.sheet-open{overflow:hidden}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/config.js"></script>
@@ -65,7 +84,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--black);color:var(--t
 <body>
 <header class="header">
   <div class="header-inner">
-    <div class="logo">ELITE<span> BASEBALL</span></div>
+    <div class="logo">ELITE<span>REC</span></div>
     <a href="index.html" class="back-btn">← 홈</a>
   </div>
 </header>
@@ -121,11 +140,44 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--black);color:var(--t
     </div>
 
     <div class="section-label">경기별 기록</div>
+    <div class="hint-text">경기를 누르면 아래에서 상세 성적이 올라옵니다.</div>
     <div id="gamesList"></div>
-    <button class="btn primary" id="btnGoGameReport">선택한 경기 리포트 보기 →</button>
     <button class="btn ghost" style="margin-top:8px" id="btnBackToToursBottom">← 대회 목록</button>
   </div>
 
+</div>
+
+<div id="sheetOverlay" class="sheet-overlay hidden"></div>
+<div id="gameSheet" class="sheet hidden" aria-hidden="true">
+  <div class="sheet-inner">
+    <div class="sheet-handle"></div>
+    <div class="sheet-top">
+      <div>
+        <div class="sheet-title">경기 성적</div>
+        <div class="sheet-sub" id="sheetHeader">-</div>
+      </div>
+      <button class="sheet-close" id="btnCloseSheet">닫기</button>
+    </div>
+
+    <div class="sheet-score">
+      <div>
+        <div class="vs" id="sheetOpponent">vs -</div>
+        <div class="sheet-sub" id="sheetGameMeta">-</div>
+      </div>
+      <div class="score" id="sheetScore">0:0</div>
+    </div>
+
+    <div class="section-label">타격</div>
+    <div id="sheetBatGrid" class="sheet-grid"></div>
+
+    <div class="section-label">투구</div>
+    <div id="sheetPitGrid" class="sheet-grid"></div>
+
+    <div class="section-label">수비 / 메모</div>
+    <div class="stat-section fld" style="margin-bottom:0">
+      <div id="sheetFieldRows"></div>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -137,7 +189,6 @@ const CACHE_TTL_MS = 60 * 1000;
 
 let currentPlayer = null;
 let currentTournament = null;
-let selectedGameId = null;
 let myUserId = null;
 let playerRecords = [];
 let gamesById = new Map();
@@ -294,7 +345,6 @@ function renderTournamentList(){
       <div class="arrow">→</div>`;
     item.onclick = ()=>{
       currentTournament = meta.tour;
-      selectedGameId = null;
       el('statsHeader').textContent = `${currentPlayer.name} · ${meta.tour}`;
       showView('viewStats');
       renderTournamentStats(meta.tour);
@@ -314,6 +364,7 @@ function renderTournamentStats(tour){
   }
 
   const recMap = new Map(safeRecords.map(r => [r.game_id, r]));
+  closeGameSheet();
   let s = { ab:0,h:0,rbi:0,r:0,bb:0,so:0,hbp:0,sb:0,d2:0,d3:0,hr:0,sf:0,sh:0,gb:0,fb:0,ip:0,er:0,pk:0,pbb:0,ph:0,pit:0,max_v:0,e:0,memos:[] };
 
   for(const r of safeRecords){
@@ -359,9 +410,9 @@ function renderTournamentStats(tour){
       </div>
       <div class="result-pill ${bc}">${g.result}</div>`;
     item.onclick = ()=>{
-      selectedGameId = g.id;
       [...el('gamesList').children].forEach(c=>c.classList.remove('selected'));
       item.classList.add('selected');
+      openGameSheet(g, r);
     };
     el('gamesList').appendChild(item);
   }
@@ -385,9 +436,73 @@ function resetStatsView(){
   el('fldKV').innerHTML = '<div class="kv-row"><span class="k">안내</span><span class="v">-</span></div>';
 }
 
+function gameBox(k,v){
+  return `<div class="sheet-box"><div class="v">${v}</div><div class="k">${k}</div></div>`;
+}
+
+function openGameSheet(game, record){
+  el('sheetHeader').textContent = `${currentPlayer?.name || '-'} · ${currentTournament || '-'}`;
+  el('sheetOpponent').textContent = `vs ${game?.opponent || '-'}`;
+  el('sheetGameMeta').textContent = `${game?.game_date || '-'} · 결과 ${game?.result || '-'}`;
+  el('sheetScore').textContent = `${num(game?.our_score)}:${num(game?.opp_score)}`;
+
+  el('sheetBatGrid').innerHTML = [
+    gameBox('타수', num(record?.ab)),
+    gameBox('안타', num(record?.h)),
+    gameBox('타점', num(record?.rbi)),
+    gameBox('득점', num(record?.r)),
+    gameBox('볼넷', num(record?.bb)),
+    gameBox('삼진', num(record?.so)),
+    gameBox('사구', num(record?.hbp)),
+    gameBox('도루', num(record?.sb)),
+    gameBox('2루타', num(record?.doubles)),
+    gameBox('3루타', num(record?.triples)),
+    gameBox('홈런', num(record?.hr)),
+    gameBox('희플', num(record?.sf))
+  ].join('');
+
+  el('sheetPitGrid').innerHTML = [
+    gameBox('이닝', num(record?.ip).toFixed(1)),
+    gameBox('자책', num(record?.er)),
+    gameBox('삼진', num(record?.pk)),
+    gameBox('볼넷', num(record?.pbb)),
+    gameBox('피안타', num(record?.ph)),
+    gameBox('투구수', num(record?.pitches)),
+    gameBox('최고구속', num(record?.max_vel) || '-'),
+    gameBox('실책', num(record?.e)),
+    gameBox('희번', num(record?.sh))
+  ].join('');
+
+  el('sheetFieldRows').innerHTML = `
+    <div class="kv-row"><span class="k">땅볼</span><span class="v">${num(record?.gb)}</span></div>
+    <div class="kv-row"><span class="k">플라이</span><span class="v">${num(record?.fb)}</span></div>
+    <div class="kv-row"><span class="k">메모</span><span class="v" style="font-size:12px;text-align:right;max-width:65%">${record?.player_memo || '-'}</span></div>`;
+
+  el('sheetOverlay').classList.remove('hidden');
+  el('gameSheet').classList.remove('hidden');
+  requestAnimationFrame(()=>{
+    el('sheetOverlay').classList.add('open');
+    el('gameSheet').classList.add('open');
+    document.body.classList.add('sheet-open');
+  });
+}
+
+function closeGameSheet(){
+  el('sheetOverlay').classList.remove('open');
+  el('gameSheet').classList.remove('open');
+  document.body.classList.remove('sheet-open');
+  setTimeout(()=>{
+    if(!el('gameSheet').classList.contains('open')){
+      el('sheetOverlay').classList.add('hidden');
+      el('gameSheet').classList.add('hidden');
+    }
+  }, 280);
+}
+
 window.onpopstate = (e)=>{
   const state = e.state;
   if(!state || state.view === 'viewTournaments'){
+    closeGameSheet();
     showView('viewTournaments', false);
     return;
   }
@@ -400,12 +515,11 @@ window.onpopstate = (e)=>{
   }
 };
 
-el('btnGoGameReport').onclick = ()=>{
-  if(!selectedGameId) return alert('경기를 선택해주세요.');
-  location.href = `report.html?game=${selectedGameId}`;
-};
-el('btnBackToTours').onclick = ()=>history.back();
-el('btnBackToToursBottom').onclick = ()=>history.back();
+el('btnCloseSheet').onclick = closeGameSheet;
+el('sheetOverlay').onclick = closeGameSheet;
+el('btnBackToTours').onclick = ()=>{ closeGameSheet(); history.back(); };
+el('btnBackToToursBottom').onclick = ()=>{ closeGameSheet(); history.back(); };
+window.addEventListener('keydown', (e)=>{ if(e.key === 'Escape') closeGameSheet(); });
 
 (async function init(){
   const session = await requireLogin();
