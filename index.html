@@ -18,62 +18,322 @@
   --red: #ff4d4d; --shadow: 0 4px 24px rgba(0,0,0,.4);
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'Noto Sans KR', sans-serif; background: var(--black); color: var(--text); min-height: 100vh; padding-bottom: 40px; }
-.header { position: sticky; top: 0; z-index: 100; background: rgba(10,12,16,.85); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); padding: 0 16px; }
-.header-inner { max-width: 480px; margin: 0 auto; height: 56px; display: flex; align-items: center; justify-content: space-between; }
-.logo { font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 1px; color: var(--brand); line-height: 1; }
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background: var(--black);
+  color: var(--text);
+  min-height: 100vh;
+  padding-bottom: 40px;
+}
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(10,12,16,.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 16px;
+}
+.header-inner {
+  max-width: 480px;
+  margin: 0 auto;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.logo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 28px;
+  letter-spacing: 1px;
+  color: var(--brand);
+  line-height: 1;
+}
 .logo span { color: var(--text); }
 #authArea { display: flex; gap: 8px; }
-.auth-btn { padding: 7px 16px; border-radius: 8px; border: 1px solid var(--border2); background: transparent; color: var(--text); font-family: 'Noto Sans KR', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; transition: all .15s; }
-.auth-btn:hover { border-color: var(--brand); color: var(--brand); }
-.auth-btn.primary { background: var(--brand); color: var(--black); border-color: var(--brand); }
+
+.auth-btn {
+  padding: 7px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--border2);
+  background: transparent;
+  color: var(--text);
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all .15s;
+}
+.auth-btn:hover {
+  border-color: var(--brand);
+  color: var(--brand);
+}
+.auth-btn.primary {
+  background: var(--brand);
+  color: var(--black);
+  border-color: var(--brand);
+}
 .auth-btn.primary:hover { background: #d4ea3a; }
-.container { max-width: 480px; margin: 0 auto; padding: 20px 16px; }
-.hero { background: var(--panel); border: 1px solid var(--border); border-radius: 20px; padding: 24px; margin-bottom: 16px; position: relative; overflow: hidden; }
-.hero::before { content: '⚾'; position: absolute; right: -10px; top: -10px; font-size: 100px; opacity: .04; transform: rotate(20deg); pointer-events: none; }
-.hero-label { font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--brand); margin-bottom: 8px; }
-.hero-title { font-family: 'Bebas Neue', sans-serif; font-size: 42px; line-height: 1; letter-spacing: .5px; margin-bottom: 8px; }
-.hero-sub { font-size: 13px; color: var(--muted); line-height: 1.6; margin-bottom: 18px; }
-.hero-btns { display: flex; gap: 10px; }
-.hero-btn { flex: 1; padding: 13px; border-radius: 12px; border: none; font-family: 'Noto Sans KR', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; transition: all .15s; }
-.hero-btn.solid { background: var(--brand); color: var(--black); }
+
+.container {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 20px 16px;
+}
+.hero {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 24px;
+  margin-bottom: 16px;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '⚾';
+  position: absolute;
+  right: -10px;
+  top: -10px;
+  font-size: 100px;
+  opacity: .04;
+  transform: rotate(20deg);
+  pointer-events: none;
+}
+.hero-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--brand);
+  margin-bottom: 8px;
+}
+.hero-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 42px;
+  line-height: 1;
+  letter-spacing: .5px;
+  margin-bottom: 8px;
+}
+.hero-sub {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.6;
+  margin-bottom: 18px;
+}
+.hero-btns {
+  display: flex;
+  gap: 10px;
+}
+.hero-btn {
+  flex: 1;
+  padding: 13px;
+  border-radius: 12px;
+  border: none;
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all .15s;
+}
+.hero-btn.solid {
+  background: var(--brand);
+  color: var(--black);
+}
 .hero-btn.solid:hover { background: #d4ea3a; }
-.hero-btn.ghost { background: transparent; border: 1px solid var(--border2); color: var(--text); }
-.hero-btn.ghost:hover { border-color: var(--brand); color: var(--brand); }
-.section-title { font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin: 24px 0 12px; }
-.stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
-.stat-card { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 16px; }
-.stat-label { font-size: 11px; font-weight: 700; letter-spacing: .5px; color: var(--muted); margin-bottom: 10px; }
-.stat-value { font-family: 'Bebas Neue', sans-serif; font-size: 34px; line-height: 1; color: var(--text); letter-spacing: .5px; }
-.stat-sub { font-size: 11px; color: var(--muted2); margin-top: 6px; }
-.quick-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
-.quick-card { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 18px; cursor: pointer; transition: all .15s; display: flex; flex-direction: column; }
-.quick-card:hover { border-color: var(--border2); transform: translateY(-1px); }
+.hero-btn.ghost {
+  background: transparent;
+  border: 1px solid var(--border2);
+  color: var(--text);
+}
+.hero-btn.ghost:hover {
+  border-color: var(--brand);
+  color: var(--brand);
+}
+
+.section-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 24px 0 12px;
+}
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.stat-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 16px;
+}
+.stat-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .5px;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+.stat-value {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 34px;
+  line-height: 1;
+  color: var(--text);
+  letter-spacing: .5px;
+}
+.stat-sub {
+  font-size: 11px;
+  color: var(--muted2);
+  margin-top: 6px;
+}
+
+.quick-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.quick-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 18px;
+  cursor: pointer;
+  transition: all .15s;
+  display: flex;
+  flex-direction: column;
+}
+.quick-card:hover {
+  border-color: var(--border2);
+  transform: translateY(-1px);
+}
 .quick-card:active { transform: translateY(0); }
-.quick-emoji { font-size: 24px; margin-bottom: 10px; }
-.quick-name { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
-.quick-desc { font-size: 12px; color: var(--muted); line-height: 1.4; flex: 1; }
-.quick-arrow { margin-top: 14px; font-size: 18px; color: var(--brand); font-weight: 900; }
-.quick-card.wide { grid-column: span 2; flex-direction: row; align-items: center; gap: 16px; }
-.quick-card.wide .quick-emoji { margin-bottom: 0; font-size: 28px; }
+.quick-emoji {
+  font-size: 24px;
+  margin-bottom: 10px;
+}
+.quick-name {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+.quick-desc {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.4;
+  flex: 1;
+}
+.quick-arrow {
+  margin-top: 14px;
+  font-size: 18px;
+  color: var(--brand);
+  font-weight: 900;
+}
+.quick-card.wide {
+  grid-column: span 2;
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
+}
+.quick-card.wide .quick-emoji {
+  margin-bottom: 0;
+  font-size: 28px;
+}
 .quick-card.wide .quick-body { flex: 1; }
 .quick-card.wide .quick-body .quick-name { margin-bottom: 4px; }
 .quick-card.wide .quick-arrow { margin-top: 0; }
-.recent-list { display: flex; flex-direction: column; gap: 8px; }
-.game-item { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 14px 16px; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: border-color .15s; }
+
+.recent-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.game-item {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: border-color .15s;
+}
 .game-item:hover { border-color: var(--border2); }
-.result-badge { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-family: 'Bebas Neue', sans-serif; font-size: 18px; flex-shrink: 0; }
+
+.result-badge {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 18px;
+  flex-shrink: 0;
+}
 .result-badge.W { background: var(--win-bg); color: var(--win); }
 .result-badge.L { background: var(--loss-bg); color: var(--loss); }
 .result-badge.D { background: var(--draw-bg); color: var(--draw); }
-.game-info { flex: 1; min-width: 0; }
-.game-vs { font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.game-meta { font-size: 12px; color: var(--muted); margin-top: 3px; }
-.game-score { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 1px; color: var(--text); flex-shrink: 0; }
-.empty { text-align: center; padding: 32px 0; color: var(--muted); font-size: 13px; line-height: 1.6; }
-.empty-icon { font-size: 32px; margin-bottom: 10px; }
-.view-all { width: 100%; margin-top: 10px; padding: 13px; border-radius: 12px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-family: 'Noto Sans KR', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; transition: all .15s; }
-.view-all:hover { border-color: var(--border2); color: var(--text); }
+
+.game-info {
+  flex: 1;
+  min-width: 0;
+}
+.game-vs {
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.game-meta {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 3px;
+}
+.game-score {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px;
+  letter-spacing: 1px;
+  color: var(--text);
+  flex-shrink: 0;
+}
+
+.empty {
+  text-align: center;
+  padding: 32px 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+.empty-icon {
+  font-size: 32px;
+  margin-bottom: 10px;
+}
+
+.view-all {
+  width: 100%;
+  margin-top: 10px;
+  padding: 13px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all .15s;
+}
+.view-all:hover {
+  border-color: var(--border2);
+  color: var(--text);
+}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/config.js"></script>
@@ -164,9 +424,10 @@ const client = window.sb;
 const el = (id) => document.getElementById(id);
 const num = (v) => Number.isFinite(Number(v)) ? Number(v) : 0;
 let currentSession = null;
-let myContext = null;
 
-function badgeClass(r){ return r === 'W' ? 'W' : r === 'L' ? 'L' : 'D'; }
+function badgeClass(r){
+  return r === 'W' ? 'W' : r === 'L' ? 'L' : 'D';
+}
 
 function goProtected(path){
   if(!currentSession){
@@ -193,6 +454,7 @@ function renderGuestHome(){
   el('yearLabel').textContent = '로그인 후 표시';
   el('mWLD').textContent = '—';
   el('monthLabel').textContent = '로그인 후 표시';
+
   el('recentHint').style.display = 'block';
   el('recentHint').innerHTML = `<div class="empty-icon">⚾</div>로그인하면 최근 경기 목록을<br>확인할 수 있어요.`;
   el('recentList').innerHTML = '';
@@ -204,6 +466,7 @@ function renderLoadingState(){
   el('yearLabel').textContent = '불러오는 중';
   el('mWLD').textContent = '...';
   el('monthLabel').textContent = '불러오는 중';
+
   el('recentHint').style.display = 'block';
   el('recentHint').innerHTML = `<div class="empty-icon">⏳</div>최근 경기 불러오는 중...`;
   el('recentList').innerHTML = '';
@@ -213,8 +476,16 @@ function renderLoadingState(){
 function renderSummary(summary){
   el('yWLD').textContent = `${num(summary.year_w)}·${num(summary.year_l)}·${num(summary.year_d)}`;
   el('yearLabel').textContent = `${summary.year}년 기준`;
+
   el('mWLD').textContent = `${num(summary.month_w)}·${num(summary.month_l)}·${num(summary.month_d)}`;
   el('monthLabel').textContent = `${summary.month} 기준`;
+}
+
+function renderSummaryError(msg){
+  el('yWLD').textContent = '—';
+  el('mWLD').textContent = '—';
+  el('yearLabel').textContent = '요약 조회 실패';
+  el('monthLabel').textContent = msg || '다시 확인해 주세요.';
 }
 
 function renderRecentGames(list){
@@ -265,19 +536,9 @@ function renderRecentGames(list){
   });
 }
 
-function renderDashboardAll(data){
-  myContext = data?.context || {};
-  renderSummary(data?.summary || {});
-  renderRecentGames(data?.recent_games || []);
-}
-
-function renderDashboardError(msg){
-  el('yWLD').textContent = '—';
-  el('yearLabel').textContent = '불러오기 실패';
-  el('mWLD').textContent = '—';
-  el('monthLabel').textContent = msg || '다시 확인해 주세요.';
+function renderRecentError(msg){
   el('recentHint').style.display = 'block';
-  el('recentHint').innerHTML = `<div class="empty-icon">⚠️</div>${msg || '조회 실패'}`;
+  el('recentHint').innerHTML = `<div class="empty-icon">⚠️</div>${msg || '최근 경기 조회 실패'}`;
   el('recentList').innerHTML = '';
   el('btnViewAll').style.display = 'none';
 }
@@ -286,55 +547,97 @@ async function measuredRpc(name, args){
   const started = performance.now();
   const res = await client.rpc(name, args);
   const ended = performance.now();
+
   console.log(`[RPC] ${name}: ${(ended - started).toFixed(1)}ms`, {
     error: res.error?.message || null
   });
+
   return res;
+}
+
+function readCache(){
+  try {
+    const raw = localStorage.getItem('baseball_home_cache_v2');
+    if(!raw) return null;
+
+    const cached = JSON.parse(raw);
+    if(!cached?.at || !cached?.data) return null;
+
+    const ttlMs = 15000;
+    if(Date.now() - cached.at > ttlMs) return null;
+
+    return cached.data;
+  } catch (e) {
+    console.warn('[HOME] cache read failed', e);
+    return null;
+  }
+}
+
+function writeCache(data){
+  try {
+    localStorage.setItem('baseball_home_cache_v2', JSON.stringify({
+      at: Date.now(),
+      data
+    }));
+  } catch (e) {
+    console.warn('[HOME] cache write failed', e);
+  }
 }
 
 async function loadDashboard(){
   renderLoadingState();
 
-  const cacheKey = 'baseball_dashboard_cache_v1';
-  const cacheTtlMs = 15000;
-
-  try {
-    const raw = localStorage.getItem(cacheKey);
-    if(raw){
-      const cached = JSON.parse(raw);
-      if(cached?.at && (Date.now() - cached.at) < cacheTtlMs && cached?.data){
-        console.log('[HOME] cache hit');
-        renderDashboardAll(cached.data);
-        return;
-      }
-    }
-  } catch (e) {
-    console.warn('[HOME] cache read failed', e);
+  const cached = readCache();
+  if(cached){
+    console.log('[HOME] cache hit');
+    if(cached.summary) renderSummary(cached.summary);
+    if(cached.recent_games) renderRecentGames(cached.recent_games);
   }
 
   const totalStart = performance.now();
-  const { data, error } = await measuredRpc('baseball_dashboard_all_in_one');
+
+  const summaryPromise = measuredRpc('baseball_dashboard_summary');
+  const recentPromise = measuredRpc('baseball_game_list_recent_my');
+
+  const nextCache = {
+    summary: cached?.summary || null,
+    recent_games: cached?.recent_games || []
+  };
+
+  summaryPromise
+    .then(({ data, error }) => {
+      if(error){
+        renderSummaryError(error.message);
+        return;
+      }
+      const summary = data || {};
+      nextCache.summary = summary;
+      renderSummary(summary);
+      writeCache(nextCache);
+    })
+    .catch(err => {
+      renderSummaryError(err?.message || '요약 조회 실패');
+    });
+
+  recentPromise
+    .then(({ data, error }) => {
+      if(error){
+        renderRecentError(`최근 경기 조회 실패: ${error.message}`);
+        return;
+      }
+      const recent = data || [];
+      nextCache.recent_games = recent;
+      renderRecentGames(recent);
+      writeCache(nextCache);
+    })
+    .catch(err => {
+      renderRecentError(err?.message || '최근 경기 조회 실패');
+    });
+
+  await Promise.allSettled([summaryPromise, recentPromise]);
+
   const totalEnd = performance.now();
-
   console.log(`[HOME] total dashboard load: ${(totalEnd - totalStart).toFixed(1)}ms`);
-
-  if(error){
-    renderDashboardError(error.message);
-    return;
-  }
-
-  const payload = data || {};
-
-  try {
-    localStorage.setItem(cacheKey, JSON.stringify({
-      at: Date.now(),
-      data: payload
-    }));
-  } catch (e) {
-    console.warn('[HOME] cache write failed', e);
-  }
-
-  renderDashboardAll(payload);
 }
 
 async function init(){
