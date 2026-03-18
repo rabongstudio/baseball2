@@ -45,7 +45,6 @@ body { font-family: 'Noto Sans KR', sans-serif; background: var(--black); color:
 .stat-card { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 16px; }
 .stat-label { font-size: 11px; font-weight: 700; letter-spacing: .5px; color: var(--muted); margin-bottom: 10px; }
 .stat-value { font-family: 'Bebas Neue', sans-serif; font-size: 34px; line-height: 1; color: var(--text); letter-spacing: .5px; }
-.stat-value.brand { color: var(--brand); }
 .stat-sub { font-size: 11px; color: var(--muted2); margin-top: 6px; }
 .quick-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
 .quick-card { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 18px; cursor: pointer; transition: all .15s; display: flex; flex-direction: column; }
@@ -73,8 +72,6 @@ body { font-family: 'Noto Sans KR', sans-serif; background: var(--black); color:
 .game-score { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 1px; color: var(--text); flex-shrink: 0; }
 .empty { text-align: center; padding: 32px 0; color: var(--muted); font-size: 13px; line-height: 1.6; }
 .empty-icon { font-size: 32px; margin-bottom: 10px; }
-@keyframes pulse { 0%,100%{opacity:.3} 50%{opacity:.7} }
-.skeleton { background: var(--panel); border-radius: 14px; animation: pulse 1.4s ease infinite; }
 .view-all { width: 100%; margin-top: 10px; padding: 13px; border-radius: 12px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-family: 'Noto Sans KR', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; transition: all .15s; }
 .view-all:hover { border-color: var(--border2); color: var(--text); }
 </style>
@@ -94,9 +91,9 @@ body { font-family: 'Noto Sans KR', sans-serif; background: var(--black); color:
 
   <div class="hero">
     <div class="hero-label">엘리트 야구 기록 시스템</div>
-    <div class="hero-title" id="heroTitle">선수의 기록을<br>한눈에</div>
-    <div class="hero-sub" id="heroSub">경기 결과, 선수 성적, 대회별 통계를<br>정확하게 관리합니다.</div>
-    <div class="hero-btns" id="heroBtns">
+    <div class="hero-title">선수의 기록을<br>한눈에</div>
+    <div class="hero-sub">경기 결과, 선수 성적, 대회별 통계를<br>정확하게 관리합니다.</div>
+    <div class="hero-btns">
       <button class="hero-btn solid" onclick="goProtected('playerReport.html')">선수 리포트</button>
       <button class="hero-btn ghost" onclick="goProtected('report.html')">경기 리포트</button>
     </div>
@@ -202,10 +199,20 @@ function renderGuestHome(){
   el('btnViewAll').style.display = 'none';
 }
 
+function renderLoadingState(){
+  el('yWLD').textContent = '...';
+  el('yearLabel').textContent = '불러오는 중';
+  el('mWLD').textContent = '...';
+  el('monthLabel').textContent = '불러오는 중';
+  el('recentHint').style.display = 'block';
+  el('recentHint').innerHTML = `<div class="empty-icon">⏳</div>최근 경기 불러오는 중...`;
+  el('recentList').innerHTML = '';
+  el('btnViewAll').style.display = 'none';
+}
+
 function renderSummary(summary){
   el('yWLD').textContent = `${num(summary.year_w)}·${num(summary.year_l)}·${num(summary.year_d)}`;
   el('yearLabel').textContent = `${summary.year}년 기준`;
-
   el('mWLD').textContent = `${num(summary.month_w)}·${num(summary.month_l)}·${num(summary.month_d)}`;
   el('monthLabel').textContent = `${summary.month} 기준`;
 }
@@ -258,45 +265,85 @@ function renderRecentGames(list){
   });
 }
 
-async function loadDashboard(){
-  const [ctxRes, summaryRes, recentRes] = await Promise.all([
-    client.rpc('baseball_my_context'),
-    client.rpc('baseball_dashboard_summary'),
-    client.rpc('baseball_game_list_recent_my')
-  ]);
+function renderDashboardAll(data){
+  myContext = data?.context || {};
+  renderSummary(data?.summary || {});
+  renderRecentGames(data?.recent_games || []);
+}
 
-  if(ctxRes.error){
-    el('yearLabel').textContent = '불러오기 실패';
-    el('monthLabel').textContent = '불러오기 실패';
-    el('recentHint').style.display = 'block';
-    el('recentHint').innerHTML = `<div class="empty-icon">⚠️</div>문맥 조회 실패: ${ctxRes.error.message}`;
-    el('btnViewAll').style.display = 'none';
+function renderDashboardError(msg){
+  el('yWLD').textContent = '—';
+  el('yearLabel').textContent = '불러오기 실패';
+  el('mWLD').textContent = '—';
+  el('monthLabel').textContent = msg || '다시 확인해 주세요.';
+  el('recentHint').style.display = 'block';
+  el('recentHint').innerHTML = `<div class="empty-icon">⚠️</div>${msg || '조회 실패'}`;
+  el('recentList').innerHTML = '';
+  el('btnViewAll').style.display = 'none';
+}
+
+async function measuredRpc(name, args){
+  const started = performance.now();
+  const res = await client.rpc(name, args);
+  const ended = performance.now();
+  console.log(`[RPC] ${name}: ${(ended - started).toFixed(1)}ms`, {
+    error: res.error?.message || null
+  });
+  return res;
+}
+
+async function loadDashboard(){
+  renderLoadingState();
+
+  const cacheKey = 'baseball_dashboard_cache_v1';
+  const cacheTtlMs = 15000;
+
+  try {
+    const raw = localStorage.getItem(cacheKey);
+    if(raw){
+      const cached = JSON.parse(raw);
+      if(cached?.at && (Date.now() - cached.at) < cacheTtlMs && cached?.data){
+        console.log('[HOME] cache hit');
+        renderDashboardAll(cached.data);
+        return;
+      }
+    }
+  } catch (e) {
+    console.warn('[HOME] cache read failed', e);
+  }
+
+  const totalStart = performance.now();
+  const { data, error } = await measuredRpc('baseball_dashboard_all_in_one');
+  const totalEnd = performance.now();
+
+  console.log(`[HOME] total dashboard load: ${(totalEnd - totalStart).toFixed(1)}ms`);
+
+  if(error){
+    renderDashboardError(error.message);
     return;
   }
 
-  myContext = ctxRes.data || {};
+  const payload = data || {};
 
-  if(summaryRes.error){
-    el('yWLD').textContent = '—';
-    el('mWLD').textContent = '—';
-    el('yearLabel').textContent = `요약 실패: ${summaryRes.error.message}`;
-    el('monthLabel').textContent = '다시 확인해 주세요.';
-  } else {
-    renderSummary(summaryRes.data || {});
+  try {
+    localStorage.setItem(cacheKey, JSON.stringify({
+      at: Date.now(),
+      data: payload
+    }));
+  } catch (e) {
+    console.warn('[HOME] cache write failed', e);
   }
 
-  if(recentRes.error){
-    el('recentHint').style.display = 'block';
-    el('recentHint').innerHTML = `<div class="empty-icon">⚠️</div>최근 경기 조회 실패: ${recentRes.error.message}`;
-    el('recentList').innerHTML = '';
-    el('btnViewAll').style.display = 'none';
-  } else {
-    renderRecentGames(recentRes.data || []);
-  }
+  renderDashboardAll(payload);
 }
 
 async function init(){
+  const sessionStart = performance.now();
   const { data, error } = await client.auth.getSession();
+  const sessionEnd = performance.now();
+
+  console.log(`[AUTH] getSession: ${(sessionEnd - sessionStart).toFixed(1)}ms`);
+
   currentSession = (!error && data?.session) || null;
   renderAuthButtons(currentSession);
 
