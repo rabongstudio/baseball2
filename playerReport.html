@@ -458,7 +458,10 @@ function openGameSheet(game, record){
     gameBox('2루타', num(record?.doubles)),
     gameBox('3루타', num(record?.triples)),
     gameBox('홈런', num(record?.hr)),
-    gameBox('희플', num(record?.sf))
+    gameBox('희플', num(record?.sf)),    
+    gameBox('희번', num(record?.sh)),    
+    gameBox('땅볼', num(record?.gb)),    
+    gameBox('플라이', num(record?.fb))
   ].join('');
 
   el('sheetPitGrid').innerHTML = [
@@ -468,14 +471,11 @@ function openGameSheet(game, record){
     gameBox('볼넷', num(record?.pbb)),
     gameBox('피안타', num(record?.ph)),
     gameBox('투구수', num(record?.pitches)),
-    gameBox('최고구속', num(record?.max_vel) || '-'),
-    gameBox('실책', num(record?.e)),
-    gameBox('희번', num(record?.sh))
+    gameBox('최고구속', num(record?.max_vel) || '-')
   ].join('');
 
   el('sheetFieldRows').innerHTML = `
-    <div class="kv-row"><span class="k">땅볼</span><span class="v">${num(record?.gb)}</span></div>
-    <div class="kv-row"><span class="k">플라이</span><span class="v">${num(record?.fb)}</span></div>
+    <div class="kv-row"><span class="k">실책</span><span class="v">${num(record?.e)}</span></div>
     <div class="kv-row"><span class="k">메모</span><span class="v" style="font-size:12px;text-align:right;max-width:65%">${record?.player_memo || '-'}</span></div>`;
 
   el('sheetOverlay').classList.remove('hidden');
