@@ -69,6 +69,7 @@ textarea{resize:vertical;min-height:88px}
 .msg{margin-top:10px;font-size:13px;line-height:1.5}
 .msg.err{color:var(--err)}
 .msg.ok{color:var(--ok)}
+.msg.warn{color:var(--warn)}
 .small{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.5}
 .row2{display:flex;gap:10px}
 .row2>div{flex:1}
@@ -244,7 +245,7 @@ textarea{resize:vertical;min-height:88px}
 
       <button class="btn" id="btnSignup">회원가입</button>
       <div class="msg" id="signupMsg"></div>
-      <div class="small">회원가입 시 선택한 학교로 가입되고, 선수도 자동 생성됩니다.</div>
+      <div class="small">첫 가입자는 자동으로 관리자(admin)가 되고, 이후 가입자는 승인대기(pending) 상태로 등록됩니다.</div>
     </div>
   </div>
 </div>
@@ -539,6 +540,23 @@ el('btnLogin').onclick = async () => {
     return;
   }
 
+  const { data: ctx, error: ctxError } = await sb.rpc('baseball_my_context');
+
+  if(ctxError){
+    msg.className = 'msg err';
+    msg.textContent = '권한 정보를 확인하지 못했습니다.';
+    return;
+  }
+
+  const me = Array.isArray(ctx) ? ctx[0] : ctx;
+
+  if(me?.role === 'pending'){
+    msg.className = 'msg warn';
+    msg.textContent = '현재 승인 대기 상태입니다. 관리자 승인 후 이용 가능합니다.';
+    await sb.auth.signOut();
+    return;
+  }
+
   location.href = nextUrl();
 };
 
@@ -623,12 +641,22 @@ el('btnSignup').onclick = async () => {
   }
 
   if(data.session){
+    const { data: ctx } = await sb.rpc('baseball_my_context');
+    const me = Array.isArray(ctx) ? ctx[0] : ctx;
+
+    if(me?.role === 'pending'){
+      await sb.auth.signOut();
+      msg.className = 'msg ok';
+      msg.textContent = '회원가입이 완료됐어요! 현재 승인 대기 상태입니다. 관리자 승인 후 로그인할 수 있습니다.';
+      return;
+    }
+
     location.href = nextUrl();
     return;
   }
 
   msg.className = 'msg ok';
-  msg.textContent = '회원가입이 완료됐어요!';
+  msg.textContent = '회원가입이 완료됐어요! 첫 가입자가 아니면 승인 대기 상태로 등록됩니다.';
 };
 
 (async function init(){
