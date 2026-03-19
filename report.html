@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="ko">
 <head>
@@ -46,8 +47,7 @@ select option{background:var(--panel)}
 .info-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px}
 .info-row:last-child{border-bottom:none}
 .info-row .k{color:var(--muted)} .info-row .v{font-weight:700;text-align:right}
-.player-card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin-bottom:8px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:border-color .15s}
-.player-card:hover{border-color:var(--border2)}
+.player-card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin-bottom:8px;display:flex;align-items:center;gap:12px}
 .player-num{width:38px;height:38px;border-radius:10px;background:var(--brand-dim);display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--brand);flex-shrink:0}
 .player-info{flex:1;min-width:0}
 .player-name{font-size:14px;font-weight:700}
@@ -64,22 +64,6 @@ select option{background:var(--panel)}
 .section-label{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin:20px 0 10px}
 .hint-text{font-size:12px;color:var(--muted);margin:8px 0}
 .hidden{display:none!important}
-.overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:1000;display:flex;align-items:flex-end}
-.sheet{width:100%;max-height:88vh;background:var(--panel);border-radius:24px 24px 0 0;overflow:hidden;display:flex;flex-direction:column;animation:slideUp .25s ease-out}
-@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
-.sheet-head{padding:18px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;background:var(--panel)}
-.sheet-head-name{font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--brand)}
-.sheet-head-sub{font-size:12px;color:var(--muted);margin-top:2px}
-.sheet-close{padding:7px 14px;border-radius:8px;border:1px solid var(--border2);background:transparent;color:var(--text);font-family:'Noto Sans KR',sans-serif;font-size:13px;font-weight:700;cursor:pointer}
-.sheet-body{padding:16px;overflow-y:auto;background:var(--black);flex:1}
-.stat-section{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:10px}
-.stat-section-title{font-size:11px;font-weight:700;letter-spacing:1.5px;color:var(--brand);margin-bottom:12px;text-transform:uppercase}
-.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
-.stat-box{background:rgba(255,255,255,.04);border-radius:10px;padding:10px 4px;text-align:center;border:1px solid var(--border)}
-.stat-box .v{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--text)}
-.stat-box .k{font-size:10px;color:var(--muted);margin-top:3px;font-weight:700}
-.memo-box{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:10px}
-.memo-text{font-size:13px;color:var(--text);line-height:1.6;margin-top:8px}
 .loading-box{padding:18px 14px;border:1px solid var(--border);border-radius:14px;background:var(--panel);font-size:13px;color:var(--muted);text-align:center}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -96,12 +80,12 @@ select option{background:var(--panel)}
 <div class="container">
   <div id="viewList">
     <div class="page-title">경기 리포트</div>
-    <div class="page-sub">대회별 성적 및 라인업 요약</div>
+    <div class="page-sub">대회 선택 후 경기와 라인업을 확인하세요</div>
 
     <div class="filter-bar">
       <div class="filter-label">대회 필터</div>
       <select id="tournamentSel">
-        <option value="__ALL__">전체 대회 보기</option>
+        <option value="">선택</option>
       </select>
       <div class="kpi-row">
         <div class="kpi"><div class="v" id="kpiGames">-</div><div class="l">TOTAL</div></div>
@@ -146,22 +130,10 @@ select option{background:var(--panel)}
     <div class="section-label">라인업 및 개인 기록</div>
     <div class="hint-text" id="recordsHint"></div>
     <div id="recordsList"></div>
-    <div class="hint-text" style="text-align:center;margin-top:8px">💡 선수 카드를 탭하면 상세 기록을 볼 수 있어요</div>
+
   </div>
 </div>
 
-<div id="playerModal" class="overlay hidden">
-  <div class="sheet">
-    <div class="sheet-head">
-      <div>
-        <div class="sheet-head-name" id="pmTitle">-</div>
-        <div class="sheet-head-sub" id="pmSub">-</div>
-      </div>
-      <button class="sheet-close" id="pmClose">닫기</button>
-    </div>
-    <div class="sheet-body" id="pmBody"></div>
-  </div>
-</div>
 
 <script>
 const client = window.sb;
@@ -178,7 +150,7 @@ const escapeHtml = (str='') => String(str)
   .replaceAll("'", '&#39;');
 
 let currentGameId = null;
-let currentFilter = { tournament: null };
+let currentFilter = { tournament: '' };
 let currentTournaments = [];
 let isAdmin = false;
 let myUserId = null;
@@ -215,9 +187,9 @@ function setRecordsHint(text='') {
   el('recordsHint').textContent = text;
 }
 
-function renderTournamentOptions(tournaments, selectedValue = '__ALL__') {
+function renderTournamentOptions(tournaments, selectedValue = '') {
   const sel = el('tournamentSel');
-  sel.innerHTML = '<option value="__ALL__">전체 대회 보기</option>';
+  sel.innerHTML = '<option value="">선택</option>';
 
   tournaments.forEach(t => {
     const opt = document.createElement('option');
@@ -226,8 +198,9 @@ function renderTournamentOptions(tournaments, selectedValue = '__ALL__') {
     sel.appendChild(opt);
   });
 
-  sel.value = selectedValue || '__ALL__';
+  sel.value = selectedValue || '';
 }
+
 
 function renderGameCard(g) {
   const item = document.createElement('div');
@@ -270,16 +243,9 @@ function renderPlayerCard(game, rec) {
     <div class="starter-pill ${rec.is_starter ? 'on' : 'off'}">${rec.is_starter ? '선발' : '교체'}</div>
   `;
 
-  item.onclick = () => {
-    if (Number(rec.player_id) !== Number(myPlayerId)) {
-      alert('본인 기록만 확인할 수 있어요.');
-      return;
-    }
-    openPlayerModal(game, rec);
-  };
-
   return item;
 }
+
 
 async function requireLogin() {
   const { data, error } = await client.auth.getUser();
@@ -298,6 +264,25 @@ async function loadMyContext() {
   return data;
 }
 
+async function loadTournamentOptions() {
+  const { data, error } = await client.rpc('baseball_report_list', {
+    p_school_id: mySchoolId,
+    p_tournament: null,
+    p_limit: 1,
+    p_offset: 0
+  });
+
+  if (error) throw error;
+
+  currentTournaments = Array.isArray(data?.tournaments) ? data.tournaments : [];
+  renderTournamentOptions(currentTournaments, currentFilter.tournament || '');
+  el('kpiGames').textContent = '-';
+  el('kpiWLD').textContent = '-';
+  el('gameList').innerHTML = '';
+  el('btnMoreGames').classList.add('hidden');
+  setListHint('대회를 선택하면 경기 데이터가 표시됩니다.');
+}
+
 async function loadGameList(reset = true) {
   if (loadingList || !mySchoolId) return;
   loadingList = true;
@@ -312,7 +297,16 @@ async function loadGameList(reset = true) {
     }
 
     const tournamentValue = el('tournamentSel').value;
-    currentFilter.tournament = tournamentValue !== '__ALL__' ? tournamentValue : null;
+    currentFilter.tournament = tournamentValue || '';
+
+    if (!currentFilter.tournament) {
+      el('kpiGames').textContent = '-';
+      el('kpiWLD').textContent = '-';
+      el('gameList').innerHTML = '';
+      el('btnMoreGames').classList.add('hidden');
+      setListHint('대회를 선택하면 경기 데이터가 표시됩니다.');
+      return;
+    }
 
     const { data, error } = await client.rpc('baseball_report_list', {
       p_school_id: mySchoolId,
@@ -332,7 +326,7 @@ async function loadGameList(reset = true) {
 
     if (reset) {
       currentTournaments = tournaments.slice();
-      renderTournamentOptions(currentTournaments, currentFilter.tournament || '__ALL__');
+      renderTournamentOptions(currentTournaments, currentFilter.tournament || '');
       el('kpiGames').textContent = num(kpi.total_games);
       el('kpiWLD').textContent = `${num(kpi.wins)}·${num(kpi.losses)}·${num(kpi.draws)}`;
     }
@@ -423,80 +417,6 @@ async function openDetail(gameId, push = true) {
   }
 }
 
-function openPlayerModal(game, rec) {
-  const p = rec.baseball_players || {};
-  const pnum = (p.jersey_number ?? '') !== '' ? `#${p.jersey_number}` : '#-';
-
-  el('pmTitle').textContent = `${pnum} ${safe(p.name)}`;
-  el('pmSub').textContent = `vs ${safe(game.opponent)} (${safe(game.game_date)})`;
-
-  const body = el('pmBody');
-  body.innerHTML = '';
-
-  const bSec = document.createElement('div');
-  bSec.className = 'stat-section';
-  bSec.innerHTML = `<div class="stat-section-title">⚾ Batting</div><div class="stat-grid"></div>`;
-
-  [
-    ['타수', rec.ab],
-    ['안타', rec.h],
-    ['타점', rec.rbi],
-    ['득점', rec.r],
-    ['볼넷', rec.bb],
-    ['삼진', rec.so],
-    ['도루', rec.sb],
-    ['홈런', rec.hr]
-  ].forEach(([k, v]) => {
-    bSec.querySelector('.stat-grid').innerHTML += `
-      <div class="stat-box">
-        <div class="v">${num(v)}</div>
-        <div class="k">${k}</div>
-      </div>
-    `;
-  });
-  body.appendChild(bSec);
-
-  if (num(rec.ip) > 0 || num(rec.pitches) > 0) {
-    const pSec = document.createElement('div');
-    pSec.className = 'stat-section';
-    pSec.innerHTML = `<div class="stat-section-title">🥎 Pitching</div><div class="stat-grid"></div>`;
-
-    [
-      ['이닝', rec.ip],
-      ['자책', rec.er],
-      ['탈삼진', rec.pk],
-      ['볼넷', rec.pbb],
-      ['투구수', rec.pitches],
-      ['MAX', rec.max_vel]
-    ].forEach(([k, v]) => {
-      pSec.querySelector('.stat-grid').innerHTML += `
-        <div class="stat-box">
-          <div class="v">${safe(v, 0)}</div>
-          <div class="k">${k}</div>
-        </div>
-      `;
-    });
-    body.appendChild(pSec);
-  }
-
-  const mSec = document.createElement('div');
-  mSec.className = 'memo-box';
-  mSec.innerHTML = `
-    <div class="stat-section-title">📝 Memo</div>
-    <div class="memo-text">${escapeHtml(safe(rec.player_memo, '입력된 메모가 없습니다.')).replace(/\n/g, '<br>')}</div>
-  `;
-  body.appendChild(mSec);
-
-  el('playerModal').classList.remove('hidden');
-}
-
-el('pmClose').onclick = () => el('playerModal').classList.add('hidden');
-
-el('playerModal').addEventListener('click', (e) => {
-  if (e.target.id === 'playerModal') {
-    el('playerModal').classList.add('hidden');
-  }
-});
 
 el('tournamentSel').addEventListener('change', () => loadGameList(true));
 el('btnMoreGames').onclick = () => loadGameList(false);
@@ -533,7 +453,7 @@ window.onpopstate = async (e) => {
       await openDetail(gid, false);
     } else {
       show('viewList', false);
-      await loadGameList(true);
+      await loadTournamentOptions();
     }
   } catch (err) {
     setListHint('초기화 오류: ' + (err?.message || err));
