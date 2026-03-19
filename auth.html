@@ -54,16 +54,20 @@ select option{background:var(--panel);color:var(--text)}
 input:focus,select:focus{outline:none;border-color:var(--brand)}
 
 .hint{font-size:12px;margin-top:4px;min-height:16px}
-.hint.ok{color:var(--ok)} .hint.err{color:var(--err)} .hint.warn{color:var(--warn)}
+.hint.ok{color:var(--ok)}
+.hint.err{color:var(--err)}
+.hint.warn{color:var(--warn)}
 
 .btn{width:100%;margin-top:20px;padding:15px;border:none;border-radius:14px;background:var(--brand);color:var(--black);font-family:'Noto Sans KR',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all .15s}
 .btn:hover{background:#d4ea3a}
 .btn:disabled{opacity:.5;cursor:not-allowed}
 
 .msg{margin-top:10px;font-size:13px;line-height:1.5}
-.msg.err{color:var(--err)} .msg.ok{color:var(--ok)}
+.msg.err{color:var(--err)}
+.msg.ok{color:var(--ok)}
 .small{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.5}
-.row2{display:flex;gap:10px} .row2>div{flex:1}
+.row2{display:flex;gap:10px}
+.row2>div{flex:1}
 .hidden{display:none!important}
 .divider{height:1px;background:var(--border);margin:16px 0}
 </style>
@@ -73,7 +77,7 @@ input:focus,select:focus{outline:none;border-color:var(--brand)}
 <body>
 <header class="header">
   <div class="header-inner">
-    <div class="logo">ELITE<span>REC</span></div>
+    <div class="logo">ELITE<span> BASEBALL</span></div>
   </div>
 </header>
 
@@ -93,11 +97,13 @@ input:focus,select:focus{outline:none;border-color:var(--brand)}
       <div class="input-wrap">
         <input id="loginUsername" placeholder="아이디 입력" autocomplete="username" />
       </div>
+
       <label>비밀번호</label>
       <div class="input-wrap">
         <input id="loginPassword" type="password" placeholder="비밀번호" autocomplete="current-password" />
         <button class="eye-btn" id="eyeLogin" type="button">👁</button>
       </div>
+
       <button class="btn" id="btnLogin">로그인</button>
       <div class="msg" id="loginMsg"></div>
     </div>
@@ -138,6 +144,7 @@ input:focus,select:focus{outline:none;border-color:var(--brand)}
         <option value="고등학교">고등학교</option>
         <option value="대학교">대학교/일반</option>
       </select>
+
       <label>학교 선택</label>
       <select id="schoolSel" disabled>
         <option value="">구분을 먼저 선택해주세요</option>
@@ -149,21 +156,71 @@ input:focus,select:focus{outline:none;border-color:var(--brand)}
       <input id="playerName" placeholder="예: 홍길동" />
 
       <div class="row2">
-        <div><label>등번호</label><input id="jerseyNumber" type="number" min="0" step="1" /></div>
-        <div><label>학년</label><input id="grade" placeholder="예: 6" /></div>
-      </div>
-      <div class="row2">
-        <div><label>생년</label><input id="birthYear" type="number" min="2000" max="2100" placeholder="예: 2013" /></div>
-        <div><label>주 포지션</label><input id="primaryPos" placeholder="예: SS" /></div>
-      </div>
-      <div class="row2">
         <div>
-          <label>투</label>
-          <select id="throws"><option value="우">우투</option><option value="좌">좌투</option><option value="양">양투</option></select>
+          <label>등번호</label>
+          <input id="jerseyNumber" type="number" min="0" step="1" />
         </div>
         <div>
-          <label>타</label>
-          <select id="bats"><option value="우">우타</option><option value="좌">좌타</option><option value="양">양타</option></select>
+          <label>생년</label>
+          <input id="birthYear" type="number" min="2000" max="2100" placeholder="예: 2013" />
+        </div>
+      </div>
+
+      <div class="row2">
+        <div>
+          <label>학제</label>
+          <select id="gradeLevel">
+            <option value="">선택</option>
+            <option value="초">초등학교</option>
+            <option value="중">중학교</option>
+            <option value="고">고등학교</option>
+            <option value="대">대학교/일반</option>
+          </select>
+        </div>
+        <div>
+          <label>학년</label>
+          <select id="gradeYear">
+            <option value="">선택</option>
+          </select>
+        </div>
+      </div>
+      <div class="hint" id="hintGrade"></div>
+
+      <div class="row2">
+        <div>
+          <label>주 포지션</label>
+          <select id="primaryPos">
+            <option value="">선택</option>
+            <option value="P">P · 투수</option>
+            <option value="C">C · 포수</option>
+            <option value="1B">1B · 1루수</option>
+            <option value="2B">2B · 2루수</option>
+            <option value="3B">3B · 3루수</option>
+            <option value="SS">SS · 유격수</option>
+            <option value="LF">LF · 좌익수</option>
+            <option value="CF">CF · 중견수</option>
+            <option value="RF">RF · 우익수</option>
+            <option value="DH">DH · 지명타자</option>
+          </select>
+        </div>
+        <div>
+          <label>투 / 타</label>
+          <div class="row2" style="margin-top:6px">
+            <div>
+              <select id="throws">
+                <option value="우">우투</option>
+                <option value="좌">좌투</option>
+                <option value="양">양투</option>
+              </select>
+            </div>
+            <div>
+              <select id="bats">
+                <option value="우">우타</option>
+                <option value="좌">좌타</option>
+                <option value="양">양타</option>
+              </select>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -178,115 +235,382 @@ input:focus,select:focus{outline:none;border-color:var(--brand)}
 const el = (id) => document.getElementById(id);
 const FAKE_DOMAIN = '@baseball.app';
 const ID_REGEX = /^[a-z0-9_]{3,20}$/;
-function toEmail(u){ return u.trim().toLowerCase() + FAKE_DOMAIN; }
+
+function toEmail(u){
+  return u.trim().toLowerCase() + FAKE_DOMAIN;
+}
 
 function showTab(mode){
-  const login = mode==='login';
-  el('tabLogin').classList.toggle('active',login);
-  el('tabSignup').classList.toggle('active',!login);
-  el('loginView').classList.toggle('hidden',!login);
-  el('signupView').classList.toggle('hidden',login);
+  const login = mode === 'login';
+  el('tabLogin').classList.toggle('active', login);
+  el('tabSignup').classList.toggle('active', !login);
+  el('loginView').classList.toggle('hidden', !login);
+  el('signupView').classList.toggle('hidden', login);
 }
 el('tabLogin').onclick = () => showTab('login');
 el('tabSignup').onclick = () => showTab('signup');
 
-function toggleEye(inputId,btn){
-  const input=el(inputId);
-  const show=input.type==='password';
-  input.type=show?'text':'password';
-  btn.textContent=show?'🙈':'👁';
+function toggleEye(inputId, btn){
+  const input = el(inputId);
+  const show = input.type === 'password';
+  input.type = show ? 'text' : 'password';
+  btn.textContent = show ? '🙈' : '👁';
 }
-el('eyeLogin').onclick    = () => toggleEye('loginPassword',el('eyeLogin'));
-el('eyePw').onclick       = () => toggleEye('signupPassword',el('eyePw'));
-el('eyePwConfirm').onclick= () => toggleEye('signupPasswordConfirm',el('eyePwConfirm'));
+el('eyeLogin').onclick = () => toggleEye('loginPassword', el('eyeLogin'));
+el('eyePw').onclick = () => toggleEye('signupPassword', el('eyePw'));
+el('eyePwConfirm').onclick = () => toggleEye('signupPasswordConfirm', el('eyePwConfirm'));
+
+function getSchoolYearBase(){
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = now.getMonth() + 1;
+  return m >= 3 ? y : y - 1;
+}
+
+function fillGradeYearOptions(level){
+  const sel = el('gradeYear');
+  const current = sel.value;
+  sel.innerHTML = '<option value="">선택</option>';
+
+  let max = 0;
+  if(level === '초') max = 6;
+  else if(level === '중') max = 3;
+  else if(level === '고') max = 3;
+  else if(level === '대') max = 4;
+
+  for(let i = 1; i <= max; i++){
+    const opt = document.createElement('option');
+    opt.value = String(i);
+    opt.textContent = `${i}학년`;
+    sel.appendChild(opt);
+  }
+
+  if(current && Number(current) <= max){
+    sel.value = current;
+  }
+}
+
+function buildGradeText(){
+  const level = el('gradeLevel').value;
+  const year = el('gradeYear').value;
+  if(!level || !year) return '';
+  return `${level}${year}`;
+}
+
+function suggestGradeFromBirthYear(){
+  const birthYear = Number(el('birthYear').value);
+  const hint = el('hintGrade');
+
+  if(!birthYear){
+    hint.className = 'hint';
+    hint.textContent = '';
+    return;
+  }
+
+  const baseYear = getSchoolYearBase();
+  const koreanAgeYear = baseYear - birthYear + 1;
+
+  let level = '';
+  let grade = 0;
+
+  if(koreanAgeYear >= 8 && koreanAgeYear <= 13){
+    level = '초';
+    grade = koreanAgeYear - 7;
+  }else if(koreanAgeYear >= 14 && koreanAgeYear <= 16){
+    level = '중';
+    grade = koreanAgeYear - 13;
+  }else if(koreanAgeYear >= 17 && koreanAgeYear <= 19){
+    level = '고';
+    grade = koreanAgeYear - 16;
+  }else if(koreanAgeYear >= 20 && koreanAgeYear <= 23){
+    level = '대';
+    grade = koreanAgeYear - 19;
+  }else{
+    hint.className = 'hint warn';
+    hint.textContent = '자동 학년 추천 대상이 아니에요. 직접 선택해주세요.';
+    return;
+  }
+
+  el('gradeLevel').value = level;
+  fillGradeYearOptions(level);
+  el('gradeYear').value = String(grade);
+  hint.className = 'hint ok';
+  hint.textContent = `생년 기준으로 ${level}${grade} 자동 추천했어요`;
+}
 
 let idChecked = false;
-el('signupUsername').addEventListener('input',()=>{
-  idChecked=false;
-  const val=el('signupUsername').value.trim();
-  const hint=el('hintUsername'),input=el('signupUsername');
-  if(!val){hint.className='hint';hint.textContent='';input.className='';return;}
-  if(!ID_REGEX.test(val)){hint.className='hint err';hint.textContent='영문 소문자, 숫자, _ 만 가능 (3~20자)';input.className='err';return;}
-  hint.className='hint warn';hint.textContent='중복확인을 눌러주세요';input.className='';
+
+el('signupUsername').addEventListener('input', () => {
+  idChecked = false;
+  const val = el('signupUsername').value.trim();
+  const hint = el('hintUsername');
+  const input = el('signupUsername');
+
+  if(!val){
+    hint.className = 'hint';
+    hint.textContent = '';
+    input.className = '';
+    return;
+  }
+
+  if(!ID_REGEX.test(val)){
+    hint.className = 'hint err';
+    hint.textContent = '영문 소문자, 숫자, _ 만 가능 (3~20자)';
+    input.className = 'err';
+    return;
+  }
+
+  hint.className = 'hint warn';
+  hint.textContent = '중복확인을 눌러주세요';
+  input.className = '';
 });
 
 el('btnCheckId').onclick = async () => {
-  const username=el('signupUsername').value.trim();
-  const hint=el('hintUsername'),input=el('signupUsername');
-  idChecked=false;
-  if(!ID_REGEX.test(username)){hint.className='hint err';hint.textContent='올바른 아이디 형식이 아니에요';return;}
-  el('btnCheckId').disabled=true;
-  hint.className='hint';hint.textContent='확인 중...';
-  const {data,error}=await sb.from('baseball_profiles').select('id').eq('username',username).maybeSingle();
-  el('btnCheckId').disabled=false;
-  if(error){hint.className='hint err';hint.textContent='확인 중 오류가 발생했어요';return;}
-  if(data){hint.className='hint err';hint.textContent='이미 사용 중인 아이디예요';input.className='err';idChecked=false;}
-  else{hint.className='hint ok';hint.textContent='사용 가능한 아이디예요 ✓';input.className='ok';idChecked=true;}
+  const username = el('signupUsername').value.trim();
+  const hint = el('hintUsername');
+  const input = el('signupUsername');
+  idChecked = false;
+
+  if(!ID_REGEX.test(username)){
+    hint.className = 'hint err';
+    hint.textContent = '올바른 아이디 형식이 아니에요';
+    return;
+  }
+
+  el('btnCheckId').disabled = true;
+  hint.className = 'hint';
+  hint.textContent = '확인 중...';
+
+  const { data, error } = await sb
+    .from('baseball_profiles')
+    .select('id')
+    .eq('username', username)
+    .maybeSingle();
+
+  el('btnCheckId').disabled = false;
+
+  if(error){
+    hint.className = 'hint err';
+    hint.textContent = '확인 중 오류가 발생했어요';
+    return;
+  }
+
+  if(data){
+    hint.className = 'hint err';
+    hint.textContent = '이미 사용 중인 아이디예요';
+    input.className = 'err';
+    idChecked = false;
+  }else{
+    hint.className = 'hint ok';
+    hint.textContent = '사용 가능한 아이디예요 ✓';
+    input.className = 'ok';
+    idChecked = true;
+  }
 };
 
-el('signupPassword').addEventListener('input',checkPasswordMatch);
-el('signupPasswordConfirm').addEventListener('input',checkPasswordMatch);
+el('signupPassword').addEventListener('input', checkPasswordMatch);
+el('signupPasswordConfirm').addEventListener('input', checkPasswordMatch);
+
 function checkPasswordMatch(){
-  const pw=el('signupPassword').value,pw2=el('signupPasswordConfirm').value;
-  const hintPw=el('hintPassword'),hintConf=el('hintPasswordConfirm');
-  if(pw.length>0&&pw.length<6){hintPw.className='hint err';hintPw.textContent='6자 이상 입력해주세요';}
-  else{hintPw.className='hint';hintPw.textContent='';}
-  if(!pw2){hintConf.className='hint';hintConf.textContent='';return;}
-  if(pw===pw2){hintConf.className='hint ok';hintConf.textContent='비밀번호가 일치해요 ✓';el('signupPasswordConfirm').className='ok';}
-  else{hintConf.className='hint err';hintConf.textContent='비밀번호가 일치하지 않아요';el('signupPasswordConfirm').className='err';}
+  const pw = el('signupPassword').value;
+  const pw2 = el('signupPasswordConfirm').value;
+  const hintPw = el('hintPassword');
+  const hintConf = el('hintPasswordConfirm');
+
+  if(pw.length > 0 && pw.length < 6){
+    hintPw.className = 'hint err';
+    hintPw.textContent = '6자 이상 입력해주세요';
+  }else{
+    hintPw.className = 'hint';
+    hintPw.textContent = '';
+  }
+
+  if(!pw2){
+    hintConf.className = 'hint';
+    hintConf.textContent = '';
+    el('signupPasswordConfirm').className = '';
+    return;
+  }
+
+  if(pw === pw2){
+    hintConf.className = 'hint ok';
+    hintConf.textContent = '비밀번호가 일치해요 ✓';
+    el('signupPasswordConfirm').className = 'ok';
+  }else{
+    hintConf.className = 'hint err';
+    hintConf.textContent = '비밀번호가 일치하지 않아요';
+    el('signupPasswordConfirm').className = 'err';
+  }
 }
 
 async function loadSchools(){
   el('categorySel').addEventListener('change', async () => {
-    const cat=el('categorySel').value;
-    const sel=el('schoolSel');
-    sel.innerHTML='<option value="">학교 선택</option>';
-    if(!cat){sel.disabled=true;return;}
-    sel.disabled=false;
-    sel.innerHTML='<option value="">불러오는 중...</option>';
-    const {data,error}=await sb.from('baseball_schools').select('id,name').eq('category',cat).order('name');
-    sel.innerHTML='<option value="">학교 선택</option>';
-    if(error){el('signupMsg').textContent='학교 목록 오류: '+error.message;return;}
-    (data||[]).forEach(s=>{const opt=document.createElement('option');opt.value=s.id;opt.textContent=s.name;sel.appendChild(opt);});
+    const cat = el('categorySel').value;
+    const sel = el('schoolSel');
+    sel.innerHTML = '<option value="">학교 선택</option>';
+
+    if(!cat){
+      sel.disabled = true;
+      return;
+    }
+
+    sel.disabled = false;
+    sel.innerHTML = '<option value="">불러오는 중...</option>';
+
+    const { data, error } = await sb
+      .from('baseball_schools')
+      .select('id,name')
+      .eq('category', cat)
+      .order('name');
+
+    sel.innerHTML = '<option value="">학교 선택</option>';
+
+    if(error){
+      el('signupMsg').className = 'msg err';
+      el('signupMsg').textContent = '학교 목록 오류: ' + error.message;
+      return;
+    }
+
+    (data || []).forEach(s => {
+      const opt = document.createElement('option');
+      opt.value = s.id;
+      opt.textContent = s.name;
+      sel.appendChild(opt);
+    });
   });
 }
 
-function nextUrl(){const next=new URLSearchParams(location.search).get('next');return next||'index.html';}
+function nextUrl(){
+  const next = new URLSearchParams(location.search).get('next');
+  return next || 'index.html';
+}
+
+el('gradeLevel').addEventListener('change', () => {
+  fillGradeYearOptions(el('gradeLevel').value);
+});
+
+el('birthYear').addEventListener('input', suggestGradeFromBirthYear);
 
 el('btnLogin').onclick = async () => {
-  const msg=el('loginMsg');msg.className='msg';msg.textContent='로그인 중...';
-  const username=el('loginUsername').value.trim();
-  if(!username){msg.className='msg err';msg.textContent='아이디를 입력해주세요.';return;}
-  const {error}=await sb.auth.signInWithPassword({email:toEmail(username),password:el('loginPassword').value});
-  if(error){msg.className='msg err';msg.textContent='아이디 또는 비밀번호가 틀렸어요.';return;}
-  location.href=nextUrl();
+  const msg = el('loginMsg');
+  msg.className = 'msg';
+  msg.textContent = '로그인 중...';
+
+  const username = el('loginUsername').value.trim();
+  if(!username){
+    msg.className = 'msg err';
+    msg.textContent = '아이디를 입력해주세요.';
+    return;
+  }
+
+  const { error } = await sb.auth.signInWithPassword({
+    email: toEmail(username),
+    password: el('loginPassword').value
+  });
+
+  if(error){
+    msg.className = 'msg err';
+    msg.textContent = '아이디 또는 비밀번호가 틀렸어요.';
+    return;
+  }
+
+  location.href = nextUrl();
 };
 
 el('btnSignup').onclick = async () => {
-  const msg=el('signupMsg');msg.className='msg';msg.textContent='';
-  const username=el('signupUsername').value.trim();
-  const password=el('signupPassword').value;
-  const password2=el('signupPasswordConfirm').value;
-  const schoolId=Number(el('schoolSel').value);
-  if(!username){msg.className='msg err';msg.textContent='아이디를 입력해주세요.';return;}
-  if(!idChecked){msg.className='msg err';msg.textContent='아이디 중복확인을 해주세요.';return;}
-  if(password.length<6){msg.className='msg err';msg.textContent='비밀번호는 6자 이상이어야 해요.';return;}
-  if(password!==password2){msg.className='msg err';msg.textContent='비밀번호가 일치하지 않아요.';return;}
-  if(!schoolId){msg.className='msg err';msg.textContent='학교를 선택해주세요.';return;}
-  const payload={username,display_name:el('displayName').value.trim(),school_id:schoolId,player_name:el('playerName').value.trim(),jersey_number:el('jerseyNumber').value===''?null:Number(el('jerseyNumber').value),grade:el('grade').value.trim(),birth_year:el('birthYear').value===''?null:Number(el('birthYear').value),primary_position:el('primaryPos').value.trim(),throws:el('throws').value,bats:el('bats').value};
-  if(!payload.display_name||!payload.player_name||!payload.grade||!payload.primary_position){msg.className='msg err';msg.textContent='이름, 선수 이름, 학년, 주 포지션은 필수예요.';return;}
-  el('btnSignup').disabled=true;msg.textContent='회원가입 중...';
-  const {data,error}=await sb.auth.signUp({email:toEmail(username),password,options:{data:payload}});
-  el('btnSignup').disabled=false;
-  if(error){msg.className='msg err';msg.textContent=error.message;return;}
-  if(data.session){location.href=nextUrl();return;}
-  msg.className='msg ok';msg.textContent='회원가입이 완료됐어요!';
+  const msg = el('signupMsg');
+  msg.className = 'msg';
+  msg.textContent = '';
+
+  const username = el('signupUsername').value.trim();
+  const password = el('signupPassword').value;
+  const password2 = el('signupPasswordConfirm').value;
+  const schoolId = Number(el('schoolSel').value);
+  const gradeText = buildGradeText();
+
+  if(!username){
+    msg.className = 'msg err';
+    msg.textContent = '아이디를 입력해주세요.';
+    return;
+  }
+
+  if(!idChecked){
+    msg.className = 'msg err';
+    msg.textContent = '아이디 중복확인을 해주세요.';
+    return;
+  }
+
+  if(password.length < 6){
+    msg.className = 'msg err';
+    msg.textContent = '비밀번호는 6자 이상이어야 해요.';
+    return;
+  }
+
+  if(password !== password2){
+    msg.className = 'msg err';
+    msg.textContent = '비밀번호가 일치하지 않아요.';
+    return;
+  }
+
+  if(!schoolId){
+    msg.className = 'msg err';
+    msg.textContent = '학교를 선택해주세요.';
+    return;
+  }
+
+  const payload = {
+    username,
+    display_name: el('displayName').value.trim(),
+    school_id: schoolId,
+    player_name: el('playerName').value.trim(),
+    jersey_number: el('jerseyNumber').value === '' ? null : Number(el('jerseyNumber').value),
+    grade: gradeText,
+    birth_year: el('birthYear').value === '' ? null : Number(el('birthYear').value),
+    primary_position: el('primaryPos').value,
+    throws: el('throws').value,
+    bats: el('bats').value
+  };
+
+  if(!payload.display_name || !payload.player_name || !payload.grade || !payload.primary_position){
+    msg.className = 'msg err';
+    msg.textContent = '이름, 선수 이름, 학제/학년, 주 포지션은 필수예요.';
+    return;
+  }
+
+  el('btnSignup').disabled = true;
+  msg.textContent = '회원가입 중...';
+
+  const { data, error } = await sb.auth.signUp({
+    email: toEmail(username),
+    password,
+    options: { data: payload }
+  });
+
+  el('btnSignup').disabled = false;
+
+  if(error){
+    msg.className = 'msg err';
+    msg.textContent = error.message;
+    return;
+  }
+
+  if(data.session){
+    location.href = nextUrl();
+    return;
+  }
+
+  msg.className = 'msg ok';
+  msg.textContent = '회원가입이 완료됐어요!';
 };
 
 (async function init(){
+  fillGradeYearOptions('');
   await loadSchools();
-  const {data:{user}}=await sb.auth.getUser();
-  if(user) location.href=nextUrl();
+
+  const { data:{ user } } = await sb.auth.getUser();
+  if(user){
+    location.href = nextUrl();
+  }
 })();
 </script>
 </body>
