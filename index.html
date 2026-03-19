@@ -576,10 +576,6 @@ async function measuredRpc(name, args){
   const res = await client.rpc(name, args);
   const ended = performance.now();
 
-  console.log(`[RPC] ${name}: ${(ended - started).toFixed(1)}ms`, {
-    error: res.error?.message || null
-  });
-
   return res;
 }
 
@@ -676,8 +672,7 @@ async function loadDashboard(){
 
   await Promise.allSettled([summaryPromise, recentPromise]);
 
-  const totalEnd = performance.now();
-  console.log(`[HOME] total dashboard load: ${(totalEnd - totalStart).toFixed(1)}ms`);
+  const totalEnd = performance.now(); 
 }
 
 async function init(){
