@@ -448,7 +448,9 @@ function goProtected(path){
     return;
   }
 
-  if(isPendingUser()){
+  const pendingAllowedPages = ['createPlayer.html'];
+
+  if(isPendingUser() && !pendingAllowedPages.includes(path)){
     alert('현재 승인 대기 상태입니다. 관리자 승인 후 이용 가능합니다.');
     return;
   }
