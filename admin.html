@@ -6,7 +6,7 @@
 <title>관리자 권한 관리</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+KR:wght@400currentProfile;600;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+KR:wght@400;600;700;900&display=swap" rel="stylesheet">
 
 <style>
 :root{
@@ -20,6 +20,7 @@
   --brand:#e8ff47;
   --ok:#4ade80;
   --err:#f87171;
+  --warn:#fbbf24;
 }
 
 *{box-sizing:border-box;margin:0;padding:0}
@@ -122,6 +123,10 @@ body{
   background:rgba(248,113,113,.1);
   color:var(--err);
 }
+.msg.warn{
+  background:rgba(251,191,36,.1);
+  color:var(--warn);
+}
 
 .user-list{
   display:flex;
@@ -163,7 +168,7 @@ body{
 }
 
 .role-select{
-  width:110px;
+  width:120px;
   flex-shrink:0;
   appearance:none;
   border-radius:10px;
@@ -206,7 +211,7 @@ body{
 }
 
 @media (max-width:380px){
-  .role-select{width:96px;padding:10px 8px}
+  .role-select{width:104px;padding:10px 8px}
   .save-btn{padding:10px 10px}
   .nick{font-size:13px}
 }
@@ -231,8 +236,8 @@ body{
   <div class="hero">
     <div class="hero-title">권한 관리</div>
     <div class="hero-sub">
-      학교기준 최초 등록된 사용자가 admin권한을 가집니다.<br>      
-      admin 권한은 한 명만 유지됩니다.
+      학교 기준 첫 가입자는 admin 권한을 가집니다.<br>
+      이후 가입자는 pending 상태로 등록되며, admin 승인 후 member 또는 recorder로 변경할 수 있습니다.
     </div>
   </div>
 
@@ -277,6 +282,10 @@ async function logout(){
   location.href = 'index.html';
 }
 
+function getMyId(){
+  return String(currentProfile?.user_id || currentProfile?.id || '');
+}
+
 async function requireAdmin(){
   const { data, error } = await client.auth.getSession();
   currentSession = (!error && data?.session) || null;
@@ -312,30 +321,29 @@ function renderRows(list){
     return;
   }
 
+  const myId = getMyId();
+
   wrap.innerHTML = list.map(user => {
-    const isMe = String(user.id) === String(currentProfile.user_id);
-    const lockSelf = isMe && user.role === 'admin';
-    
-    console.log(String(user.id));
-    console.log(String(currentProfile.user_id));
-    console.log(user.role);
+    const isMe = String(user.id) === myId;
+    const lockSelfAdmin = isMe && user.role === 'admin';
 
     return `
       <div class="user-card">
         <div class="user-row">
-          <div class="nick">${escapeHtml(user.display_name || '-')}</div>
+          <div class="nick">${escapeHtml(user.display_name || user.username || '-')}</div>
           ${isMe ? '<div class="me-badge">나</div>' : ''}
 
-          <select class="role-select" id="role_${user.id}" ${lockSelf ? 'disabled' : ''}>
-            <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>admin</option>
-            <option value="recorder" ${user.role === 'recorder' ? 'selected' : ''}>recorder</option>
+          <select class="role-select" id="role_${user.id}" ${lockSelfAdmin ? 'disabled' : ''}>
+            <option value="pending" ${user.role === 'pending' ? 'selected' : ''}>pending</option>
             <option value="member" ${user.role === 'member' ? 'selected' : ''}>member</option>
+            <option value="recorder" ${user.role === 'recorder' ? 'selected' : ''}>recorder</option>
+            <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>admin</option>
           </select>
 
           <button
             class="save-btn"
             onclick="changeRole('${user.id}','${user.role}')"
-            ${lockSelf ? 'disabled title="관리자 본인 권한은 직접 변경할 수 없습니다."' : ''}
+            ${lockSelfAdmin ? 'disabled title="관리자 본인 권한은 직접 변경할 수 없습니다."' : ''}
           >
             저장
           </button>
@@ -365,11 +373,10 @@ async function changeRole(id, oldRole){
   if(!select) return;
 
   const newRole = select.value;
-  const isMe = String(id) === String(currentProfile.user_id);
+  const isMe = String(id) === getMyId();
   const currentAdmin = currentUsers.find(u => u.role === 'admin');
   const targetUser = currentUsers.find(u => String(u.id) === String(id));
 
-  // 관리자 본인 row 직접 변경 금지
   if(isMe && oldRole === 'admin' && newRole !== 'admin'){
     showMsg('관리자 본인 권한은 직접 변경할 수 없습니다.', 'err');
     select.value = oldRole;
@@ -377,7 +384,7 @@ async function changeRole(id, oldRole){
   }
 
   if(newRole === oldRole){
-    showMsg('변경된 내용이 없습니다.');
+    showMsg('변경된 내용이 없습니다.', 'warn');
     return;
   }
 
@@ -402,7 +409,9 @@ async function changeRole(id, oldRole){
 
     if(error) throw error;
 
-    if(newRole === 'admin' && currentAdmin && String(currentAdmin.id) !== String(id)){
+    if(oldRole === 'pending' && (newRole === 'member' || newRole === 'recorder')){
+      showMsg(`${targetUser?.display_name || '선택한 사용자'} 승인 완료`, 'ok');
+    }else if(newRole === 'admin' && currentAdmin && String(currentAdmin.id) !== String(id)){
       showMsg(`관리자가 ${targetUser?.display_name || '선택한 사용자'}(으)로 변경되었습니다.`, 'ok');
     }else{
       showMsg('권한 변경 완료', 'ok');
