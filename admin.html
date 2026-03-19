@@ -152,8 +152,18 @@ body{
   text-overflow:ellipsis;
 }
 
+.me-badge{
+  flex-shrink:0;
+  font-size:11px;
+  font-weight:800;
+  color:#000;
+  background:var(--brand);
+  border-radius:999px;
+  padding:4px 8px;
+}
+
 .role-select{
-  width:104px;
+  width:110px;
   flex-shrink:0;
   appearance:none;
   border-radius:10px;
@@ -196,7 +206,7 @@ body{
 }
 
 @media (max-width:380px){
-  .role-select{width:92px;padding:10px 8px}
+  .role-select{width:96px;padding:10px 8px}
   .save-btn{padding:10px 10px}
   .nick{font-size:13px}
 }
@@ -302,21 +312,33 @@ function renderRows(list){
     return;
   }
 
-  wrap.innerHTML = list.map(user => `
-    <div class="user-card">
-      <div class="user-row">
-        <div class="nick">${escapeHtml(user.display_name || '-')}</div>
+  wrap.innerHTML = list.map(user => {
+    const isMe = String(user.id) === String(currentProfile?.id);
+    const lockSelf = isMe && user.role === 'admin';
 
-        <select class="role-select" id="role_${user.id}">
-          <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>admin</option>
-          <option value="recorder" ${user.role === 'recorder' ? 'selected' : ''}>recorder</option>
-          <option value="member" ${user.role === 'member' ? 'selected' : ''}>member</option>
-        </select>
+    return `
+      <div class="user-card">
+        <div class="user-row">
+          <div class="nick">${escapeHtml(user.display_name || '-')}</div>
+          ${isMe ? '<div class="me-badge">나</div>' : ''}
 
-        <button class="save-btn" onclick="changeRole('${user.id}','${user.role}')">저장</button>
+          <select class="role-select" id="role_${user.id}" ${lockSelf ? 'disabled' : ''}>
+            <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>admin</option>
+            <option value="recorder" ${user.role === 'recorder' ? 'selected' : ''}>recorder</option>
+            <option value="member" ${user.role === 'member' ? 'selected' : ''}>member</option>
+          </select>
+
+          <button
+            class="save-btn"
+            onclick="changeRole('${user.id}','${user.role}')"
+            ${lockSelf ? 'disabled title="관리자 본인 권한은 직접 변경할 수 없습니다."' : ''}
+          >
+            저장
+          </button>
+        </div>
       </div>
-    </div>
-  `).join('');
+    `;
+  }).join('');
 }
 
 async function loadUsers(){
@@ -339,14 +361,21 @@ async function changeRole(id, oldRole){
   if(!select) return;
 
   const newRole = select.value;
+  const isMe = String(id) === String(currentProfile?.id);
+  const currentAdmin = currentUsers.find(u => u.role === 'admin');
+  const targetUser = currentUsers.find(u => String(u.id) === String(id));
+
+  // 관리자 본인 row 직접 변경 금지
+  if(isMe && oldRole === 'admin' && newRole !== 'admin'){
+    showMsg('관리자 본인 권한은 직접 변경할 수 없습니다.', 'err');
+    select.value = oldRole;
+    return;
+  }
 
   if(newRole === oldRole){
     showMsg('변경된 내용이 없습니다.');
     return;
   }
-
-  const currentAdmin = currentUsers.find(u => u.role === 'admin');
-  const targetUser = currentUsers.find(u => String(u.id) === String(id));
 
   if(newRole === 'admin' && currentAdmin && String(currentAdmin.id) !== String(id)){
     const ok = confirm('admin은 1명만 될 수 있습니다. 변경하시겠습니까?');
@@ -379,7 +408,6 @@ async function changeRole(id, oldRole){
   }catch(err){
     showMsg(err.message || '권한 변경 실패', 'err');
     select.value = oldRole;
-  }finally{
     select.disabled = false;
     if(btn) btn.disabled = false;
   }
