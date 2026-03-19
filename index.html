@@ -421,10 +421,13 @@ body {
 </div>
 
 <script>
+<script>
 const client = window.sb;
 const el = (id) => document.getElementById(id);
 const num = (v) => Number.isFinite(Number(v)) ? Number(v) : 0;
+
 let currentSession = null;
+let currentContext = null;
 
 function badgeClass(r){
   return r === 'W' ? 'W' : r === 'L' ? 'L' : 'D';
@@ -438,11 +441,36 @@ function goProtected(path){
   location.href = path;
 }
 
-function renderAuthButtons(session){
+function goAdmin(){
+  if(!currentSession){
+    location.href = `auth.html?next=${encodeURIComponent('admin.html')}`;
+    return;
+  }
+  if(currentContext?.role !== 'admin'){
+    alert('관리자만 접근할 수 있습니다.');
+    return;
+  }
+  location.href = 'admin.html';
+}
+
+function renderAuthButtons(session, ctx){
   const area = el('authArea');
-  area.innerHTML = session
-    ? `<button class="auth-btn" onclick="logout()">로그아웃</button>`
-    : `<button class="auth-btn primary" onclick="location.href='auth.html'">로그인</button>`;
+
+  if(!session){
+    area.innerHTML = `
+      <button class="auth-btn primary" onclick="location.href='auth.html'">로그인</button>
+    `;
+    return;
+  }
+
+  const adminBtn = ctx?.role === 'admin'
+    ? `<button class="auth-btn" onclick="goAdmin()">관리자</button>`
+    : '';
+
+  area.innerHTML = `
+    ${adminBtn}
+    <button class="auth-btn" onclick="logout()">로그아웃</button>
+  `;
 }
 
 async function logout(){
@@ -558,7 +586,7 @@ async function measuredRpc(name, args){
 
 function readCache(){
   try {
-    const raw = localStorage.getItem('baseball_home_cache_v2');
+    const raw = localStorage.getItem('baseball_home_cache_v3');
     if(!raw) return null;
 
     const cached = JSON.parse(raw);
@@ -576,13 +604,25 @@ function readCache(){
 
 function writeCache(data){
   try {
-    localStorage.setItem('baseball_home_cache_v2', JSON.stringify({
+    localStorage.setItem('baseball_home_cache_v3', JSON.stringify({
       at: Date.now(),
       data
     }));
   } catch (e) {
     console.warn('[HOME] cache write failed', e);
   }
+}
+
+async function loadMyContext(){
+  const { data, error } = await measuredRpc('baseball_my_context');
+
+  if(error){
+    console.warn('[HOME] my_context failed', error.message);
+    return null;
+  }
+
+  if(Array.isArray(data)) return data[0] || null;
+  return data || null;
 }
 
 async function loadDashboard(){
@@ -642,24 +682,24 @@ async function loadDashboard(){
 }
 
 async function init(){
-  const sessionStart = performance.now();
   const { data, error } = await client.auth.getSession();
-  const sessionEnd = performance.now();
-
-  console.log(`[AUTH] getSession: ${(sessionEnd - sessionStart).toFixed(1)}ms`);
-
   currentSession = (!error && data?.session) || null;
-  renderAuthButtons(currentSession);
 
   if(!currentSession){
+    currentContext = null;
+    renderAuthButtons(null, null);
     renderGuestHome();
     return;
   }
+
+  currentContext = await loadMyContext();
+  renderAuthButtons(currentSession, currentContext);
 
   await loadDashboard();
 }
 
 init();
+</script>
 </script>
 </body>
 </html>
