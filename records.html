@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="ko">
 <head>
@@ -87,21 +88,12 @@ textarea{resize:none}
 
 <div class="container">
 
-  <!-- VIEW 1: 선수 선택 -->
-  <div id="viewPlayers">
-    <div class="page-title">기록 입력</div>
-    <div class="page-sub">먼저 선수를 선택해주세요.</div>
-    <div class="hint-text" id="playersHint">불러오는 중...</div>
-    <div id="playerSelectList"></div>
-  </div>
-
-  <!-- VIEW 2: 경기 선택 -->
-  <div id="viewGames" class="hidden">
+  <!-- VIEW 1: 경기 선택 -->
+  <div id="viewGames">
     <div class="page-title">경기 선택</div>
-    <div class="page-sub" id="selectedPlayerHeader">-</div>
+    <div class="page-sub" id="selectedPlayerHeader">내 선수 기록을 입력할 경기를 선택해주세요.</div>
     <div class="hint-text" id="gamesHint">불러오는 중...</div>
     <div id="gamesList"></div>
-    <button class="btn ghost" id="btnBackToPlayers" style="margin-top:16px">← 선수 선택</button>
   </div>
 
   <!-- VIEW 3: 기록 입력 -->
@@ -119,7 +111,21 @@ textarea{resize:none}
       </div>
       <div class="row2">
         <div><label>타순</label><input id="battingOrder" type="number" min="1" step="1" placeholder="1~9" /></div>
-        <div><label>포지션</label><input id="position" type="text" placeholder="예: SS, P" /></div>
+        <div><label>포지션</label><select id="position">
+          <option value="">선택</option>
+          <option value="P">투수 (P)</option>
+          <option value="C">포수 (C)</option>
+          <option value="1B">1루수 (1B)</option>
+          <option value="2B">2루수 (2B)</option>
+          <option value="3B">3루수 (3B)</option>
+          <option value="SS">유격수 (SS)</option>
+          <option value="LF">좌익수 (LF)</option>
+          <option value="CF">중견수 (CF)</option>
+          <option value="RF">우익수 (RF)</option>
+          <option value="DH">지명타자 (DH)</option>
+          <option value="PH">대타 (PH)</option>
+          <option value="PR">대주자 (PR)</option>
+        </select></div>
       </div>
 
       <div class="divider"></div>
@@ -156,7 +162,7 @@ textarea{resize:none}
         <button class="btn ghost" id="btnReset">되돌리기</button>
         <button class="btn danger" id="btnRemoveFromGame">경기에서 제외</button>
       </div>
-      <button class="btn ghost" id="btnBackPlayers" style="margin-top:8px">← 선수 목록</button>
+      <button class="btn ghost" id="btnBackPlayers" style="margin-top:8px">← 경기 목록</button>
       <div class="msg" id="msg"></div>
     </div>
   </div>
@@ -169,10 +175,10 @@ async function requireLogin(){const{data,error}=await client.auth.getSession();i
 const el=(id)=>document.getElementById(id);
 const setMsg=(html)=>el('msg').innerHTML=html;
 let currentGameId=null,currentGame=null,currentRecord=null,currentPlayer=null,isStarter=true;
-let playersCache=[],recordsCache=[],myPlayerId=null,mySchoolId=null,currentView='viewPlayers';
+let playersCache=[],recordsCache=[],myPlayerId=null,mySchoolId=null,currentView='viewGames';
 
 function show(viewId, pushState=true){
-  ['viewPlayers','viewGames','viewEdit'].forEach(v=>el(v).classList.add('hidden'));
+  ['viewGames','viewEdit'].forEach(v=>el(v).classList.add('hidden'));
   el(viewId).classList.remove('hidden');
   setMsg('');
   currentView=viewId;
@@ -191,26 +197,27 @@ function recordSummary(rec){
   return`${bo} · ${pos} · ${rec.is_starter?'선발':'교체'} | ${safeNum(rec.ab)}타 ${safeNum(rec.h)}안 ${safeNum(rec.rbi)}타점 | ${safeNum(rec.ip)}이닝 ${safeNum(rec.pk)}K`;
 }
 
-async function loadPlayerList(){
-  el('playerSelectList').innerHTML='';el('playersHint').textContent='불러오는 중...';
-  const{data:{user}}=await client.auth.getUser();
-  if(!user){el('playersHint').textContent='로그인이 필요해요.';return;}
-  const{data,error}=await client.from('baseball_players').select('id,name,jersey_number,grade,primary_position,throws,bats,is_active').eq('owner_user_id',user.id).order('jersey_number',{ascending:true,nullsFirst:false}).order('name',{ascending:true});
-  if(error){el('playersHint').textContent='불러오기 실패: '+error.message;return;}
-  if(!data||!data.length){el('playersHint').textContent='등록된 선수가 없어요.';return;}
-  el('playersHint').textContent='';
-  data.forEach(p=>{
-    const item=document.createElement('div');item.className='player-card';
-    const num=(p.jersey_number??'')!==''?p.jersey_number:'-';
-    item.innerHTML=`<div class="player-num">${num}</div><div class="player-info"><div class="player-name">${p.name} <span style="color:var(--muted);font-size:12px">(${p.grade})</span></div><div class="player-meta">${p.primary_position} · ${p.throws}투${p.bats}타</div></div><div style="color:var(--brand);font-size:18px">→</div>`;
-    item.addEventListener('click',()=>{
-      currentPlayer=p;
-      myPlayerId=p.id;
-      el('selectedPlayerHeader').textContent=`선수: #${num} ${p.name} (${p.grade})`;
-      show('viewGames');loadGames();
-    });
-    el('playerSelectList').appendChild(item);
-  });
+async function loadMyPlayer(){
+  const {data:{user}} = await client.auth.getUser();
+  if(!user) return false;
+  const {data,error} = await client
+    .from('baseball_players')
+    .select('id,name,jersey_number,grade,primary_position,throws,bats,is_active')
+    .eq('owner_user_id', user.id)
+    .maybeSingle();
+  if(error){
+    el('gamesHint').textContent='내 선수 정보를 불러오지 못했어요: '+error.message;
+    return false;
+  }
+  if(!data){
+    el('gamesHint').textContent='내 선수 정보가 없어요. 관리자에게 문의해주세요.';
+    return false;
+  }
+  currentPlayer=data;
+  myPlayerId=data.id;
+  const num=(data.jersey_number??'')!=='' ? data.jersey_number : '-';
+  el('selectedPlayerHeader').textContent=`#${num} ${data.name} (${data.grade||'-'}) · ${data.primary_position||'-'}`;
+  return true;
 }
 
 async function loadGames(){
@@ -256,55 +263,6 @@ async function openGame(gameId){
   }
 }
 
-async function loadPlayersCache(){
-  if(playersCache.length>0)return;
-  const{data,error}=await client.from('baseball_players').select('id,name,jersey_number,grade,primary_position,throws,bats,is_active').order('is_active',{ascending:false}).order('jersey_number',{ascending:true,nullsFirst:false}).order('name',{ascending:true});
-  if(error){playersCache=[];return;}
-  playersCache=data||[];
-}
-
-async function loadRecordsForGame(){
-  el('recordsList').innerHTML='';el('recordsHint').textContent='불러오는 중...';
-  const{data,error}=await client.from('baseball_game_player_records').select('id,game_id,player_id,is_starter,batting_order,position,ab,h,rbi,r,bb,so,hbp,sb,doubles,triples,hr,sf,sh,gb,fb,ip,er,pk,pbb,ph,pitches,max_vel,e,player_memo,baseball_players(id,name,jersey_number,grade,primary_position,throws,bats)').eq('game_id',currentGameId).order('batting_order',{ascending:true,nullsFirst:false}).order('player_id',{ascending:true});
-  if(error){el('recordsHint').textContent='불러오기 실패: '+error.message;return;}
-  recordsCache=data||[];
-  if(!recordsCache.length){el('recordsHint').textContent='등록된 선수가 없어요. 위의 선수 추가 버튼으로 참여선수를 먼저 등록하세요.';return;}
-  el('recordsHint').textContent='';
-  recordsCache.forEach(rec=>{
-    const p=rec.baseball_players||{};
-    const num=(p.jersey_number??'')!==''?p.jersey_number:'-';
-    const item=document.createElement('div');item.className='player-card';
-    item.innerHTML=`<div class="player-num">${num}</div><div class="player-info"><div class="player-name">${p.name||'선수'} <span style="color:var(--muted);font-size:12px">(${p.grade||'-'})</span></div><div class="player-meta">${recordSummary(rec)}</div>${rec.player_memo?`<div class="player-meta" style="color:var(--brand)">메모: ${rec.player_memo}</div>`:''}</div><div class="starter-pill ${rec.is_starter?'on':'off'}">${rec.is_starter?'선발':'교체'}</div>`;
-    item.addEventListener('click',()=>openRecord(rec));el('recordsList').appendChild(item);
-  });
-}
-
-
-
-
-
-function renderPlayerPickList(query){
-  const q=(query||'').trim().toLowerCase();
-  const picked=new Set((recordsCache||[]).map(r=>r.player_id));
-  const list=el('playerPickList');list.innerHTML='';
-  const filtered=(playersCache||[]).filter(p=>!picked.has(p.id)).filter(p=>{if(!q)return true;const num=(p.jersey_number??'').toString();return(p.name||'').toLowerCase().includes(q)||num===q;}).slice(0,50);
-  if(!filtered.length){list.innerHTML='<div class="hint-text">추가할 수 있는 선수가 없어요.</div>';return;}
-  filtered.forEach(p=>{
-    const item=document.createElement('div');item.className='player-card';
-    const num=(p.jersey_number??'')!==''?p.jersey_number:'-';
-    item.innerHTML=`<div class="player-num">${num}</div><div class="player-info"><div class="player-name">${p.name} <span style="color:var(--muted);font-size:12px">(${p.grade})</span></div><div class="player-meta">${p.primary_position} · ${p.throws}투${p.bats}타</div></div><div style="color:var(--brand);font-size:22px;font-weight:900">+</div>`;
-    item.addEventListener('click',()=>addPlayerToGame(p.id));list.appendChild(item);
-  });
-}
-
-async function addPlayerToGame(playerId){
-  const{error}=await client.from('baseball_game_player_records').upsert({game_id:currentGameId,player_id:playerId,is_starter:true,batting_order:null,position:null},{onConflict:'game_id,player_id'});
-  if(error){alert('선수 추가 실패: '+error.message);return;}
-  await loadRecordsForGame();
-  const rec=recordsCache.find(r=>r.player_id===playerId);
-  if(rec)openRecord(rec);
-}
-
 function openRecord(rec){
   currentRecord=rec;
   // openRecord가 직접 호출될 때는 currentPlayer가 이미 선수선택에서 세팅돼있음
@@ -314,7 +272,8 @@ function openRecord(rec){
   const num=(currentPlayer.jersey_number??'')!==''?`#${currentPlayer.jersey_number}`:'#-';
   el('editHeader').textContent=`경기 #${currentGameId} · ${num} ${currentPlayer.name||''} (${currentPlayer.grade||''})`;
   if(isStarter)setActive(el('btnStarter'),el('btnSub'));else setActive(el('btnSub'),el('btnStarter'));
-  el('battingOrder').value=rec.batting_order??'';el('position').value=rec.position??'';
+  const defaultPosition = rec.position ?? currentPlayer?.primary_position ?? '';
+  el('battingOrder').value=rec.batting_order??'';el('position').value=defaultPosition;
   el('ab').value=rec.ab??0;el('h').value=rec.h??0;el('rbi').value=rec.rbi??0;el('r').value=rec.r??0;el('bb').value=rec.bb??0;el('so').value=rec.so??0;el('hbp').value=rec.hbp??0;el('sb').value=rec.sb??0;
   el('doubles').value=rec.doubles??0;el('triples').value=rec.triples??0;el('hr').value=rec.hr??0;el('sf').value=rec.sf??0;el('sh').value=rec.sh??0;el('gb').value=rec.gb??0;el('fb').value=rec.fb??0;
   el('ip').value=rec.ip??0;el('er').value=rec.er??0;el('pk').value=rec.pk??0;el('pbb').value=rec.pbb??0;el('ph').value=rec.ph??0;el('pitches').value=rec.pitches??0;el('maxVel').value=rec.max_vel??'';
@@ -324,8 +283,7 @@ function openRecord(rec){
 el('btnStarter').addEventListener('click',()=>{isStarter=true;setActive(el('btnStarter'),el('btnSub'));});
 el('btnSub').addEventListener('click',()=>{isStarter=false;setActive(el('btnSub'),el('btnStarter'));});
 
-el('btnBackToPlayers').addEventListener('click',()=>{currentGameId=null;currentGame=null;show('viewPlayers');});
-el('btnBackPlayers').addEventListener('click',()=>{currentGameId=null;currentGame=null;show('viewGames');});
+el('btnBackPlayers').addEventListener('click',()=>{currentGameId=null;currentGame=null;show('viewGames');loadGames();});
 el('btnReset').addEventListener('click',()=>{if(currentRecord)openRecord(currentRecord);});
 
 el('btnSave').addEventListener('click',async()=>{
@@ -353,11 +311,9 @@ window.addEventListener('popstate',()=>{
   if(currentView==='viewEdit'){
     currentRecord=null;
     show('viewGames',false);
-  } else if(currentView==='viewGames'){
-    currentGameId=null;currentGame=null;
-    show('viewPlayers',false);
+    loadGames();
   } else {
-    show('viewPlayers',false);
+    show('viewGames',false);
   }
 });
 
@@ -368,8 +324,10 @@ window.addEventListener('popstate',()=>{
     const{data:profile}=await client.from('baseball_profiles').select('school_id').eq('id',user.id).maybeSingle();
     if(profile) mySchoolId=profile.school_id;
   }
-  history.replaceState({view:'viewPlayers'},'',location.pathname);
-  show('viewPlayers',false);await loadPlayerList();
+  history.replaceState({view:'viewGames'},'',location.pathname);
+  show('viewGames',false);
+  const ok=await loadMyPlayer();
+  if(ok) await loadGames();
 })();
 </script>
 </body>
