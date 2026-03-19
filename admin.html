@@ -6,7 +6,7 @@
 <title>관리자 권한 관리</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+KR:wght@400;600;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+KR:wght@400currentProfile;600;700;900&display=swap" rel="stylesheet">
 
 <style>
 :root{
@@ -313,11 +313,11 @@ function renderRows(list){
   }
 
   wrap.innerHTML = list.map(user => {
-    const isMe = String(user.id) === String(currentProfile?.id);
+    const isMe = String(user.id) === String(currentProfile.user_id);
     const lockSelf = isMe && user.role === 'admin';
     
     console.log(String(user.id));
-    console.log(String(currentProfile?.id));
+    console.log(String(currentProfile.user_id));
     console.log(user.role);
 
     return `
@@ -365,7 +365,7 @@ async function changeRole(id, oldRole){
   if(!select) return;
 
   const newRole = select.value;
-  const isMe = String(id) === String(currentProfile?.id);
+  const isMe = String(id) === String(currentProfile.user_id);
   const currentAdmin = currentUsers.find(u => u.role === 'admin');
   const targetUser = currentUsers.find(u => String(u.id) === String(id));
 
