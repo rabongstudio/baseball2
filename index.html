@@ -432,11 +432,27 @@ function badgeClass(r){
   return r === 'W' ? 'W' : r === 'L' ? 'L' : 'D';
 }
 
+function isPendingUser(){
+  return currentContext?.role === 'pending';
+}
+
+function clearHomeCache(){
+  try{
+    localStorage.removeItem('baseball_home_cache_v3');
+  }catch(e){}
+}
+
 function goProtected(path){
   if(!currentSession){
     location.href = `auth.html?next=${encodeURIComponent(path)}`;
     return;
   }
+
+  if(isPendingUser()){
+    alert('현재 승인 대기 상태입니다. 관리자 승인 후 이용 가능합니다.');
+    return;
+  }
+
   location.href = path;
 }
 
@@ -473,6 +489,7 @@ function renderAuthButtons(session, ctx){
 }
 
 async function logout(){
+  clearHomeCache();
   await client.auth.signOut();
   location.href = 'index.html';
 }
@@ -485,6 +502,22 @@ function renderGuestHome(){
 
   el('recentHint').style.display = 'block';
   el('recentHint').innerHTML = `<div class="empty-icon">⚾</div>로그인하면 최근 경기 목록을<br>확인할 수 있어요.`;
+  el('recentList').innerHTML = '';
+  el('btnViewAll').style.display = 'none';
+}
+
+function renderPendingHome(){
+  el('yWLD').textContent = '—';
+  el('yearLabel').textContent = '승인 대기';
+  el('mWLD').textContent = '—';
+  el('monthLabel').textContent = '관리자 승인 후 이용 가능';
+
+  el('recentHint').style.display = 'block';
+  el('recentHint').innerHTML = `
+    <div class="empty-icon">⏳</div>
+    현재 승인 대기 상태입니다.<br>
+    관리자 승인 후 경기 및 선수 정보를 조회할 수 있어요.
+  `;
   el('recentList').innerHTML = '';
   el('btnViewAll').style.display = 'none';
 }
@@ -572,11 +605,7 @@ function renderRecentError(msg){
 }
 
 async function measuredRpc(name, args){
-  const started = performance.now();
-  const res = await client.rpc(name, args);
-  const ended = performance.now();
-
-  return res;
+  return await client.rpc(name, args);
 }
 
 function readCache(){
@@ -592,7 +621,6 @@ function readCache(){
 
     return cached.data;
   } catch (e) {
-    console.warn('[HOME] cache read failed', e);
     return null;
   }
 }
@@ -603,9 +631,7 @@ function writeCache(data){
       at: Date.now(),
       data
     }));
-  } catch (e) {
-    console.warn('[HOME] cache write failed', e);
-  }
+  } catch (e) {}
 }
 
 async function loadMyContext(){
@@ -621,16 +647,19 @@ async function loadMyContext(){
 }
 
 async function loadDashboard(){
+  if(isPendingUser()){
+    clearHomeCache();
+    renderPendingHome();
+    return;
+  }
+
   renderLoadingState();
 
   const cached = readCache();
   if(cached){
-    console.log('[HOME] cache hit');
     if(cached.summary) renderSummary(cached.summary);
     if(cached.recent_games) renderRecentGames(cached.recent_games);
   }
-
-  const totalStart = performance.now();
 
   const summaryPromise = measuredRpc('baseball_dashboard_summary');
   const recentPromise = measuredRpc('baseball_game_list_recent_my');
@@ -646,7 +675,14 @@ async function loadDashboard(){
         renderSummaryError(error.message);
         return;
       }
-      const summary = data || {};
+
+      const summary = Array.isArray(data) ? (data[0] || null) : data;
+
+      if(!summary){
+        renderSummaryError('승인 후 이용 가능합니다.');
+        return;
+      }
+
       nextCache.summary = summary;
       renderSummary(summary);
       writeCache(nextCache);
@@ -661,7 +697,16 @@ async function loadDashboard(){
         renderRecentError(`최근 경기 조회 실패: ${error.message}`);
         return;
       }
-      const recent = data || [];
+
+      const recent = Array.isArray(data) ? data : [];
+
+      if(!recent.length){
+        renderRecentGames([]);
+        nextCache.recent_games = [];
+        writeCache(nextCache);
+        return;
+      }
+
       nextCache.recent_games = recent;
       renderRecentGames(recent);
       writeCache(nextCache);
@@ -671,8 +716,6 @@ async function loadDashboard(){
     });
 
   await Promise.allSettled([summaryPromise, recentPromise]);
-
-  const totalEnd = performance.now(); 
 }
 
 async function init(){
@@ -681,6 +724,7 @@ async function init(){
 
   if(!currentSession){
     currentContext = null;
+    clearHomeCache();
     renderAuthButtons(null, null);
     renderGuestHome();
     return;
@@ -688,6 +732,18 @@ async function init(){
 
   currentContext = await loadMyContext();
   renderAuthButtons(currentSession, currentContext);
+
+  if(!currentContext){
+    clearHomeCache();
+    renderGuestHome();
+    return;
+  }
+
+  if(isPendingUser()){
+    clearHomeCache();
+    renderPendingHome();
+    return;
+  }
 
   await loadDashboard();
 }
