@@ -301,6 +301,7 @@ function getAcademicYear(date = new Date()){
 function suggestGradeFromBirthYear(){
   const birthYear = Number(el('birthYear').value);
   if(!birthYear) return;
+
   const schoolYear = getAcademicYear();
   const schoolGrade = schoolYear - birthYear - 7;
 
@@ -367,18 +368,6 @@ async function loadSchoolOptions(category, selectedSchoolId = ''){
   if(selectedSchoolId) schoolSel.value = String(selectedSchoolId);
 }
 
-async function loadSchoolById(schoolId){
-  if(!schoolId) return null;
-  const { data, error } = await client
-    .from('baseball_schools')
-    .select('id, name, category')
-    .eq('id', schoolId)
-    .maybeSingle();
-
-  if(error) return null;
-  return data || null;
-}
-
 el('schoolCategory').addEventListener('change', async () => {
   await loadSchoolOptions(el('schoolCategory').value, '');
 });
@@ -422,7 +411,14 @@ async function loadMyPlayer(){
 
   const { data, error } = await client
     .from('baseball_players')
-    .select('*')
+    .select(`
+      *,
+      baseball_schools (
+        id,
+        name,
+        category
+      )
+    `)
     .eq('owner_user_id', user.id)
     .maybeSingle();
 
@@ -461,16 +457,9 @@ async function loadMyPlayer(){
   syncChipsFromInput();
   setActiveState(!!data.is_active);
 
-  if(data.school_id){
-    const school = await loadSchoolById(data.school_id);
-    if(school){
-      el('schoolCategory').value = school.category ?? '';
-      await loadSchoolOptions(school.category ?? '', data.school_id);
-    }else{
-      el('schoolCategory').value = '';
-      el('schoolId').innerHTML = '<option value="">학교 선택</option>';
-      el('schoolId').disabled = true;
-    }
+  if(data.school_id && data.baseball_schools){
+    el('schoolCategory').value = data.baseball_schools.category ?? '';
+    await loadSchoolOptions(data.baseball_schools.category ?? '', data.school_id);
   }else{
     el('schoolCategory').value = '';
     el('schoolId').innerHTML = '<option value="">학교 선택</option>';
