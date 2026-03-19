@@ -315,6 +315,10 @@ function renderRows(list){
   wrap.innerHTML = list.map(user => {
     const isMe = String(user.id) === String(currentProfile?.id);
     const lockSelf = isMe && user.role === 'admin';
+    
+    console.log(String(user.id));
+    console.log(String(currentProfile?.id));
+    console.log(user.role);
 
     return `
       <div class="user-card">
