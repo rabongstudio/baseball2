@@ -49,9 +49,13 @@ label{display:block;margin-top:16px;font-size:12px;font-weight:700;letter-spacin
 .check-btn:hover{background:var(--brand);color:var(--black)}
 .check-btn:disabled{opacity:.4;cursor:not-allowed}
 
-input:not(.id-wrap input):not(.input-wrap input),select{width:100%;margin-top:6px;padding:14px 16px;border:1px solid var(--border2);border-radius:12px;font-size:15px;background:rgba(255,255,255,.05);color:var(--text);font-family:'Noto Sans KR',sans-serif}
+input:not(.id-wrap input):not(.input-wrap input),select,textarea{
+  width:100%;margin-top:6px;padding:14px 16px;border:1px solid var(--border2);border-radius:12px;
+  font-size:15px;background:rgba(255,255,255,.05);color:var(--text);font-family:'Noto Sans KR',sans-serif
+}
 select option{background:var(--panel);color:var(--text)}
-input:focus,select:focus{outline:none;border-color:var(--brand)}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--brand)}
+textarea{resize:vertical;min-height:88px}
 
 .hint{font-size:12px;margin-top:4px;min-height:16px}
 .hint.ok{color:var(--ok)}
@@ -204,7 +208,7 @@ input:focus,select:focus{outline:none;border-color:var(--brand)}
           </select>
         </div>
         <div>
-          <label>투 / 타</label>
+          <label>등/투타</label>
           <div class="row2" style="margin-top:6px">
             <div>
               <select id="throws">
@@ -223,6 +227,20 @@ input:focus,select:focus{outline:none;border-color:var(--brand)}
           </div>
         </div>
       </div>
+
+      <div class="row2">
+        <div>
+          <label>키(cm)</label>
+          <input id="heightCm" type="number" min="50" max="250" step="0.1" placeholder="예: 145" />
+        </div>
+        <div>
+          <label>몸무게(kg)</label>
+          <input id="weightKg" type="number" min="10" max="200" step="0.1" placeholder="예: 38" />
+        </div>
+      </div>
+
+      <label>부가정보 / 메모</label>
+      <textarea id="playerNote" placeholder="예: 주말리그 등록선수, 최근 포지션 변경, 성장기록 메모 등"></textarea>
 
       <button class="btn" id="btnSignup">회원가입</button>
       <div class="msg" id="signupMsg"></div>
@@ -298,12 +316,19 @@ function buildGradeText(){
 }
 
 function suggestGradeFromBirthYear(){
-  const birthYear = Number(el('birthYear').value);
+  const raw = el('birthYear').value.trim();
   const hint = el('hintGrade');
 
-  if(!birthYear){
+  if(!raw){
     hint.className = 'hint';
     hint.textContent = '';
+    return;
+  }
+
+  const birthYear = Number(raw);
+  if(!Number.isFinite(birthYear)){
+    hint.className = 'hint warn';
+    hint.textContent = '생년을 정확히 입력해주세요.';
     return;
   }
 
@@ -568,7 +593,10 @@ el('btnSignup').onclick = async () => {
     birth_year: el('birthYear').value === '' ? null : Number(el('birthYear').value),
     primary_position: el('primaryPos').value,
     throws: el('throws').value,
-    bats: el('bats').value
+    bats: el('bats').value,
+    height_cm: el('heightCm').value === '' ? null : Number(el('heightCm').value),
+    weight_kg: el('weightKg').value === '' ? null : Number(el('weightKg').value),
+    note: el('playerNote').value.trim()
   };
 
   if(!payload.display_name || !payload.player_name || !payload.grade || !payload.primary_position){
