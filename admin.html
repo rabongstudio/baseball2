@@ -9,12 +9,17 @@
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+KR:wght@400;600;700;900&display=swap" rel="stylesheet">
 
 <style>
-:root {
-  --black:#0a0c10; --dark:#11141a; --panel:#181c24;
-  --border:rgba(255,255,255,.07); --border2:rgba(255,255,255,.12);
-  --text:#f0f2f5; --muted:#7a8294;
+:root{
+  --black:#0a0c10;
+  --dark:#11141a;
+  --panel:#181c24;
+  --border:rgba(255,255,255,.07);
+  --border2:rgba(255,255,255,.12);
+  --text:#f0f2f5;
+  --muted:#7a8294;
   --brand:#e8ff47;
-  --ok:#4ade80; --err:#f87171;
+  --ok:#4ade80;
+  --err:#f87171;
 }
 
 *{box-sizing:border-box;margin:0;padding:0}
@@ -26,9 +31,12 @@ body{
 }
 
 .header{
-  position:sticky;top:0;z-index:100;
+  position:sticky;
+  top:0;
+  z-index:100;
   background:rgba(10,12,16,.85);
   backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
   border-bottom:1px solid var(--border);
 }
 
@@ -43,8 +51,9 @@ body{
 }
 
 .logo{
-  font-family:'Bebas Neue';
+  font-family:'Bebas Neue',sans-serif;
   font-size:28px;
+  line-height:1;
   color:var(--brand);
 }
 .logo span{color:var(--text)}
@@ -65,10 +74,15 @@ body{
   cursor:pointer;
 }
 
+.auth-btn:hover{
+  border-color:var(--brand);
+  color:var(--brand);
+}
+
 .container{
   max-width:480px;
   margin:0 auto;
-  padding:20px 16px;
+  padding:20px 16px 32px;
 }
 
 .hero{
@@ -88,7 +102,25 @@ body{
 .hero-sub{
   font-size:13px;
   color:var(--muted);
+  line-height:1.55;
+}
+
+.msg{
+  display:none;
+  margin-bottom:12px;
+  padding:12px 14px;
+  border-radius:12px;
+  font-size:13px;
   line-height:1.5;
+}
+.msg.show{display:block}
+.msg.ok{
+  background:rgba(74,222,128,.1);
+  color:var(--ok);
+}
+.msg.err{
+  background:rgba(248,113,113,.1);
+  color:var(--err);
 }
 
 .user-list{
@@ -101,87 +133,78 @@ body{
   background:var(--panel);
   border:1px solid var(--border);
   border-radius:16px;
-  padding:14px;
+  padding:12px;
 }
 
-.user-line{
+.user-row{
   display:flex;
   align-items:center;
-  justify-content:space-between;
-  gap:10px;
-  margin-bottom:10px;
-}
-
-.nick{
-  font-size:15px;
-  font-weight:800;
-  overflow:hidden;
-  text-overflow:ellipsis;
-  white-space:nowrap;
-}
-
-.role-chip{
-  flex-shrink:0;
-  font-size:12px;
-  padding:6px 10px;
-  border-radius:999px;
-  border:1px solid var(--border2);
-}
-
-.role-row{
-  display:flex;
   gap:8px;
 }
 
-select{
+.nick{
   flex:1;
-  border-radius:12px;
+  min-width:0;
+  font-size:14px;
+  font-weight:800;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.role-select{
+  width:104px;
+  flex-shrink:0;
+  appearance:none;
+  border-radius:10px;
   border:1px solid var(--border2);
   background:var(--dark);
   color:var(--text);
-  padding:12px;
-  font-size:14px;
+  padding:10px 10px;
+  font-size:12px;
   font-weight:700;
+  outline:none;
+}
+
+.role-select:focus{
+  border-color:var(--brand);
 }
 
 .save-btn{
-  padding:12px 14px;
+  flex-shrink:0;
+  padding:10px 12px;
   border:none;
-  border-radius:12px;
+  border-radius:10px;
   background:var(--brand);
   color:#000;
+  font-size:12px;
   font-weight:800;
   cursor:pointer;
 }
 
 .save-btn:disabled,
-select:disabled{
+.role-select:disabled{
   opacity:.6;
   cursor:default;
 }
-
-.msg{
-  display:none;
-  margin-bottom:12px;
-  padding:12px;
-  border-radius:12px;
-  font-size:13px;
-}
-.msg.show{display:block}
-.msg.ok{background:rgba(74,222,128,.1);color:var(--ok)}
-.msg.err{background:rgba(248,113,113,.1);color:var(--err)}
 
 .empty{
   text-align:center;
   padding:30px;
   color:var(--muted);
+  font-size:14px;
+}
+
+@media (max-width:380px){
+  .role-select{width:92px;padding:10px 8px}
+  .save-btn{padding:10px 10px}
+  .nick{font-size:13px}
 }
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/config.js"></script>
 </head>
-
 <body>
 
 <header class="header">
@@ -212,7 +235,7 @@ select:disabled{
 
 <script>
 const client = window.sb;
-const el = (id)=>document.getElementById(id);
+const el = (id) => document.getElementById(id);
 
 let currentSession = null;
 let currentProfile = null;
@@ -227,7 +250,7 @@ function escapeHtml(v=''){
     .replaceAll("'","&#39;");
 }
 
-function showMsg(text,type='ok'){
+function showMsg(text, type='ok'){
   const box = el('msg');
   box.className = `msg show ${type}`;
   box.textContent = text;
@@ -239,19 +262,13 @@ function hideMsg(){
   box.textContent = '';
 }
 
-function roleLabel(role){
-  if(role === 'admin') return '관리자';
-  if(role === 'recorder') return '기록원';
-  return '일반회원';
-}
-
 async function logout(){
   await client.auth.signOut();
   location.href = 'index.html';
 }
 
 async function requireAdmin(){
-  const {data,error} = await client.auth.getSession();
+  const { data, error } = await client.auth.getSession();
   currentSession = (!error && data?.session) || null;
 
   if(!currentSession){
@@ -259,13 +276,14 @@ async function requireAdmin(){
     return false;
   }
 
-  const {data:ctx,error:ctxError} = await client.rpc('baseball_my_context');
+  const { data: ctx, error: ctxError } = await client.rpc('baseball_my_context');
   if(ctxError){
     showMsg('내 권한 정보를 불러오지 못했습니다.', 'err');
     return false;
   }
 
   const me = Array.isArray(ctx) ? ctx[0] : ctx;
+
   if(!me || me.role !== 'admin'){
     alert('관리자만 접근할 수 있습니다.');
     location.href = 'index.html';
@@ -279,24 +297,22 @@ async function requireAdmin(){
 function renderRows(list){
   const wrap = el('userList');
 
-  if(!list?.length){
+  if(!Array.isArray(list) || !list.length){
     wrap.innerHTML = '<div class="empty">사용자 없음</div>';
     return;
   }
 
   wrap.innerHTML = list.map(user => `
     <div class="user-card">
-      <div class="user-line">
+      <div class="user-row">
         <div class="nick">${escapeHtml(user.display_name || '-')}</div>
-        <div class="role-chip">${roleLabel(user.role)}</div>
-      </div>
 
-      <div class="role-row">
-        <select id="role_${user.id}">
-          <option value="admin" ${user.role==='admin'?'selected':''}>admin</option>
-          <option value="recorder" ${user.role==='recorder'?'selected':''}>recorder</option>
-          <option value="member" ${user.role==='member'?'selected':''}>member</option>
+        <select class="role-select" id="role_${user.id}">
+          <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>admin</option>
+          <option value="recorder" ${user.role === 'recorder' ? 'selected' : ''}>recorder</option>
+          <option value="member" ${user.role === 'member' ? 'selected' : ''}>member</option>
         </select>
+
         <button class="save-btn" onclick="changeRole('${user.id}','${user.role}')">저장</button>
       </div>
     </div>
@@ -306,7 +322,7 @@ function renderRows(list){
 async function loadUsers(){
   hideMsg();
 
-  const {data,error} = await client.rpc('baseball_admin_list_profiles');
+  const { data, error } = await client.rpc('baseball_admin_list_profiles');
   if(error){
     el('userList').innerHTML = `<div class="empty">${escapeHtml(error.message)}</div>`;
     return;
@@ -325,12 +341,12 @@ async function changeRole(id, oldRole){
   const newRole = select.value;
 
   if(newRole === oldRole){
-    showMsg('변경 없음');
+    showMsg('변경된 내용이 없습니다.');
     return;
   }
 
-  const targetUser = currentUsers.find(u => String(u.id) === String(id));
   const currentAdmin = currentUsers.find(u => u.role === 'admin');
+  const targetUser = currentUsers.find(u => String(u.id) === String(id));
 
   if(newRole === 'admin' && currentAdmin && String(currentAdmin.id) !== String(id)){
     const ok = confirm('admin은 1명만 될 수 있습니다. 변경하시겠습니까?');
@@ -346,7 +362,7 @@ async function changeRole(id, oldRole){
     select.disabled = true;
     if(btn) btn.disabled = true;
 
-    const {error} = await client.rpc('baseball_admin_update_role',{
+    const { error } = await client.rpc('baseball_admin_update_role', {
       p_user_id: id,
       p_role: newRole
     });
@@ -354,14 +370,14 @@ async function changeRole(id, oldRole){
     if(error) throw error;
 
     if(newRole === 'admin' && currentAdmin && String(currentAdmin.id) !== String(id)){
-      showMsg(`관리자가 ${targetUser?.display_name || '선택한 사용자'}(으)로 변경되었습니다.`);
+      showMsg(`관리자가 ${targetUser?.display_name || '선택한 사용자'}(으)로 변경되었습니다.`, 'ok');
     }else{
-      showMsg('권한 변경 완료');
+      showMsg('권한 변경 완료', 'ok');
     }
 
     await loadUsers();
-  }catch(error){
-    showMsg(error.message || '권한 변경 실패', 'err');
+  }catch(err){
+    showMsg(err.message || '권한 변경 실패', 'err');
     select.value = oldRole;
   }finally{
     select.disabled = false;
