@@ -386,15 +386,16 @@ function toEmail(u){ return u.trim().toLowerCase() + FAKE_DOMAIN; }
 
 // ─── 탭 전환 ───────────────────────────────────────────────
 function showTab(mode){
-  ['login','signup','forgot'].forEach(m => {
+  ['login','signup'].forEach(m => {
     el('tab' + m.charAt(0).toUpperCase() + m.slice(1)).classList.toggle('active', m === mode);
+  });
+  ['login','signup','forgot'].forEach(m => {
     el(m + 'View').classList.toggle('hidden', m !== mode);
   });
   if(mode === 'forgot') resetForgotSteps();
 }
-el('tabLogin').onclick  = () => showTab('login');
-el('tabSignup').onclick = () => showTab('signup');
-el('tabForgot').onclick = () => showTab('forgot');
+el('tabLogin').onclick    = () => showTab('login');
+el('tabSignup').onclick   = () => showTab('signup');
 el('btnGoForgot').onclick = () => showTab('forgot');
 el('btnGoLogin').onclick  = () => showTab('login');
 
