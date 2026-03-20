@@ -1,8 +1,15 @@
 document.addEventListener('DOMContentLoaded', async function () {
 
-  // ── 헤더 HTML 삽입 ───────────────────────────────
   const target = document.getElementById('appHeader');
   if (!target) return;
+
+  // data-back 속성으로 뒤로가기 버튼 제어
+  // 예) <div id="appHeader" data-back="index.html" data-back-label="← 홈"></div>
+  const backHref  = target.dataset.back  || '';
+  const backLabel = target.dataset.backLabel || '← 홈';
+  const backBtn   = backHref
+    ? `<a href="${backHref}" style="padding:7px 16px;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:transparent;color:#f0f2f5;font-family:'Noto Sans KR',sans-serif;font-size:13px;font-weight:700;text-decoration:none;transition:all .15s" onmouseover="this.style.borderColor='#e8ff47';this.style.color='#e8ff47'" onmouseout="this.style.borderColor='rgba(255,255,255,.12)';this.style.color='#f0f2f5'">${backLabel}</a>`
+    : '';
 
   target.innerHTML = `
     <header style="position:sticky;top:0;z-index:100;background:rgba(10,12,16,.85);backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,.07);padding:0 16px">
@@ -10,12 +17,15 @@ document.addEventListener('DOMContentLoaded', async function () {
         <div onclick="location.href='index.html'" style="font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:1px;color:#e8ff47;line-height:1;cursor:pointer">
           ELITE<span style="color:#f0f2f5"> BASEBALL</span>
         </div>
-        <div id="_headerAuthArea" style="display:flex;gap:8px"></div>
+        <div style="display:flex;align-items:center;gap:8px">
+          ${backBtn}
+          <div id="_headerAuthArea" style="display:flex;gap:8px"></div>
+        </div>
       </div>
     </header>
   `;
 
-  // ── 버튼 스타일 주입 ─────────────────────────────
+  // ── 버튼 공통 스타일 ─────────────────────────────
   if (!document.getElementById('_headerStyle')) {
     const style = document.createElement('style');
     style.id = '_headerStyle';
