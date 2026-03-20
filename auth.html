@@ -636,6 +636,11 @@ el('btnSignup').onclick = async () => {
     height_cm: el('heightCm').value === '' ? null : Number(el('heightCm').value),
     weight_kg: el('weightKg').value === '' ? null : Number(el('weightKg').value),
     note: el('playerNote').value.trim()
+
+    secondary_positions: el('secondaryPositions').value.trim(),  // 해당 input id로 변경
+    tags: el('playerTags').value.trim(),                         // 해당 input id로 변경
+    photo_url: el('photoUrl').value.trim(),                      // 해당 input id로 변경
+    
   };
 
   if(!payload.display_name || !payload.player_name || !payload.grade || !payload.primary_position){
