@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="ko">
 <head>
@@ -8,749 +9,87 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+KR:wght@400;600;700;900&display=swap" rel="stylesheet">
 <style>
-:root {
-  --black: #0a0c10; --dark: #11141a; --panel: #181c24;
-  --border: rgba(255,255,255,.07); --border2: rgba(255,255,255,.12);
-  --text: #f0f2f5; --muted: #7a8294; --muted2: #4a5060;
-  --brand: #e8ff47; --brand-dim: rgba(232,255,71,.12); --brand-dim2: rgba(232,255,71,.06);
-  --win: #4ade80; --win-bg: rgba(74,222,128,.1);
-  --loss: #f87171; --loss-bg: rgba(248,113,113,.1);
-  --draw: #94a3b8; --draw-bg: rgba(148,163,184,.1);
-  --red: #ff4d4d; --shadow: 0 4px 24px rgba(0,0,0,.4);
-}
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body {
-  font-family: 'Noto Sans KR', sans-serif;
-  background: var(--black);
-  color: var(--text);
-  min-height: 100vh;
-  padding-bottom: 40px;
-}
-.header {
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  background: rgba(10,12,16,.85);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-bottom: 1px solid var(--border);
-  padding: 0 16px;
-}
-.header-inner {
-  max-width: 480px;
-  margin: 0 auto;
-  height: 56px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.logo {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 28px;
-  letter-spacing: 1px;
-  color: var(--brand);
-  line-height: 1;
-}
-.logo span { color: var(--text); }
-#authArea { display: flex; gap: 8px; }
-
-.auth-btn {
-  padding: 7px 16px;
-  border-radius: 8px;
-  border: 1px solid var(--border2);
-  background: transparent;
-  color: var(--text);
-  font-family: 'Noto Sans KR', sans-serif;
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all .15s;
-}
-.auth-btn:hover {
-  border-color: var(--brand);
-  color: var(--brand);
-}
-.auth-btn.primary {
-  background: var(--brand);
-  color: var(--black);
-  border-color: var(--brand);
-}
-.auth-btn.primary:hover { background: #d4ea3a; }
-
-.container {
-  max-width: 480px;
-  margin: 0 auto;
-  padding: 20px 16px;
-}
-.hero {
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  padding: 24px;
-  margin-bottom: 16px;
-  position: relative;
-  overflow: hidden;
-}
-.hero::before {
-  content: '⚾';
-  position: absolute;
-  right: -10px;
-  top: -10px;
-  font-size: 100px;
-  opacity: .04;
-  transform: rotate(20deg);
-  pointer-events: none;
-}
-.hero-label {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: var(--brand);
-  margin-bottom: 8px;
-}
-.hero-title {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 42px;
-  line-height: 1;
-  letter-spacing: .5px;
-  margin-bottom: 8px;
-}
-.hero-sub {
-  font-size: 13px;
-  color: var(--muted);
-  line-height: 1.6;
-  margin-bottom: 18px;
-}
-.hero-btns {
-  display: flex;
-  gap: 10px;
-}
-.hero-btn {
-  flex: 1;
-  padding: 13px;
-  border-radius: 12px;
-  border: none;
-  font-family: 'Noto Sans KR', sans-serif;
-  font-size: 14px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all .15s;
-}
-.hero-btn.solid {
-  background: var(--brand);
-  color: var(--black);
-}
-.hero-btn.solid:hover { background: #d4ea3a; }
-.hero-btn.ghost {
-  background: transparent;
-  border: 1px solid var(--border2);
-  color: var(--text);
-}
-.hero-btn.ghost:hover {
-  border-color: var(--brand);
-  color: var(--brand);
-}
-
-.section-title {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin: 24px 0 12px;
-}
-.stats-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-bottom: 16px;
-}
-.stat-card {
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 16px;
-}
-.stat-label {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: .5px;
-  color: var(--muted);
-  margin-bottom: 10px;
-}
-.stat-value {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 34px;
-  line-height: 1;
-  color: var(--text);
-  letter-spacing: .5px;
-}
-.stat-sub {
-  font-size: 11px;
-  color: var(--muted2);
-  margin-top: 6px;
-}
-
-.quick-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-bottom: 16px;
-}
-.quick-card {
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 18px;
-  cursor: pointer;
-  transition: all .15s;
-  display: flex;
-  flex-direction: column;
-}
-.quick-card:hover {
-  border-color: var(--border2);
-  transform: translateY(-1px);
-}
-.quick-card:active { transform: translateY(0); }
-.quick-emoji {
-  font-size: 24px;
-  margin-bottom: 10px;
-}
-.quick-name {
-  font-size: 14px;
-  font-weight: 700;
-  margin-bottom: 6px;
-}
-.quick-desc {
-  font-size: 12px;
-  color: var(--muted);
-  line-height: 1.4;
-  flex: 1;
-}
-.quick-arrow {
-  margin-top: 14px;
-  font-size: 18px;
-  color: var(--brand);
-  font-weight: 900;
-}
-.quick-card.wide {
-  grid-column: span 2;
-  flex-direction: row;
-  align-items: center;
-  gap: 16px;
-}
-.quick-card.wide .quick-emoji {
-  margin-bottom: 0;
-  font-size: 28px;
-}
-.quick-card.wide .quick-body { flex: 1; }
-.quick-card.wide .quick-body .quick-name { margin-bottom: 4px; }
-.quick-card.wide .quick-arrow { margin-top: 0; }
-
-.recent-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.game-item {
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 14px 16px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  cursor: pointer;
-  transition: border-color .15s;
-}
-.game-item:hover { border-color: var(--border2); }
-
-.result-badge {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 18px;
-  flex-shrink: 0;
-}
-.result-badge.W { background: var(--win-bg); color: var(--win); }
-.result-badge.L { background: var(--loss-bg); color: var(--loss); }
-.result-badge.D { background: var(--draw-bg); color: var(--draw); }
-
-.game-info {
-  flex: 1;
-  min-width: 0;
-}
-.game-vs {
-  font-size: 14px;
-  font-weight: 700;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.game-meta {
-  font-size: 12px;
-  color: var(--muted);
-  margin-top: 3px;
-}
-.game-score {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 22px;
-  letter-spacing: 1px;
-  color: var(--text);
-  flex-shrink: 0;
-}
-
-.empty {
-  text-align: center;
-  padding: 32px 0;
-  color: var(--muted);
-  font-size: 13px;
-  line-height: 1.6;
-}
-.empty-icon {
-  font-size: 32px;
-  margin-bottom: 10px;
-}
-
-.view-all {
-  width: 100%;
-  margin-top: 10px;
-  padding: 13px;
-  border-radius: 12px;
-  border: 1px solid var(--border);
-  background: transparent;
-  color: var(--muted);
-  font-family: 'Noto Sans KR', sans-serif;
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all .15s;
-}
-.view-all:hover {
-  border-color: var(--border2);
-  color: var(--text);
-}
+:root { --black:#0a0c10; --dark:#11141a; --panel:#181c24; --border:rgba(255,255,255,.07); --border2:rgba(255,255,255,.12); --text:#f0f2f5; --muted:#7a8294; --muted2:#4a5060; --brand:#e8ff47; --brand-dim:rgba(232,255,71,.12); --win:#4ade80; --win-bg:rgba(74,222,128,.1); --loss:#f87171; --loss-bg:rgba(248,113,113,.1); --draw:#94a3b8; --draw-bg:rgba(148,163,184,.1); }
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--black);color:var(--text);min-height:100vh;padding-bottom:40px}
+.header{position:sticky;top:0;z-index:100;background:rgba(10,12,16,.85);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 16px}
+.header-inner{max-width:480px;margin:0 auto;height:56px;display:flex;align-items:center;justify-content:space-between}.logo{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:1px;color:var(--brand);line-height:1}.logo span{color:var(--text)}
+#authArea{display:flex;gap:8px}.auth-btn{padding:7px 16px;border-radius:8px;border:1px solid var(--border2);background:transparent;color:var(--text);font-size:13px;font-weight:700;cursor:pointer}.auth-btn:hover{border-color:var(--brand);color:var(--brand)}.auth-btn.primary{background:var(--brand);color:var(--black);border-color:var(--brand)}.auth-btn.primary:hover{background:#d4ea3a}
+.container{max-width:480px;margin:0 auto;padding:20px 16px}.hero{background:var(--panel);border:1px solid var(--border);border-radius:20px;padding:24px;margin-bottom:16px;position:relative;overflow:hidden}.hero::before{content:'⚾';position:absolute;right:-10px;top:-10px;font-size:100px;opacity:.04;transform:rotate(20deg)}.hero-label{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--brand);margin-bottom:8px}.hero-title{font-family:'Bebas Neue',sans-serif;font-size:42px;line-height:1;margin-bottom:8px}.hero-sub{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:18px}.hero-btns{display:flex;gap:10px}.hero-btn{flex:1;padding:13px;border-radius:12px;border:none;font-size:14px;font-weight:700;cursor:pointer}.hero-btn.solid{background:var(--brand);color:var(--black)}.hero-btn.ghost{background:transparent;border:1px solid var(--border2);color:var(--text)}
+.section-title{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin:24px 0 12px}.stats-grid,.quick-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}.stat-card,.quick-card,.game-item{background:var(--panel);border:1px solid var(--border);border-radius:16px}.stat-card{padding:16px}.stat-label{font-size:11px;font-weight:700;color:var(--muted);margin-bottom:10px}.stat-value{font-family:'Bebas Neue',sans-serif;font-size:34px;line-height:1}.stat-sub{font-size:11px;color:var(--muted2);margin-top:6px}
+.quick-card{padding:18px;cursor:pointer;display:flex;flex-direction:column}.quick-card:hover,.game-item:hover{border-color:var(--border2)}.quick-emoji{font-size:24px;margin-bottom:10px}.quick-name{font-size:14px;font-weight:700;margin-bottom:6px}.quick-desc{font-size:12px;color:var(--muted);line-height:1.4;flex:1}.quick-arrow{margin-top:14px;font-size:18px;color:var(--brand);font-weight:900}.quick-card.wide{grid-column:span 2;flex-direction:row;align-items:center;gap:16px}.quick-card.wide .quick-emoji{margin-bottom:0;font-size:28px}.quick-card.wide .quick-body{flex:1}.recent-list{display:flex;flex-direction:column;gap:8px}.game-item{padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer}.result-badge{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:18px;flex-shrink:0}.result-badge.W{background:var(--win-bg);color:var(--win)}.result-badge.L{background:var(--loss-bg);color:var(--loss)}.result-badge.D{background:var(--draw-bg);color:var(--draw)}.game-info{flex:1;min-width:0}.game-vs{font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.game-meta{font-size:12px;color:var(--muted);margin-top:3px}.game-score{font-family:'Bebas Neue',sans-serif;font-size:22px;flex-shrink:0}.empty{text-align:center;padding:32px 0;color:var(--muted);font-size:13px;line-height:1.6}.empty-icon{font-size:32px;margin-bottom:10px}.view-all{width:100%;margin-top:10px;padding:13px;border-radius:12px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:13px;font-weight:700;cursor:pointer}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/config.js"></script>
 </head>
 <body>
-
-<header class="header">
-  <div class="header-inner">
-    <div class="logo">ELITE<span> BASEBALL</span></div>
-    <div id="authArea"></div>
-  </div>
-</header>
-
+<header class="header"><div class="header-inner"><div class="logo">ELITE<span> BASEBALL</span></div><div id="authArea"><button class="auth-btn primary" onclick="location.href='auth.html'">로그인</button></div></div></header>
 <div class="container">
-
   <div class="hero">
     <div class="hero-label">엘리트 야구 기록 시스템</div>
-    <div class="hero-title">선수의 기록을<br>한눈에</div>
-    <div class="hero-sub">경기 결과, 선수 성적, 대회별 통계를<br>정확하게 관리합니다.</div>
+    <div class="hero-title">내 선수 기록을<br>한눈에</div>
+    <div class="hero-sub">이제 학교 공유 없이 내 계정에서 경기와 선수 기록을 직접 관리합니다.</div>
     <div class="hero-btns">
-      <button class="hero-btn solid" onclick="goProtected('playerReport.html')">선수 리포트</button>
+      <button class="hero-btn solid" onclick="goProtected('createGame.html')">기록 입력</button>
       <button class="hero-btn ghost" onclick="goProtected('report.html')">경기 리포트</button>
     </div>
   </div>
 
   <div class="section-title">시즌 요약</div>
   <div class="stats-grid">
-    <div class="stat-card">
-      <div class="stat-label">올해 승 · 패 · 무</div>
-      <div class="stat-value" id="yWLD" style="font-size:26px">—</div>
-      <div class="stat-sub" id="yearLabel">로그인 후 표시</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">이번달 승 · 패 · 무</div>
-      <div class="stat-value" id="mWLD" style="font-size:26px">—</div>
-      <div class="stat-sub" id="monthLabel">로그인 후 표시</div>
-    </div>
+    <div class="stat-card"><div class="stat-label">올해 승 · 패 · 무</div><div class="stat-value" id="yWLD" style="font-size:26px">—</div><div class="stat-sub" id="yearLabel">로그인 후 표시</div></div>
+    <div class="stat-card"><div class="stat-label">이번달 승 · 패 · 무</div><div class="stat-value" id="mWLD" style="font-size:26px">—</div><div class="stat-sub" id="monthLabel">로그인 후 표시</div></div>
   </div>
 
   <div class="section-title">최근 경기</div>
-  <div id="recentHint" class="empty" style="display:none">
-    <div class="empty-icon">⚾</div>
-    로그인하면 최근 경기 목록을<br>확인할 수 있어요.
-  </div>
+  <div id="recentHint" class="empty" style="display:none"></div>
   <div class="recent-list" id="recentList"></div>
   <button class="view-all" id="btnViewAll" onclick="goProtected('report.html')" style="display:none">전체 경기 보기</button>
 
   <div class="section-title">바로가기</div>
   <div class="quick-grid">
-    <div class="quick-card" onclick="goProtected('report.html')">
-      <div class="quick-emoji">📊</div>
-      <div class="quick-name">경기 리포트</div>
-      <div class="quick-desc">대회별 경기 목록과 상세 기록</div>
-      <div class="quick-arrow">→</div>
-    </div>
-    <div class="quick-card" onclick="goProtected('playerReport.html')">
-      <div class="quick-emoji">👤</div>
-      <div class="quick-name">선수 리포트</div>
-      <div class="quick-desc">선수별 대회 성적 및 경기 기록</div>
-      <div class="quick-arrow">→</div>
-    </div>
-    <div class="quick-card" onclick="goProtected('createGame.html')">
-      <div class="quick-emoji">⚾</div>
-      <div class="quick-name">경기결과 입력</div>
-      <div class="quick-desc">새 경기 결과 등록</div>
-      <div class="quick-arrow">→</div>
-    </div>
-    <div class="quick-card" onclick="goProtected('records.html')">
-      <div class="quick-emoji">✍️</div>
-      <div class="quick-name">선수기록 입력</div>
-      <div class="quick-desc">경기 선택 후 선수별 타격·투구 기록 입력</div>
-      <div class="quick-arrow">→</div>
-    </div>
-    <div class="quick-card wide" onclick="goProtected('createPlayer.html')">
-      <div class="quick-emoji">🗂️</div>
-      <div class="quick-body">
-        <div class="quick-name">선수 관리</div>
-        <div class="quick-desc">선수 정보 변경 및 관리</div>
-      </div>
-      <div class="quick-arrow">→</div>
-    </div>
+    <div class="quick-card" onclick="goProtected('createGame.html')"><div class="quick-emoji">✍️</div><div class="quick-name">기록 입력</div><div class="quick-desc">경기 정보와 선수 기록을 한 번에 저장</div><div class="quick-arrow">→</div></div>
+    <div class="quick-card" onclick="goProtected('report.html')"><div class="quick-emoji">📊</div><div class="quick-name">경기 리포트</div><div class="quick-desc">대회별 경기 목록과 상세 성적</div><div class="quick-arrow">→</div></div>
+    <div class="quick-card" onclick="goProtected('playerReport.html')"><div class="quick-emoji">👤</div><div class="quick-name">선수 리포트</div><div class="quick-desc">내 선수의 대회별 누적 성적</div><div class="quick-arrow">→</div></div>
+    <div class="quick-card" onclick="goProtected('createPlayer.html')"><div class="quick-emoji">🗂️</div><div class="quick-name">선수 관리</div><div class="quick-desc">내 선수 기본정보 수정</div><div class="quick-arrow">→</div></div>
+    <div class="quick-card wide" onclick="goProtected('records.html')"><div class="quick-emoji">🔁</div><div class="quick-body"><div class="quick-name">기록 입력 바로가기</div><div class="quick-desc">records.html도 통합 입력 화면으로 연결됩니다.</div></div><div class="quick-arrow">→</div></div>
   </div>
-
 </div>
-
 <script>
-const client = window.sb;
-const el = (id) => document.getElementById(id);
-const num = (v) => Number.isFinite(Number(v)) ? Number(v) : 0;
-
+const client = window.sb; const el = (id)=>document.getElementById(id);
 let currentSession = null;
-let currentContext = null;
-
-function badgeClass(r){
-  return r === 'W' ? 'W' : r === 'L' ? 'L' : 'D';
-}
-
-function isPendingUser(){
-  return currentContext?.role === 'pending';
-}
-
-function clearHomeCache(){
-  try{
-    localStorage.removeItem('baseball_home_cache_v3');
-  }catch(e){}
-}
-
-function goProtected(path){
-  if(!currentSession){
-    location.href = `auth.html?next=${encodeURIComponent(path)}`;
-    return;
-  }
-
-  const pendingAllowedPages = ['createPlayer.html'];
-
-  if(isPendingUser() && !pendingAllowedPages.includes(path)){
-    alert('현재 승인 대기 상태입니다. 관리자 승인 후 이용 가능합니다.');
-    return;
-  }
-
-  location.href = path;
-}
-
-function goAdmin(){
-  if(!currentSession){
-    location.href = `auth.html?next=${encodeURIComponent('admin.html')}`;
-    return;
-  }
-  if(currentContext?.role !== 'admin'){
-    alert('관리자만 접근할 수 있습니다.');
-    return;
-  }
-  location.href = 'admin.html';
-}
-
-function renderAuthButtons(session, ctx){
+function badgeClass(r){ return r==='W'?'W':r==='L'?'L':'D'; }
+function renderAuthButtons(session){
   const area = el('authArea');
-
-  if(!session){
-    area.innerHTML = `
-      <button class="auth-btn primary" onclick="location.href='auth.html'">로그인</button>
-    `;
-    return;
-  }
-
-  const adminBtn = ctx?.role === 'admin'
-    ? `<button class="auth-btn" onclick="goAdmin()">관리자</button>`
-    : '';
-
-  area.innerHTML = `
-    ${adminBtn}
-    <button class="auth-btn" onclick="logout()">로그아웃</button>
-  `;
+  if(!session){ area.innerHTML = `<button class="auth-btn primary" onclick="location.href='auth.html'">로그인</button>`; return; }
+  area.innerHTML = `<button class="auth-btn" onclick="location.href='createPlayer.html'">내 선수</button><button class="auth-btn" onclick="logout()">로그아웃</button>`;
 }
-
-async function logout(){
-  clearHomeCache();
-  await client.auth.signOut();
-  location.href = 'index.html';
-}
-
-function renderGuestHome(){
-  el('yWLD').textContent = '—';
-  el('yearLabel').textContent = '로그인 후 표시';
-  el('mWLD').textContent = '—';
-  el('monthLabel').textContent = '로그인 후 표시';
-
-  el('recentHint').style.display = 'block';
-  el('recentHint').innerHTML = `<div class="empty-icon">⚾</div>로그인하면 최근 경기 목록을<br>확인할 수 있어요.`;
-  el('recentList').innerHTML = '';
-  el('btnViewAll').style.display = 'none';
-}
-
-function renderPendingHome(){
-  el('yWLD').textContent = '—';
-  el('yearLabel').textContent = '승인 대기';
-  el('mWLD').textContent = '—';
-  el('monthLabel').textContent = '관리자 승인 후 이용 가능';
-
-  el('recentHint').style.display = 'block';
-  el('recentHint').innerHTML = `
-    <div class="empty-icon">⏳</div>
-    현재 승인 대기 상태입니다.<br>
-    관리자 승인 후 경기 및 선수 정보를 조회할 수 있어요.
-  `;
-  el('recentList').innerHTML = '';
-  el('btnViewAll').style.display = 'none';
-}
-
-function renderLoadingState(){
-  el('yWLD').textContent = '...';
-  el('yearLabel').textContent = '불러오는 중';
-  el('mWLD').textContent = '...';
-  el('monthLabel').textContent = '불러오는 중';
-
-  el('recentHint').style.display = 'block';
-  el('recentHint').innerHTML = `<div class="empty-icon">⏳</div>최근 경기 불러오는 중...`;
-  el('recentList').innerHTML = '';
-  el('btnViewAll').style.display = 'none';
-}
-
-function renderSummary(summary){
-  el('yWLD').textContent = `${num(summary.year_w)}·${num(summary.year_l)}·${num(summary.year_d)}`;
-  el('yearLabel').textContent = `${summary.year}년 기준`;
-
-  el('mWLD').textContent = `${num(summary.month_w)}·${num(summary.month_l)}·${num(summary.month_d)}`;
-  el('monthLabel').textContent = `${summary.month} 기준`;
-}
-
-function renderSummaryError(msg){
-  el('yWLD').textContent = '—';
-  el('mWLD').textContent = '—';
-  el('yearLabel').textContent = '요약 조회 실패';
-  el('monthLabel').textContent = msg || '다시 확인해 주세요.';
-}
-
-function renderRecentGames(list){
-  const hint = el('recentHint');
-  const wrap = el('recentList');
-  const btn = el('btnViewAll');
-
-  wrap.innerHTML = '';
-
-  if(!Array.isArray(list) || !list.length){
-    hint.style.display = 'block';
-    hint.innerHTML = `<div class="empty-icon">⚾</div>등록된 경기가 없어요.`;
-    btn.style.display = 'none';
-    return;
-  }
-
-  hint.style.display = 'none';
-  btn.style.display = 'block';
-
-  list.forEach(g => {
-    const item = document.createElement('div');
-    item.className = 'game-item';
-
-    const result = g.result || 'D';
-    const gameId = g.id;
-    const gameDate = g.game_date || '';
-    const opponent = g.opponent || '-';
-    const tournament = g.tournament || '';
-    const ourScore = num(g.our_score);
-    const oppScore = num(g.opp_score);
-
-    item.innerHTML = `
-      <div class="result-badge ${badgeClass(result)}">${result}</div>
-      <div class="game-info">
-        <div class="game-vs">vs ${opponent}</div>
-        <div class="game-meta">${gameDate}${tournament ? ' · ' + tournament : ''}</div>
-      </div>
-      <div class="game-score">
-        ${ourScore}<span style="color:var(--muted);font-size:16px">:</span>${oppScore}
-      </div>
-    `;
-
-    item.onclick = () => {
-      location.href = `report.html?game=${gameId}`;
-    };
-
-    wrap.appendChild(item);
-  });
-}
-
-function renderRecentError(msg){
-  el('recentHint').style.display = 'block';
-  el('recentHint').innerHTML = `<div class="empty-icon">⚠️</div>${msg || '최근 경기 조회 실패'}`;
-  el('recentList').innerHTML = '';
-  el('btnViewAll').style.display = 'none';
-}
-
-async function measuredRpc(name, args){
-  return await client.rpc(name, args);
-}
-
-function readCache(){
-  try {
-    const raw = localStorage.getItem('baseball_home_cache_v3');
-    if(!raw) return null;
-
-    const cached = JSON.parse(raw);
-    if(!cached?.at || !cached?.data) return null;
-
-    const ttlMs = 15000;
-    if(Date.now() - cached.at > ttlMs) return null;
-
-    return cached.data;
-  } catch (e) {
-    return null;
-  }
-}
-
-function writeCache(data){
-  try {
-    localStorage.setItem('baseball_home_cache_v3', JSON.stringify({
-      at: Date.now(),
-      data
-    }));
-  } catch (e) {}
-}
-
-async function loadMyContext(){
-  const { data, error } = await measuredRpc('baseball_my_context');
-
-  if(error){
-    console.warn('[HOME] my_context failed', error.message);
-    return null;
-  }
-
-  if(Array.isArray(data)) return data[0] || null;
-  return data || null;
-}
-
-async function loadDashboard(){
-  if(isPendingUser()){
-    clearHomeCache();
-    renderPendingHome();
-    return;
-  }
-
-  renderLoadingState();
-
-  const cached = readCache();
-  if(cached){
-    if(cached.summary) renderSummary(cached.summary);
-    if(cached.recent_games) renderRecentGames(cached.recent_games);
-  }
-
-  const summaryPromise = measuredRpc('baseball_dashboard_summary_home');
-  const recentPromise = measuredRpc('baseball_game_list_recent_home');
-
-  const nextCache = {
-    summary: cached?.summary || null,
-    recent_games: cached?.recent_games || []
-  };
-
-  summaryPromise
-    .then(({ data, error }) => {
-      if(error){
-        renderSummaryError(error.message);
-        return;
-      }
-
-      const summary = Array.isArray(data) ? (data[0] || null) : data;
-
-      if(!summary){
-        renderSummaryError('승인 후 이용 가능합니다.');
-        return;
-      }
-
-      nextCache.summary = summary;
-      renderSummary(summary);
-      writeCache(nextCache);
-    })
-    .catch(err => {
-      renderSummaryError(err?.message || '요약 조회 실패');
-    });
-
-  recentPromise
-    .then(({ data, error }) => {
-      if(error){
-        renderRecentError(`최근 경기 조회 실패: ${error.message}`);
-        return;
-      }
-
-      const recent = Array.isArray(data) ? data : [];
-
-      if(!recent.length){
-        renderRecentGames([]);
-        nextCache.recent_games = [];
-        writeCache(nextCache);
-        return;
-      }
-
-      nextCache.recent_games = recent;
-      renderRecentGames(recent);
-      writeCache(nextCache);
-    })
-    .catch(err => {
-      renderRecentError(err?.message || '최근 경기 조회 실패');
-    });
-
-  await Promise.allSettled([summaryPromise, recentPromise]);
-}
-
-async function init(){
-  const { data, error } = await client.auth.getSession();
-  currentSession = (!error && data?.session) || null;
-
-  if(!currentSession){
-    currentContext = null;
-    clearHomeCache();
-    renderAuthButtons(null, null);
+async function logout(){ try{ localStorage.removeItem('baseball_home_cache_v4'); }catch(e){} await client.auth.signOut(); location.href='index.html'; }
+function goProtected(path){ if(!currentSession){ location.href=`auth.html?next=${encodeURIComponent(path)}`; return; } location.href=path; }
+function renderGuestHome(){ el('yWLD').textContent='—'; el('yearLabel').textContent='로그인 후 표시'; el('mWLD').textContent='—'; el('monthLabel').textContent='로그인 후 표시'; el('recentHint').style.display='block'; el('recentHint').innerHTML=`<div class="empty-icon">⚾</div>로그인하면 최근 경기 목록을<br>확인할 수 있어요.`; el('recentList').innerHTML=''; el('btnViewAll').style.display='none'; }
+function renderSummary(summary){ el('yWLD').textContent=`${Number(summary?.year_w||0)}·${Number(summary?.year_l||0)}·${Number(summary?.year_d||0)}`; el('yearLabel').textContent=`${summary?.year || '-'}년 기준`; el('mWLD').textContent=`${Number(summary?.month_w||0)}·${Number(summary?.month_l||0)}·${Number(summary?.month_d||0)}`; el('monthLabel').textContent=`${summary?.month || '-'} 기준`; }
+function renderRecentGames(list){ const hint=el('recentHint'), wrap=el('recentList'), btn=el('btnViewAll'); wrap.innerHTML=''; if(!Array.isArray(list)||!list.length){ hint.style.display='block'; hint.innerHTML=`<div class="empty-icon">⚾</div>등록된 경기가 없어요.`; btn.style.display='none'; return; } hint.style.display='none'; btn.style.display='block'; list.forEach(g=>{ const item=document.createElement('div'); item.className='game-item'; item.innerHTML=`<div class="result-badge ${badgeClass(g.result||'D')}">${g.result||'D'}</div><div class="game-info"><div class="game-vs">vs ${g.opponent||'-'}</div><div class="game-meta">${g.game_date||''}${g.tournament ? ' · ' + g.tournament : ''}</div></div><div class="game-score">${Number(g.our_score||0)}<span style="color:var(--muted);font-size:16px">:</span>${Number(g.opp_score||0)}</div>`; item.onclick=()=>location.href=`report.html?game=${g.id}`; wrap.appendChild(item); }); }
+function readCache(){ try{ const raw=localStorage.getItem('baseball_home_cache_v4'); if(!raw) return null; const cached=JSON.parse(raw); if(!cached?.at||!cached?.data) return null; if(Date.now()-cached.at>15000) return null; return cached.data; }catch(e){ return null; } }
+function writeCache(data){ try{ localStorage.setItem('baseball_home_cache_v4', JSON.stringify({at:Date.now(), data})); }catch(e){} }
+async function loadDashboard(){ const cached=readCache(); if(cached?.summary) renderSummary(cached.summary); if(cached?.recent) renderRecentGames(cached.recent); const [sRes, rRes] = await Promise.all([client.rpc('baseball_dashboard_summary_home'), client.rpc('baseball_record_list_recent_home')]); if(!sRes.error){ const summary = Array.isArray(sRes.data) ? (sRes.data[0]||null) : sRes.data; if(summary) renderSummary(summary); const current = readCache() || {}; writeCache({ summary, recent: current.recent || [] }); } if(!rRes.error){ const recent = Array.isArray(rRes.data) ? rRes.data : []; renderRecentGames(recent); const current = readCache() || {}; writeCache({ summary: current.summary || null, recent }); } }
+(async function init(){
+  try{
+    if(!client?.auth){
+      renderAuthButtons(null);
+      renderGuestHome();
+      return;
+    }
+    const {data, error}=await client.auth.getSession();
+    currentSession = (!error && data?.session) || null;
+    renderAuthButtons(currentSession);
+    if(!currentSession){ renderGuestHome(); return; }
+    await loadDashboard();
+  }catch(e){
+    console.error('[HOME INIT ERROR]', e);
+    renderAuthButtons(null);
     renderGuestHome();
-    return;
   }
-
-  currentContext = await loadMyContext();
-  renderAuthButtons(currentSession, currentContext);
-
-  if(!currentContext){
-    clearHomeCache();
-    renderGuestHome();
-    return;
-  }
-
-  if(isPendingUser()){
-    clearHomeCache();
-    renderPendingHome();
-    return;
-  }
-
-  await loadDashboard();
-}
-
-init();
+})();
 </script>
 </body>
 </html>
