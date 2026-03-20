@@ -1,15 +1,5 @@
 document.addEventListener('DOMContentLoaded', async function () {
 
-  // ── AdSense 공통 삽입 ────────────────────────────
-  if (!document.getElementById('_adsenseScript')) {
-    const ads = document.createElement('script');
-    ads.id = '_adsenseScript';
-    ads.async = true;
-    ads.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8226060642438570';
-    ads.crossOrigin = 'anonymous';
-    document.head.appendChild(ads);
-  }
-
   // ── 헤더 삽입 ────────────────────────────────────
   const target = document.getElementById('appHeader');
   if (!target) return;
