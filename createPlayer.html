@@ -526,17 +526,38 @@ el('btnSave').addEventListener('click', async () => {
     return;
   }
 
+  const { data:{ user } } = await client.auth.getUser();
+  if(!user){
+    setMsg('<span class="err">로그인이 필요해요.</span>');
+    return;
+  }
+
   if(mode === 'create'){
     const { data, error } = await client
       .from('baseball_players')
-      .insert(payload)
-      .select('id,name,grade')
+      .insert({
+        ...payload,
+        owner_user_id: user.id
+      })
+      .select('id,name,grade,school_id')
       .single();
 
     if(error){
       setMsg(`<span class="err">저장 실패: ${error.message}</span>`);
       return;
     }
+
+    const { error: profileErr } = await client
+      .from('baseball_profiles')
+      .update({ school_id: payload.school_id })
+      .eq('id', user.id);
+
+    if(profileErr){
+      setMsg(`<span class="err">선수는 저장됐지만 프로필 학교 변경 실패: ${profileErr.message}</span>`);
+      return;
+    }
+
+    try{ localStorage.removeItem('baseball_home_cache_v3'); }catch(e){}
 
     setMsg(`<span class="ok">✅ 저장 완료! #${data.id} · ${data.name} (${data.grade})</span>`);
     await loadMyPlayer();
@@ -547,13 +568,25 @@ el('btnSave').addEventListener('click', async () => {
     .from('baseball_players')
     .update(payload)
     .eq('id', editingId)
-    .select('id,name,grade')
+    .select('id,name,grade,school_id')
     .single();
 
   if(error){
     setMsg(`<span class="err">수정 실패: ${error.message}</span>`);
     return;
   }
+
+  const { error: profileErr } = await client
+    .from('baseball_profiles')
+    .update({ school_id: payload.school_id })
+    .eq('id', user.id);
+
+  if(profileErr){
+    setMsg(`<span class="err">선수는 수정됐지만 프로필 학교 변경 실패: ${profileErr.message}</span>`);
+    return;
+  }
+
+  try{ localStorage.removeItem('baseball_home_cache_v3'); }catch(e){}
 
   setMsg(`<span class="ok">✅ 수정 완료! ${data.name} (${data.grade})</span>`);
 });
