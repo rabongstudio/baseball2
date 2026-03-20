@@ -173,7 +173,7 @@ function renderRecentGames(list) {
       </div>
       <div class="game-score">${Number(g.our_score||0)}<span style="color:var(--muted);font-size:16px">:</span>${Number(g.opp_score||0)}</div>
     `;
-    item.onclick = () => location.href = `playerreport.html`;
+    item.onclick = () => location.href = `report.html?game=${g.id}`;
     wrap.appendChild(item);
   });
 }
