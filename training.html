@@ -269,10 +269,10 @@ el('btnSave').addEventListener('click',async()=>{
   el('formErr').textContent='';el('btnSave').disabled=true;el('btnSave').textContent='저장 중...';
   const items=Object.entries(activeItems).map(([key,vals])=>({key,...vals}));
   const payload={player_id:playerId,owner_user_id:(await client.auth.getUser()).data.user.id,train_date:date,condition:condVal,duration_min:el('trainDuration').value?Number(el('trainDuration').value):null,memo:el('trainMemo').value.trim()||null,items:items.length?JSON.stringify(items):null};
-  const{error}=await client.from('baseball_training_logs').insert(payload);
+  const{error}=await client.from('baseball_training_logs').upsert(payload,{onConflict:'player_id,train_date'});
   el('btnSave').disabled=false;el('btnSave').textContent='저장하기';
   if(error){el('formErr').textContent='저장 실패: '+error.message;return;}
-  showToast('✅ 훈련 기록이 저장됐어요!');
+  const existed=allLogs.some(l=>l.train_date===date);showToast(existed?'✅ 오늘 기록이 업데이트됐어요!':'✅ 훈련 기록이 저장됐어요!');
   allLogs=[];activeItems={};el('trainMemo').value='';el('trainDuration').value='';condVal=4;
   document.querySelectorAll('.cond-btn').forEach(b=>b.classList.toggle('active',b.dataset.val==='4'));
   renderAddButtons();renderTrainItems();
