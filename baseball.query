@@ -1,5 +1,209 @@
 [
   {
+    "schemaname": "public",
+    "tablename": "baseball_game_player_records",
+    "policyname": "baseball_records_delete_admin_or_owner",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "action": "DELETE",
+    "using_expression": "(EXISTS ( SELECT 1\n   FROM (baseball_games g\n     JOIN baseball_players p ON ((p.id = baseball_game_player_records.player_id)))\n  WHERE ((g.id = baseball_game_player_records.game_id) AND (g.school_id = baseball_my_school_id()) AND (p.school_id = baseball_my_school_id()) AND (baseball_is_school_admin() OR (p.owner_user_id = auth.uid())))))",
+    "check_expression": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "baseball_game_player_records",
+    "policyname": "baseball_records_insert_admin_or_owner",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "action": "INSERT",
+    "using_expression": null,
+    "check_expression": "(EXISTS ( SELECT 1\n   FROM (baseball_games g\n     JOIN baseball_players p ON ((p.id = baseball_game_player_records.player_id)))\n  WHERE ((g.id = baseball_game_player_records.game_id) AND (g.school_id = baseball_my_school_id()) AND (p.school_id = baseball_my_school_id()) AND (baseball_is_school_admin() OR (p.owner_user_id = auth.uid())))))"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "baseball_game_player_records",
+    "policyname": "baseball_records_select_school_or_my_player_records",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "action": "SELECT",
+    "using_expression": "((EXISTS ( SELECT 1\n   FROM baseball_games g\n  WHERE ((g.id = baseball_game_player_records.game_id) AND (g.school_id = baseball_my_school_id())))) OR (EXISTS ( SELECT 1\n   FROM baseball_players p\n  WHERE ((p.id = baseball_game_player_records.player_id) AND (p.owner_user_id = auth.uid())))))",
+    "check_expression": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "baseball_game_player_records",
+    "policyname": "baseball_records_update_admin_or_owner",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "action": "UPDATE",
+    "using_expression": "(EXISTS ( SELECT 1\n   FROM (baseball_games g\n     JOIN baseball_players p ON ((p.id = baseball_game_player_records.player_id)))\n  WHERE ((g.id = baseball_game_player_records.game_id) AND (g.school_id = baseball_my_school_id()) AND (p.school_id = baseball_my_school_id()) AND (baseball_is_school_admin() OR (p.owner_user_id = auth.uid())))))",
+    "check_expression": "(EXISTS ( SELECT 1\n   FROM (baseball_games g\n     JOIN baseball_players p ON ((p.id = baseball_game_player_records.player_id)))\n  WHERE ((g.id = baseball_game_player_records.game_id) AND (g.school_id = baseball_my_school_id()) AND (p.school_id = baseball_my_school_id()) AND (baseball_is_school_admin() OR (p.owner_user_id = auth.uid())))))"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "baseball_games",
+    "policyname": "baseball_games_select_school_or_my_player_games",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "action": "SELECT",
+    "using_expression": "((school_id = baseball_my_school_id()) OR (EXISTS ( SELECT 1\n   FROM (baseball_game_player_records r\n     JOIN baseball_players p ON ((p.id = r.player_id)))\n  WHERE ((r.game_id = baseball_games.id) AND (p.owner_user_id = auth.uid())))))",
+    "check_expression": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "baseball_games",
+    "policyname": "Allow insert for authenticated users",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "action": "INSERT",
+    "using_expression": null,
+    "check_expression": "true"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "baseball_games",
+    "policyname": "baseball_games_update_admin",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "action": "UPDATE",
+    "using_expression": "(baseball_is_school_admin() AND (school_id = baseball_my_school_id()))",
+    "check_expression": "(baseball_is_school_admin() AND (school_id = baseball_my_school_id()))"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "baseball_games",
+    "policyname": "baseball_games select",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "action": "SELECT",
+    "using_expression": "true",
+    "check_expression": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "baseball_games",
+    "policyname": "baseball_games_delete_admin",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "action": "DELETE",
+    "using_expression": "(baseball_is_school_admin() AND (school_id = baseball_my_school_id()))",
+    "check_expression": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "baseball_games",
+    "policyname": "baseball_games_insert_admin",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "action": "INSERT",
+    "using_expression": null,
+    "check_expression": "((school_id = baseball_my_school_id()) AND baseball_is_school_admin())"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "baseball_players",
+    "policyname": "baseball_players_delete_admin_only",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "action": "DELETE",
+    "using_expression": "(baseball_is_school_admin() AND (school_id = baseball_my_school_id()))",
+    "check_expression": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "baseball_players",
+    "policyname": "baseball_players_insert_self_or_admin",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "action": "INSERT",
+    "using_expression": null,
+    "check_expression": "((school_id = baseball_my_school_id()) AND ((owner_user_id = auth.uid()) OR baseball_is_school_admin()))"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "baseball_players",
+    "policyname": "baseball_players_select_same_school_or_my_player",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "action": "SELECT",
+    "using_expression": "((school_id = baseball_my_school_id()) OR (owner_user_id = auth.uid()))",
+    "check_expression": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "baseball_players",
+    "policyname": "baseball_players_update_self_or_admin",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "action": "UPDATE",
+    "using_expression": "((owner_user_id = auth.uid()) OR (baseball_is_school_admin() AND (school_id = baseball_my_school_id())))",
+    "check_expression": "((owner_user_id = auth.uid()) OR (baseball_is_school_admin() AND (school_id = baseball_my_school_id())))"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "baseball_profiles",
+    "policyname": "baseball_profiles_select_own",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "action": "SELECT",
+    "using_expression": "(id = auth.uid())",
+    "check_expression": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "baseball_profiles",
+    "policyname": "baseball_profiles_select_school_admin",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "action": "SELECT",
+    "using_expression": "(baseball_is_school_admin() AND (school_id = baseball_my_school_id()))",
+    "check_expression": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "baseball_profiles",
+    "policyname": "baseball_profiles_update_own",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "action": "UPDATE",
+    "using_expression": "(id = auth.uid())",
+    "check_expression": "(id = auth.uid())"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "baseball_profiles",
+    "policyname": "baseball_profiles_update_school_admin",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "action": "UPDATE",
+    "using_expression": "(baseball_is_school_admin() AND (school_id = baseball_my_school_id()))",
+    "check_expression": "(baseball_is_school_admin() AND (school_id = baseball_my_school_id()) AND (role = ANY (ARRAY['admin'::text, 'member'::text, 'recorder'::text])))"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "baseball_schools",
+    "policyname": "allow read",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "action": "SELECT",
+    "using_expression": "true",
+    "check_expression": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "baseball_schools",
+    "policyname": "baseball_schools_select_all",
+    "permissive": "PERMISSIVE",
+    "roles": "{anon,authenticated}",
+    "action": "SELECT",
+    "using_expression": "true",
+    "check_expression": null
+  }
+]
+
+
+[
+  {
     "schema_name": "public",
     "function_name": "baseball_game_list_simple",
     "arguments": "p_school_id bigint",
@@ -78,6 +282,30 @@
     "return_type": "trigger",
     "language": "plpgsql",
     "source_code": "\r\nDECLARE\r\n  v_school_id bigint;\r\n  v_role text;\r\nBEGIN\r\n  v_school_id := nullif(new.raw_user_meta_data ->> 'school_id', '')::bigint;\r\n\r\n  IF v_school_id IS NULL THEN\r\n    RAISE LOG 'baseball_handle_new_user: school_id is null | metadata: %', new.raw_user_meta_data;\r\n    RETURN new;\r\n  END IF;\r\n\r\n  -- 같은 학교 동시 가입 시 admin 중복 방지용 학교별 락\r\n  PERFORM pg_advisory_xact_lock(938100, v_school_id::integer);\r\n\r\n  -- 해당 학교에 이미 가입한 사용자가 있는지 확인\r\n  IF EXISTS (\r\n    SELECT 1\r\n    FROM public.baseball_profiles\r\n    WHERE school_id = v_school_id\r\n  ) THEN\r\n    v_role := 'pending';\r\n  ELSE\r\n    v_role := 'admin';\r\n  END IF;\r\n\r\n  -- 프로필 생성\r\n  INSERT INTO public.baseball_profiles (id, display_name, username, school_id, role)\r\n  VALUES (\r\n    new.id,\r\n    coalesce(new.raw_user_meta_data ->> 'display_name', new.raw_user_meta_data ->> 'username'),\r\n    new.raw_user_meta_data ->> 'username',\r\n    v_school_id,\r\n    v_role\r\n  )\r\n  ON CONFLICT (id) DO NOTHING;\r\n\r\n  -- 선수 생성 (player_name 있을 때만)\r\n  IF coalesce(new.raw_user_meta_data ->> 'player_name', '') <> '' THEN\r\n    IF NOT EXISTS (\r\n      SELECT 1\r\n      FROM public.baseball_players\r\n      WHERE owner_user_id = new.id\r\n    ) THEN\r\n      INSERT INTO public.baseball_players (\r\n        name,\r\n        jersey_number,\r\n        grade,\r\n        birth_year,\r\n        primary_position,\r\n        throws,\r\n        bats,\r\n        school_id,\r\n        owner_user_id,\r\n        is_active\r\n      )\r\n      VALUES (\r\n        new.raw_user_meta_data ->> 'player_name',\r\n        nullif(new.raw_user_meta_data ->> 'jersey_number', '')::int,\r\n        new.raw_user_meta_data ->> 'grade',\r\n        nullif(new.raw_user_meta_data ->> 'birth_year', '')::int,\r\n        new.raw_user_meta_data ->> 'primary_position',\r\n        coalesce(new.raw_user_meta_data ->> 'throws', '우'),\r\n        coalesce(new.raw_user_meta_data ->> 'bats', '우'),\r\n        v_school_id,\r\n        new.id,\r\n        true\r\n      );\r\n    END IF;\r\n  END IF;\r\n\r\n  RETURN new;\r\n\r\nEXCEPTION WHEN OTHERS THEN\r\n  RAISE LOG 'baseball_handle_new_user error: % | metadata: %', SQLERRM, new.raw_user_meta_data;\r\n  RETURN new;\r\nEND;\r\n"
+  },
+  {
+    "schema_name": "public",
+    "function_name": "baseball_my_player_id",
+    "arguments": "",
+    "return_type": "bigint",
+    "language": "sql",
+    "source_code": "\r\n  select id\r\n  from public.baseball_players\r\n  where owner_user_id = auth.uid()\r\n  order by id\r\n  limit 1\r\n"
+  },
+  {
+    "schema_name": "public",
+    "function_name": "baseball_my_record_game_list",
+    "arguments": "",
+    "return_type": "TABLE(id bigint, game_date date, opponent text, tournament text, stadium text, our_score integer, opp_score integer, result text)",
+    "language": "sql",
+    "source_code": "\r\n  select distinct\r\n    g.id,\r\n    g.game_date,\r\n    g.opponent,\r\n    g.tournament,\r\n    g.stadium,\r\n    g.our_score,\r\n    g.opp_score,\r\n    g.result\r\n  from public.baseball_games g\r\n  left join public.baseball_game_player_records r\r\n    on r.game_id = g.id\r\n   and r.player_id = public.baseball_my_player_id()\r\n  where\r\n    g.school_id = public.baseball_my_school_id()\r\n    or r.player_id is not null\r\n  order by g.game_date desc, g.id desc\r\n"
+  },
+  {
+    "schema_name": "public",
+    "function_name": "baseball_report_list_my",
+    "arguments": "p_tournament text DEFAULT NULL::text, p_limit integer DEFAULT 20, p_offset integer DEFAULT 0",
+    "return_type": "jsonb",
+    "language": "plpgsql",
+    "source_code": "\r\ndeclare\r\n  v_player_id bigint;\r\n  v_tournaments jsonb;\r\n  v_kpi jsonb;\r\n  v_games jsonb;\r\nbegin\r\n  select public.baseball_my_player_id() into v_player_id;\r\n\r\n  if v_player_id is null then\r\n    return jsonb_build_object(\r\n      'tournaments', '[]'::jsonb,\r\n      'kpi', jsonb_build_object(\r\n        'total_games', 0,\r\n        'wins', 0,\r\n        'losses', 0,\r\n        'draws', 0\r\n      ),\r\n      'games', '[]'::jsonb\r\n    );\r\n  end if;\r\n\r\n  select coalesce(jsonb_agg(x.tournament order by x.tournament), '[]'::jsonb)\r\n    into v_tournaments\r\n  from (\r\n    select distinct g.tournament\r\n    from public.baseball_games g\r\n    join public.baseball_game_player_records r on r.game_id = g.id\r\n    where r.player_id = v_player_id\r\n      and g.tournament is not null\r\n  ) x;\r\n\r\n  select jsonb_build_object(\r\n    'total_games', count(*),\r\n    'wins', count(*) filter (where g.result = 'W'),\r\n    'losses', count(*) filter (where g.result = 'L'),\r\n    'draws', count(*) filter (where g.result = 'D')\r\n  )\r\n  into v_kpi\r\n  from public.baseball_games g\r\n  join public.baseball_game_player_records r on r.game_id = g.id\r\n  where r.player_id = v_player_id\r\n    and (p_tournament is null or g.tournament = p_tournament);\r\n\r\n  select coalesce(jsonb_agg(row_to_json(y)), '[]'::jsonb)\r\n    into v_games\r\n  from (\r\n    select\r\n      g.id,\r\n      g.game_date,\r\n      g.opponent,\r\n      g.tournament,\r\n      g.stadium,\r\n      g.our_score,\r\n      g.opp_score,\r\n      g.result\r\n    from public.baseball_games g\r\n    join public.baseball_game_player_records r on r.game_id = g.id\r\n    where r.player_id = v_player_id\r\n      and (p_tournament is null or g.tournament = p_tournament)\r\n    order by g.game_date desc, g.id desc\r\n    limit p_limit offset p_offset\r\n  ) y;\r\n\r\n  return jsonb_build_object(\r\n    'tournaments', coalesce(v_tournaments, '[]'::jsonb),\r\n    'kpi', coalesce(v_kpi, jsonb_build_object(\r\n      'total_games', 0,\r\n      'wins', 0,\r\n      'losses', 0,\r\n      'draws', 0\r\n    )),\r\n    'games', coalesce(v_games, '[]'::jsonb)\r\n  );\r\nend;\r\n"
   },
   {
     "schema_name": "public",
@@ -174,208 +402,5 @@
     "return_type": "bigint",
     "language": "plpgsql",
     "source_code": "\r\nDECLARE\r\n  v_school_id bigint;\r\nBEGIN\r\n  SELECT school_id INTO v_school_id\r\n  FROM public.baseball_profiles\r\n  WHERE id = auth.uid()\r\n  LIMIT 1;\r\n  RETURN v_school_id;\r\nEND;\r\n"
-  }
-]
-
-[
-  {
-    "schemaname": "public",
-    "tablename": "baseball_game_player_records",
-    "policyname": "baseball_records_delete_admin_or_owner",
-    "permissive": "PERMISSIVE",
-    "roles": "{public}",
-    "action": "DELETE",
-    "using_expression": "(EXISTS ( SELECT 1\n   FROM (baseball_games g\n     JOIN baseball_players p ON ((p.id = baseball_game_player_records.player_id)))\n  WHERE ((g.id = baseball_game_player_records.game_id) AND (g.school_id = baseball_my_school_id()) AND (p.school_id = baseball_my_school_id()) AND (baseball_is_school_admin() OR (p.owner_user_id = auth.uid())))))",
-    "check_expression": null
-  },
-  {
-    "schemaname": "public",
-    "tablename": "baseball_game_player_records",
-    "policyname": "baseball_records_insert_admin_or_owner",
-    "permissive": "PERMISSIVE",
-    "roles": "{public}",
-    "action": "INSERT",
-    "using_expression": null,
-    "check_expression": "(EXISTS ( SELECT 1\n   FROM (baseball_games g\n     JOIN baseball_players p ON ((p.id = baseball_game_player_records.player_id)))\n  WHERE ((g.id = baseball_game_player_records.game_id) AND (g.school_id = baseball_my_school_id()) AND (p.school_id = baseball_my_school_id()) AND (baseball_is_school_admin() OR (p.owner_user_id = auth.uid())))))"
-  },
-  {
-    "schemaname": "public",
-    "tablename": "baseball_game_player_records",
-    "policyname": "baseball_records_select_same_school",
-    "permissive": "PERMISSIVE",
-    "roles": "{public}",
-    "action": "SELECT",
-    "using_expression": "(EXISTS ( SELECT 1\n   FROM baseball_games g\n  WHERE ((g.id = baseball_game_player_records.game_id) AND (g.school_id = baseball_my_school_id()))))",
-    "check_expression": null
-  },
-  {
-    "schemaname": "public",
-    "tablename": "baseball_game_player_records",
-    "policyname": "baseball_records_update_admin_or_owner",
-    "permissive": "PERMISSIVE",
-    "roles": "{public}",
-    "action": "UPDATE",
-    "using_expression": "(EXISTS ( SELECT 1\n   FROM (baseball_games g\n     JOIN baseball_players p ON ((p.id = baseball_game_player_records.player_id)))\n  WHERE ((g.id = baseball_game_player_records.game_id) AND (g.school_id = baseball_my_school_id()) AND (p.school_id = baseball_my_school_id()) AND (baseball_is_school_admin() OR (p.owner_user_id = auth.uid())))))",
-    "check_expression": "(EXISTS ( SELECT 1\n   FROM (baseball_games g\n     JOIN baseball_players p ON ((p.id = baseball_game_player_records.player_id)))\n  WHERE ((g.id = baseball_game_player_records.game_id) AND (g.school_id = baseball_my_school_id()) AND (p.school_id = baseball_my_school_id()) AND (baseball_is_school_admin() OR (p.owner_user_id = auth.uid())))))"
-  },
-  {
-    "schemaname": "public",
-    "tablename": "baseball_games",
-    "policyname": "baseball_games_select_same_school",
-    "permissive": "PERMISSIVE",
-    "roles": "{public}",
-    "action": "SELECT",
-    "using_expression": "(school_id = baseball_my_school_id())",
-    "check_expression": null
-  },
-  {
-    "schemaname": "public",
-    "tablename": "baseball_games",
-    "policyname": "Allow insert for authenticated users",
-    "permissive": "PERMISSIVE",
-    "roles": "{authenticated}",
-    "action": "INSERT",
-    "using_expression": null,
-    "check_expression": "true"
-  },
-  {
-    "schemaname": "public",
-    "tablename": "baseball_games",
-    "policyname": "baseball_games_update_admin",
-    "permissive": "PERMISSIVE",
-    "roles": "{public}",
-    "action": "UPDATE",
-    "using_expression": "(baseball_is_school_admin() AND (school_id = baseball_my_school_id()))",
-    "check_expression": "(baseball_is_school_admin() AND (school_id = baseball_my_school_id()))"
-  },
-  {
-    "schemaname": "public",
-    "tablename": "baseball_games",
-    "policyname": "baseball_games select",
-    "permissive": "PERMISSIVE",
-    "roles": "{authenticated}",
-    "action": "SELECT",
-    "using_expression": "true",
-    "check_expression": null
-  },
-  {
-    "schemaname": "public",
-    "tablename": "baseball_games",
-    "policyname": "baseball_games_delete_admin",
-    "permissive": "PERMISSIVE",
-    "roles": "{public}",
-    "action": "DELETE",
-    "using_expression": "(baseball_is_school_admin() AND (school_id = baseball_my_school_id()))",
-    "check_expression": null
-  },
-  {
-    "schemaname": "public",
-    "tablename": "baseball_games",
-    "policyname": "baseball_games_insert_admin",
-    "permissive": "PERMISSIVE",
-    "roles": "{public}",
-    "action": "INSERT",
-    "using_expression": null,
-    "check_expression": "((school_id = baseball_my_school_id()) AND baseball_is_school_admin())"
-  },
-  {
-    "schemaname": "public",
-    "tablename": "baseball_players",
-    "policyname": "baseball_players_delete_admin_only",
-    "permissive": "PERMISSIVE",
-    "roles": "{public}",
-    "action": "DELETE",
-    "using_expression": "(baseball_is_school_admin() AND (school_id = baseball_my_school_id()))",
-    "check_expression": null
-  },
-  {
-    "schemaname": "public",
-    "tablename": "baseball_players",
-    "policyname": "baseball_players_insert_self_or_admin",
-    "permissive": "PERMISSIVE",
-    "roles": "{public}",
-    "action": "INSERT",
-    "using_expression": null,
-    "check_expression": "((school_id = baseball_my_school_id()) AND ((owner_user_id = auth.uid()) OR baseball_is_school_admin()))"
-  },
-  {
-    "schemaname": "public",
-    "tablename": "baseball_players",
-    "policyname": "baseball_players_select_same_school",
-    "permissive": "PERMISSIVE",
-    "roles": "{public}",
-    "action": "SELECT",
-    "using_expression": "(school_id = baseball_my_school_id())",
-    "check_expression": null
-  },
-  {
-    "schemaname": "public",
-    "tablename": "baseball_players",
-    "policyname": "baseball_players_update_self_or_admin",
-    "permissive": "PERMISSIVE",
-    "roles": "{public}",
-    "action": "UPDATE",
-    "using_expression": "((school_id = baseball_my_school_id()) AND ((owner_user_id = auth.uid()) OR baseball_is_school_admin()))",
-    "check_expression": "((school_id = baseball_my_school_id()) AND ((owner_user_id = auth.uid()) OR baseball_is_school_admin()))"
-  },
-  {
-    "schemaname": "public",
-    "tablename": "baseball_profiles",
-    "policyname": "baseball_profiles_select_own",
-    "permissive": "PERMISSIVE",
-    "roles": "{public}",
-    "action": "SELECT",
-    "using_expression": "(id = auth.uid())",
-    "check_expression": null
-  },
-  {
-    "schemaname": "public",
-    "tablename": "baseball_profiles",
-    "policyname": "baseball_profiles_select_school_admin",
-    "permissive": "PERMISSIVE",
-    "roles": "{authenticated}",
-    "action": "SELECT",
-    "using_expression": "(baseball_is_school_admin() AND (school_id = baseball_my_school_id()))",
-    "check_expression": null
-  },
-  {
-    "schemaname": "public",
-    "tablename": "baseball_profiles",
-    "policyname": "baseball_profiles_update_own",
-    "permissive": "PERMISSIVE",
-    "roles": "{public}",
-    "action": "UPDATE",
-    "using_expression": "(id = auth.uid())",
-    "check_expression": "(id = auth.uid())"
-  },
-  {
-    "schemaname": "public",
-    "tablename": "baseball_profiles",
-    "policyname": "baseball_profiles_update_school_admin",
-    "permissive": "PERMISSIVE",
-    "roles": "{authenticated}",
-    "action": "UPDATE",
-    "using_expression": "(baseball_is_school_admin() AND (school_id = baseball_my_school_id()))",
-    "check_expression": "(baseball_is_school_admin() AND (school_id = baseball_my_school_id()) AND (role = ANY (ARRAY['admin'::text, 'member'::text, 'recorder'::text])))"
-  },
-  {
-    "schemaname": "public",
-    "tablename": "baseball_schools",
-    "policyname": "allow read",
-    "permissive": "PERMISSIVE",
-    "roles": "{public}",
-    "action": "SELECT",
-    "using_expression": "true",
-    "check_expression": null
-  },
-  {
-    "schemaname": "public",
-    "tablename": "baseball_schools",
-    "policyname": "baseball_schools_select_all",
-    "permissive": "PERMISSIVE",
-    "roles": "{anon,authenticated}",
-    "action": "SELECT",
-    "using_expression": "true",
-    "check_expression": null
   }
 ]
