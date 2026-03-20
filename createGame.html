@@ -371,6 +371,14 @@ function showForm(pushState = true){
   }
 }
 
+function todayKST(){
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
 function setButtonsDisabled(disabled){
   el('btnSave').disabled = disabled;
   el('btnDelete').disabled = disabled;
@@ -444,7 +452,7 @@ async function preloadSchoolCategories(){
 function resetForm({ keepDate = false } = {}){
   const savedDate = el('gameDate').value;
 
-  el('gameDate').value = keepDate ? savedDate : '';
+  el('gameDate').value = keepDate ? savedDate : todayKST();
   el('gameTime').value = '';
   el('innings').value = '7';
 
@@ -855,7 +863,7 @@ window.addEventListener('popstate', async (e) => {
     if(!user) return;
 
     await preloadSchoolCategories();
-
+    el('gameDate').value = todayKST();
     const params = new URLSearchParams(location.search);
     const recordId = Number(params.get('record'));
 
