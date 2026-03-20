@@ -1,14 +1,25 @@
 document.addEventListener('DOMContentLoaded', async function () {
 
+  // ── AdSense 공통 삽입 ────────────────────────────
+  if (!document.getElementById('_adsenseScript')) {
+    const ads = document.createElement('script');
+    ads.id = '_adsenseScript';
+    ads.async = true;
+    ads.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8226060642438570';
+    ads.crossOrigin = 'anonymous';
+    document.head.appendChild(ads);
+  }
+
+  // ── 헤더 삽입 ────────────────────────────────────
   const target = document.getElementById('appHeader');
   if (!target) return;
 
-  // data-back   : 뒤로가기 링크 (없으면 버튼 미표시)
-  // data-back-label : 뒤로가기 텍스트 (기본값 "← 홈")
-  // data-auth   : "true" 일 때만 로그인/선수정보/로그아웃 버튼 표시 (기본 false)
-  const backHref   = target.dataset.back || '';
-  const backLabel  = target.dataset.backLabel || '← 홈';
-  const showAuth   = target.dataset.auth === 'true';
+  // data-back        : 뒤로가기 링크 (없으면 버튼 미표시)
+  // data-back-label  : 뒤로가기 텍스트 (기본값 "← 홈")
+  // data-auth="true" : 로그인/선수정보/로그아웃 버튼 표시 (index.html 전용)
+  const backHref  = target.dataset.back || '';
+  const backLabel = target.dataset.backLabel || '← 홈';
+  const showAuth  = target.dataset.auth === 'true';
 
   const backBtn = backHref
     ? `<a href="${backHref}" class="_hbtn">${backLabel}</a>`
@@ -46,7 +57,6 @@ document.addEventListener('DOMContentLoaded', async function () {
   function renderButtons(session) {
     window._headerSession = session || null;
 
-    // data-auth="true" 인 페이지(index)에서만 인증 버튼 표시
     if (!showAuth) {
       authArea.innerHTML = '';
       return;
