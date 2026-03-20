@@ -216,6 +216,49 @@ async function loadDashboard() {
     writeCache({ summary: current.summary || null, recent });
   }
 }
+  // 계좌 복사 + 토스트
+function copyAccount(){
+  const account = '1000-6029-7721';
+  const copy = () => {
+    let t = document.getElementById('_copyToast');
+    if(!t){
+      t = document.createElement('div');
+      t.id = '_copyToast';
+      t.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);background:#181c24;border:1px solid #4ade80;border-radius:14px;padding:12px 22px;font-size:14px;font-weight:700;color:#4ade80;opacity:0;transition:opacity .25s,transform .25s;pointer-events:none;z-index:999;white-space:nowrap;box-shadow:0 8px 32px rgba(0,0,0,.5)';
+      t.textContent = '✅ 복사되었습니다';
+      document.body.appendChild(t);
+    }
+    requestAnimationFrame(() => {
+      t.style.opacity = '1';
+      t.style.transform = 'translateX(-50%) translateY(0)';
+    });
+    clearTimeout(t._timer);
+    t._timer = setTimeout(() => {
+      t.style.opacity = '0';
+      t.style.transform = 'translateX(-50%) translateY(20px)';
+    }, 2500);
+  };
+
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(account).then(copy).catch(() => {
+      const ta = document.createElement('textarea');
+      ta.value = account;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      copy();
+    });
+  } else {
+    const ta = document.createElement('textarea');
+    ta.value = account;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    copy();
+  }
+}
 
 async function init() {
   try {
@@ -238,7 +281,8 @@ document.addEventListener('DOMContentLoaded', init);
 
 <footer style="max-width:480px;margin:0 auto;padding:28px 16px 40px;border-top:1px solid rgba(255,255,255,.07);margin-top:32px">
   <div style="margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid rgba(255,255,255,.07)">
-    <p style="font-size:12px;color:#4a5060;line-height:1.8">이 서비스는 무료로 운영됩니다. 따뜻한 후원은 서비스 운영에 큰 도움이 됩니다. <br>토스뱅크 <span style="color:#7a8294">1000-6029-7721</span> </p>
+    <p style="font-size:12px;color:#4a5060;line-height:1.8">이 서비스는 무료로 운영됩니다. 따뜻한 후원은 서비스 운영에 큰 도움이 됩니다. <br>
+      토스뱅크 <span style="color:#7a8294">1000-6029-7721</span> <button onclick="copyAccount()" id="copyBtn" style="margin-left:6px;padding:3px 10px;border-radius:6px;border:1px solid rgba(255,255,255,.15);background:transparent;color:#7a8294;font-size:11px;font-weight:700;cursor:pointer;vertical-align:middle;font-family:'Noto Sans KR',sans-serif">복사</button></p>
   </div>
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
     <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;color:#e8ff47">ELITE<span style="color:#f0f2f5"> BASEBALL</span></div>
