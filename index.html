@@ -62,7 +62,7 @@ function badgeClass(r){ return r==='W'?'W':r==='L'?'L':'D'; }
 function renderAuthButtons(session){
   const area = el('authArea');
   if(!session){ area.innerHTML = `<button class="auth-btn primary" onclick="location.href='auth.html'">로그인</button>`; return; }
-  area.innerHTML = `<button class="auth-btn" onclick="location.href='createPlayer.html'">내 선수</button><button class="auth-btn" onclick="logout()">로그아웃</button>`;
+  area.innerHTML = `<button class="auth-btn" onclick="location.href='createPlayer.html'">선수정보</button><button class="auth-btn" onclick="logout()">로그아웃</button>`;
 }
 async function logout(){ try{ localStorage.removeItem('baseball_home_cache_v4'); }catch(e){} await client.auth.signOut(); location.href='index.html'; }
 function goProtected(path){ if(!currentSession){ location.href=`auth.html?next=${encodeURIComponent(path)}`; return; } location.href=path; }
