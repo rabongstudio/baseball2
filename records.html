@@ -231,8 +231,8 @@ function buildRecords(){
   const totalRBI  = records.reduce((s,r) => s+num(r.rbi), 0);
   const totalR    = records.reduce((s,r) => s+num(r.r), 0);
   const avgScore  = records.length ? (records.reduce((s,r)=>s+num(r.our_score),0)/records.length).toFixed(1) : '-';
-  const bigWin    = [...records].sort((a,b)=>(num(b.our_score)-num(b.opp_score))-(num(a.our_score)-num(a.opp_score)))[0];
-  const bigLoss   = [...records].sort((a,b)=>(num(b.opp_score)-num(b.our_score))-(num(a.opp_score)-num(a.our_score)))[0];
+  const bigWin    = [...records].filter(r=>r.result==='W').sort((a,b)=>(num(b.our_score)-num(b.opp_score))-(num(a.our_score)-num(a.opp_score)))[0] || null;
+  const bigLoss   = [...records].filter(r=>r.result==='L').sort((a,b)=>(num(b.opp_score)-num(b.our_score))-(num(a.opp_score)-num(a.our_score)))[0] || null;
 
   const funRecords = [
     { id:'total_hr',  emoji:'💣', label:'통산 홈런',      value: totalHR  },
