@@ -268,11 +268,18 @@ el('btnSave').addEventListener('click',async()=>{
   if(!date){el('formErr').textContent='훈련 날짜는 필수입니다.';return;}
   el('formErr').textContent='';el('btnSave').disabled=true;el('btnSave').textContent='저장 중...';
   const items=Object.entries(activeItems).map(([key,vals])=>({key,...vals}));
-  const payload={player_id:playerId,owner_user_id:(await client.auth.getUser()).data.user.id,train_date:date,condition:condVal,duration_min:el('trainDuration').value?Number(el('trainDuration').value):null,memo:el('trainMemo').value.trim()||null,items:items.length?JSON.stringify(items):null};
-  const{error}=await client.from('baseball_training_logs').upsert(payload,{onConflict:'player_id,train_date'});
+  const uid=(await client.auth.getUser()).data.user.id;
+  const fields={condition:condVal,duration_min:el('trainDuration').value?Number(el('trainDuration').value):null,memo:el('trainMemo').value.trim()||null,items:items.length?JSON.stringify(items):null};
+  const{data:existing}=await client.from('baseball_training_logs').select('id').eq('player_id',playerId).eq('train_date',date).maybeSingle();
+  let error;
+  if(existing?.id){
+    ({error}=await client.from('baseball_training_logs').update(fields).eq('id',existing.id));
+  }else{
+    ({error}=await client.from('baseball_training_logs').insert({player_id:playerId,owner_user_id:uid,train_date:date,...fields}));
+  }
   el('btnSave').disabled=false;el('btnSave').textContent='저장하기';
   if(error){el('formErr').textContent='저장 실패: '+error.message;return;}
-  const existed=allLogs.some(l=>l.train_date===date);showToast(existed?'✅ 오늘 기록이 업데이트됐어요!':'✅ 훈련 기록이 저장됐어요!');
+  showToast(existing?.id?'✅ 오늘 기록이 업데이트됐어요!':'✅ 훈련 기록이 저장됐어요!');
   allLogs=[];activeItems={};el('trainMemo').value='';el('trainDuration').value='';condVal=4;
   document.querySelectorAll('.cond-btn').forEach(b=>b.classList.toggle('active',b.dataset.val==='4'));
   renderAddButtons();renderTrainItems();
