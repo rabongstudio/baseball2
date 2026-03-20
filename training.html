@@ -386,7 +386,7 @@ function openSheet(log){
   el('sheetTitle').textContent=log.train_date;
   el('sheetSub').textContent=`${COND_EMOJI[log.condition]||'🙂'} 컨디션 ${COND_LABEL[log.condition]||'-'}${log.duration_min?' · '+log.duration_min+'분 훈련':''}`;
   const items=log.items?JSON.parse(log.items):[];let html='';
-  if(items.length){html+=`<div class="detail-section"><div class="detail-label">훈련 항목</div><div class="detail-grid">`;items.forEach(item=>{const type=TRAIN_TYPES.find(t=>t.key===item.key);if(!type)return;type.fields.forEach(f=>{if(item[f.id]!=null)html+=`<div class="detail-box"><div class="v">${item[f.id]}</div><div class="k">${type.emoji} ${f.label}</div></div>`;});});html+=`</div></div>`;}
+  if(items.length){html+=`<div class="detail-section"><div class="detail-label">훈련 항목</div><div class="detail-grid">`;items.forEach(item=>{const type=TRAIN_TYPES.find(t=>t.key===item.key);if(!type)return;type.fields.forEach(f=>{if(item[f.id]!=null)html+=`<div class="detail-box"><div class="v">${item[f.id]}</div><div class="k">${type.emoji} ${type.name}</div><div style="font-size:9px;color:var(--muted2);margin-top:1px">${f.label}</div></div>`;});});html+=`</div></div>`;}
   if(log.memo)html+=`<div class="detail-section"><div class="detail-label">메모</div><div class="detail-memo">${log.memo}</div></div>`;
   if(!items.length&&!log.memo)html='<div style="color:var(--muted);font-size:13px;padding:16px 0">기록된 내용이 없어요.</div>';
   el('sheetBody').innerHTML=html;
