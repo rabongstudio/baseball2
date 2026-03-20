@@ -154,7 +154,7 @@ textarea{resize:vertical;min-height:88px}
       <select id="schoolSel" disabled>
         <option value="">구분을 먼저 선택해주세요</option>
       </select>
-      
+
       <div class="divider"></div>
 
       <label>선수 이름</label>
@@ -254,6 +254,8 @@ textarea{resize:vertical;min-height:88px}
 const el = (id) => document.getElementById(id);
 const FAKE_DOMAIN = '@baseball.app';
 const ID_REGEX = /^[a-z0-9_]{3,20}$/;
+const SCHOOL_CACHE_KEY = 'baseball_school_category_cache_v1';
+const schoolCategoryCache = new Map();
 
 function toEmail(u){
   return u.trim().toLowerCase() + FAKE_DOMAIN;
@@ -364,6 +366,93 @@ function suggestGradeFromBirthYear(){
   hint.textContent = `생년 기준으로 ${level}${grade} 자동 추천했어요`;
 }
 
+function loadSchoolCacheFromSession(){
+  try{
+    const raw = sessionStorage.getItem(SCHOOL_CACHE_KEY);
+    if(!raw) return;
+    const obj = JSON.parse(raw);
+    Object.entries(obj).forEach(([k, v]) => {
+      if(Array.isArray(v)) schoolCategoryCache.set(k, v);
+    });
+  }catch(e){}
+}
+
+function saveSchoolCacheToSession(){
+  try{
+    const obj = Object.fromEntries(schoolCategoryCache.entries());
+    sessionStorage.setItem(SCHOOL_CACHE_KEY, JSON.stringify(obj));
+  }catch(e){}
+}
+
+async function ensureSchoolCategory(cat){
+  if(!cat) return [];
+
+  if(schoolCategoryCache.has(cat)){
+    return schoolCategoryCache.get(cat);
+  }
+
+  const { data, error } = await sb
+    .from('baseball_schools')
+    .select('id,name')
+    .eq('category', cat)
+    .order('name');
+
+  if(error){
+    throw error;
+  }
+
+  const rows = data || [];
+  schoolCategoryCache.set(cat, rows);
+  saveSchoolCacheToSession();
+  return rows;
+}
+
+function renderSchoolOptions(rows){
+  const sel = el('schoolSel');
+  sel.innerHTML = '<option value="">학교 선택</option>';
+
+  (rows || []).forEach(s => {
+    const opt = document.createElement('option');
+    opt.value = s.id;
+    opt.textContent = s.name;
+    sel.appendChild(opt);
+  });
+
+  sel.disabled = false;
+}
+
+async function loadSchools(){
+  el('categorySel').addEventListener('change', async () => {
+    const cat = el('categorySel').value;
+    const sel = el('schoolSel');
+    const msg = el('signupMsg');
+
+    sel.innerHTML = '<option value="">학교 선택</option>';
+
+    if(!cat){
+      sel.disabled = true;
+      return;
+    }
+
+    try{
+      sel.disabled = false;
+      sel.innerHTML = '<option value="">불러오는 중...</option>';
+      const rows = await ensureSchoolCategory(cat);
+      renderSchoolOptions(rows);
+    }catch(error){
+      sel.disabled = true;
+      sel.innerHTML = '<option value="">학교 선택</option>';
+      msg.className = 'msg err';
+      msg.textContent = '학교 목록 오류: ' + error.message;
+    }
+  });
+}
+
+function nextUrl(){
+  const next = new URLSearchParams(location.search).get('next');
+  return next || 'index.html';
+}
+
 let idChecked = false;
 
 el('signupUsername').addEventListener('input', () => {
@@ -469,48 +558,6 @@ function checkPasswordMatch(){
   }
 }
 
-async function loadSchools(){
-  el('categorySel').addEventListener('change', async () => {
-    const cat = el('categorySel').value;
-    const sel = el('schoolSel');
-    sel.innerHTML = '<option value="">학교 선택</option>';
-
-    if(!cat){
-      sel.disabled = true;
-      return;
-    }
-
-    sel.disabled = false;
-    sel.innerHTML = '<option value="">불러오는 중...</option>';
-
-    const { data, error } = await sb
-      .from('baseball_schools')
-      .select('id,name')
-      .eq('category', cat)
-      .order('name');
-
-    sel.innerHTML = '<option value="">학교 선택</option>';
-
-    if(error){
-      el('signupMsg').className = 'msg err';
-      el('signupMsg').textContent = '학교 목록 오류: ' + error.message;
-      return;
-    }
-
-    (data || []).forEach(s => {
-      const opt = document.createElement('option');
-      opt.value = s.id;
-      opt.textContent = s.name;
-      sel.appendChild(opt);
-    });
-  });
-}
-
-function nextUrl(){
-  const next = new URLSearchParams(location.search).get('next');
-  return next || 'index.html';
-}
-
 el('gradeLevel').addEventListener('change', () => {
   fillGradeYearOptions(el('gradeLevel').value);
 });
@@ -603,32 +650,63 @@ el('btnSignup').onclick = async () => {
   el('btnSignup').disabled = true;
   msg.textContent = '회원가입 중...';
 
-  const { data, error } = await sb.auth.signUp({
-    email: toEmail(username),
-    password,
-    options: { data: payload }
-  });
+  try{
+    const { data, error } = await sb.auth.signUp({
+      email: toEmail(username),
+      password,
+      options: { data: payload }
+    });
 
-  el('btnSignup').disabled = false;
+    console.log('SIGNUP RESULT', { data, error });
 
-  if(error){
+    if(error){
+      msg.className = 'msg err';
+      msg.textContent = error.message;
+      return;
+    }
+
+    if(!data?.user){
+      msg.className = 'msg err';
+      msg.textContent = '회원가입이 정상적으로 완료되지 않았어요. 잠시 후 다시 시도해주세요.';
+      return;
+    }
+
+    if(Array.isArray(data.user.identities) && data.user.identities.length === 0){
+      msg.className = 'msg err';
+      msg.textContent = '계정 생성이 완료되지 않았어요. 다른 아이디로 다시 시도해주세요.';
+      return;
+    }
+
+    const { data: userCheck, error: userCheckError } = await sb.auth.getUser();
+
+    console.log('AFTER SIGNUP GETUSER', { userCheck, userCheckError });
+
+    if(userCheckError){
+      msg.className = 'msg err';
+      msg.textContent = '회원가입 후 사용자 확인 중 오류가 발생했어요.';
+      return;
+    }
+
+    if(data.session){
+      location.href = nextUrl();
+      return;
+    }
+
+    msg.className = 'msg ok';
+    msg.textContent = '회원가입이 완료됐어요! 이제 로그인해서 바로 사용할 수 있어요.';
+    showTab('login');
+  }catch(err){
+    console.error(err);
     msg.className = 'msg err';
-    msg.textContent = error.message;
-    return;
+    msg.textContent = '회원가입 처리 중 예상치 못한 오류가 발생했어요.';
+  }finally{
+    el('btnSignup').disabled = false;
   }
-
-  if(data.session){
-    location.href = nextUrl();
-    return;
-  }
-
-  msg.className = 'msg ok';
-  msg.textContent = '회원가입이 완료됐어요! 이제 로그인해서 바로 사용할 수 있어요.';
-  showTab('login');
 };
 
 (async function init(){
   fillGradeYearOptions('');
+  loadSchoolCacheFromSession();
   await loadSchools();
 
   const { data:{ user } } = await sb.auth.getUser();
