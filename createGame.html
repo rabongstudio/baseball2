@@ -69,18 +69,28 @@ textarea{resize:none}
 .btn.primary:hover{background:#d4ea3a}
 .btn.ghost{background:transparent;border:1px solid var(--border2);color:var(--text)}
 .btn.ghost:hover{border-color:var(--border2);background:rgba(255,255,255,.05)}
-.btn.danger{background:var(--loss-bg);border:1px solid var(--loss);color:var(--loss)}
-.btn.danger:hover{background:rgba(248,113,113,.2)}
 .btn:disabled{opacity:.55;cursor:not-allowed}
-
-.msg{margin-top:12px;font-size:13px;line-height:1.5;text-align:center}
-.msg .ok{color:var(--ok)}
-.msg .err{color:var(--err)}
-.msg .warn{color:var(--warn)}
 
 .hidden{display:none!important}
 .hint-text{font-size:12px;color:var(--muted);margin-top:8px}
 .small{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.5}
+
+/* 에러 메시지 */
+.form-err{margin-top:12px;font-size:13px;color:var(--err);text-align:center;min-height:20px}
+
+/* 토스트 */
+.toast{
+  position:fixed;bottom:88px;left:50%;transform:translateX(-50%) translateY(20px);
+  background:var(--panel);border:1px solid var(--border2);border-radius:14px;
+  padding:13px 24px;font-size:14px;font-weight:700;
+  display:flex;align-items:center;gap:8px;
+  opacity:0;transition:opacity .25s, transform .25s;
+  pointer-events:none;z-index:200;white-space:nowrap;
+  box-shadow:0 8px 32px rgba(0,0,0,.5);
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.ok{border-color:var(--ok);color:var(--ok)}
+.toast.err{border-color:var(--err);color:var(--err)}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/config.js"></script>
@@ -148,6 +158,7 @@ textarea{resize:none}
         </div>
       </div>
       <div class="small">리포트에서 대회명 기준으로 묶여 보여집니다. 같은 대회는 띄어쓰기까지 동일하게 입력해주세요.</div>
+
       <label>홈 / 원정</label>
       <div class="chip-row">
         <button type="button" class="chip-btn active" id="btnHome">홈</button>
@@ -233,37 +244,30 @@ textarea{resize:none}
         <div><label>타수</label><input id="ab" type="number" min="0" step="1" value="0" /></div>
         <div><label>안타</label><input id="h" type="number" min="0" step="1" value="0" /></div>
       </div>
-
       <div class="row2">
         <div><label>2루타</label><input id="doubles" type="number" min="0" step="1" value="0" /></div>
         <div><label>3루타</label><input id="triples" type="number" min="0" step="1" value="0" /></div>
       </div>
-
       <div class="row2">
         <div><label>홈런</label><input id="hr" type="number" min="0" step="1" value="0" /></div>
         <div><label>타점</label><input id="rbi" type="number" min="0" step="1" value="0" /></div>
       </div>
-
       <div class="row2">
         <div><label>득점</label><input id="r" type="number" min="0" step="1" value="0" /></div>
         <div><label>볼넷</label><input id="bb" type="number" min="0" step="1" value="0" /></div>
       </div>
-
       <div class="row2">
         <div><label>삼진</label><input id="so" type="number" min="0" step="1" value="0" /></div>
         <div><label>사구</label><input id="hbp" type="number" min="0" step="1" value="0" /></div>
       </div>
-
       <div class="row2">
         <div><label>도루</label><input id="sb" type="number" min="0" step="1" value="0" /></div>
         <div><label>희생플라이</label><input id="sf" type="number" min="0" step="1" value="0" /></div>
       </div>
-
       <div class="row2">
         <div><label>희생번트</label><input id="sh" type="number" min="0" step="1" value="0" /></div>
         <div><label>땅볼</label><input id="gb" type="number" min="0" step="1" value="0" /></div>
       </div>
-
       <label>플라이</label>
       <input id="fb" type="number" min="0" step="1" value="0" />
 
@@ -274,17 +278,14 @@ textarea{resize:none}
         <div><label>이닝(IP)</label><input id="ip" type="number" min="0" step="0.1" value="0" /></div>
         <div><label>자책점</label><input id="er" type="number" min="0" step="1" value="0" /></div>
       </div>
-
       <div class="row2">
         <div><label>탈삼진</label><input id="pk" type="number" min="0" step="1" value="0" /></div>
         <div><label>볼넷</label><input id="pbb" type="number" min="0" step="1" value="0" /></div>
       </div>
-
       <div class="row2">
         <div><label>피안타</label><input id="ph" type="number" min="0" step="1" value="0" /></div>
         <div><label>투구수</label><input id="pitches" type="number" min="0" step="1" value="0" /></div>
       </div>
-
       <label>최고구속</label>
       <input id="maxVel" type="number" min="0" step="1" placeholder="예: 112" />
 
@@ -298,20 +299,17 @@ textarea{resize:none}
       <textarea id="playerMemo" rows="3" placeholder="예: 찬스에서 집중력 좋았음, 수비 위치선정 아쉬움"></textarea>
 
       <button class="btn primary" id="btnSave">저장하기</button>
-
-      <div class="row2" style="margin-top:10px">
-        <button class="btn ghost" id="btnReset">초기화</button>
-        <button class="btn danger hidden" id="btnDelete">삭제</button>
-      </div>
-
       <button class="btn ghost" id="btnBack" style="margin-top:8px">← 목록으로</button>
 
-      <div class="msg" id="msg"></div>
+      <div class="form-err" id="formErr"></div>
     </div>
   </div>
 </div>
 
 <button class="fab" id="btnNew" aria-label="새 경기">+</button>
+
+<!-- 토스트 -->
+<div class="toast" id="toast"></div>
 
 <script>
 const client = window.sb;
@@ -332,15 +330,27 @@ let isStarter = true;
 
 let gameListCache = null;
 let schoolCategoryCache = new Map();
+let toastTimer = null;
 
-function setMsg(html=''){ el('msg').innerHTML = html; }
+// ── 토스트 ──────────────────────────────────────
+function showToast(msg, type = 'ok'){
+  const t = el('toast');
+  t.textContent = msg;
+  t.className = `toast ${type} show`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+function setFormErr(msg = ''){
+  el('formErr').textContent = msg;
+}
+
+// ── 유틸 ────────────────────────────────────────
 function numVal(id){
   const v = Number(el(id).value);
   return Number.isFinite(v) ? v : 0;
 }
-function textVal(id){
-  return el(id).value.trim();
-}
+function textVal(id){ return el(id).value.trim(); }
 function setActive(on, off){
   on.classList.add('active');
   off.classList.remove('active');
@@ -352,12 +362,10 @@ function ymTitle(k){
 }
 function todayKST(){
   const d = new Date();
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${y}-${m}-${day}`;
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 
+// ── 학교 캐시 ────────────────────────────────────
 function loadSchoolCacheFromSession(){
   try{
     const raw = sessionStorage.getItem(SCHOOL_CACHE_KEY);
@@ -374,84 +382,9 @@ function saveSchoolCacheToSession(){
     sessionStorage.setItem(SCHOOL_CACHE_KEY, JSON.stringify(obj));
   }catch(e){}
 }
-
-function showList(pushState = true){
-  el('viewList').classList.remove('hidden');
-  el('viewForm').classList.add('hidden');
-  currentView = 'list';
-  el('btnNew').style.display = 'flex';
-  setMsg('');
-  if(pushState) history.pushState({ view:'list' }, '', location.pathname);
-}
-
-function showForm(pushState = true){
-  el('viewList').classList.add('hidden');
-  el('viewForm').classList.remove('hidden');
-  currentView = 'form';
-  el('btnNew').style.display = 'none';
-  setMsg('');
-  if(pushState){
-    const url = mode === 'edit' && editingId ? `${location.pathname}?record=${editingId}` : location.pathname;
-    history.pushState({ view:'form', recordId: editingId }, '', url);
-  }
-}
-
-function setButtonsDisabled(disabled){
-  el('btnSave').disabled = disabled;
-  el('btnDelete').disabled = disabled;
-  el('btnReset').disabled = disabled;
-}
-
-function requireLoginRedirect(){
-  const next = location.pathname.split('/').pop() + location.search;
-  location.href = `auth.html?next=${encodeURIComponent(next)}`;
-}
-
-async function requireLogin(){
-  const { data, error } = await client.auth.getUser();
-  if(error || !data?.user){
-    requireLoginRedirect();
-    return null;
-  }
-  return data.user;
-}
-
-function resetOpponentSelect(){
-  el('opponentInput').innerHTML = '<option value="">구분을 먼저 선택해주세요</option>';
-  el('opponentInput').disabled = true;
-}
-
-function applySchoolOptions(names = [], selected = ''){
-  const sel = el('opponentInput');
-  sel.innerHTML = '<option value="">학교 선택</option>';
-  sel.disabled = false;
-
-  names.forEach(row => {
-    const name = typeof row === 'string' ? row : row.name;
-    if(!name) return;
-    const opt = document.createElement('option');
-    opt.value = name;
-    opt.textContent = name;
-    sel.appendChild(opt);
-  });
-
-  if(selected) sel.value = selected;
-}
-
-function detectCategoryFromOpponent(opponent){
-  if(!opponent) return '';
-  for(const [cat, names] of schoolCategoryCache.entries()){
-    if((names || []).includes(opponent)) return cat;
-  }
-  return '';
-}
-
 async function ensureCategoryCache(cat){
   if(!cat) return [];
-
-  if(schoolCategoryCache.has(cat)){
-    return schoolCategoryCache.get(cat);
-  }
+  if(schoolCategoryCache.has(cat)) return schoolCategoryCache.get(cat);
 
   const { data, error } = await client
     .from('baseball_schools')
@@ -459,29 +392,84 @@ async function ensureCategoryCache(cat){
     .eq('category', cat)
     .order('name');
 
-  if(error){
-    console.error('학교 목록 조회 오류:', error);
-    return [];
-  }
+  if(error){ console.error('학교 목록 조회 오류:', error); return []; }
 
-  // { name } 객체 배열 그대로 캐시
   const rows = data || [];
   schoolCategoryCache.set(cat, rows);
   saveSchoolCacheToSession();
   return rows;
 }
 
+// ── 상대팀 select ────────────────────────────────
+function resetOpponentSelect(){
+  el('opponentInput').innerHTML = '<option value="">구분을 먼저 선택해주세요</option>';
+  el('opponentInput').disabled = true;
+}
+function applySchoolOptions(rows = [], selected = ''){
+  const sel = el('opponentInput');
+  sel.innerHTML = '<option value="">학교 선택</option>';
+  sel.disabled = false;
+  rows.forEach(row => {
+    const name = typeof row === 'string' ? row : row.name;
+    if(!name) return;
+    const opt = document.createElement('option');
+    opt.value = name;
+    opt.textContent = name;
+    sel.appendChild(opt);
+  });
+  if(selected) sel.value = selected;
+}
+function detectCategoryFromOpponent(opponent){
+  if(!opponent) return '';
+  for(const [cat, rows] of schoolCategoryCache.entries()){
+    const names = (rows || []).map(r => typeof r === 'string' ? r : r.name);
+    if(names.includes(opponent)) return cat;
+  }
+  return '';
+}
+
+// ── 뷰 전환 ─────────────────────────────────────
+function showList(pushState = true){
+  el('viewList').classList.remove('hidden');
+  el('viewForm').classList.add('hidden');
+  currentView = 'list';
+  el('btnNew').style.display = 'flex';
+  setFormErr('');
+  if(pushState) history.pushState({ view:'list' }, '', location.pathname);
+}
+function showForm(pushState = true){
+  el('viewList').classList.add('hidden');
+  el('viewForm').classList.remove('hidden');
+  currentView = 'form';
+  el('btnNew').style.display = 'none';
+  setFormErr('');
+  if(pushState){
+    const url = mode === 'edit' && editingId
+      ? `${location.pathname}?record=${editingId}`
+      : location.pathname;
+    history.pushState({ view:'form', recordId: editingId }, '', url);
+  }
+}
+
+// ── 인증 ─────────────────────────────────────────
+function requireLoginRedirect(){
+  const next = location.pathname.split('/').pop() + location.search;
+  location.href = `auth.html?next=${encodeURIComponent(next)}`;
+}
+async function requireLogin(){
+  const { data, error } = await client.auth.getUser();
+  if(error || !data?.user){ requireLoginRedirect(); return null; }
+  return data.user;
+}
+
+// ── 폼 초기화 ────────────────────────────────────
 function resetForm({ keepDate = false } = {}){
   const savedDate = el('gameDate').value;
-  const today = todayKST();
-
-  el('gameDate').value = keepDate ? (savedDate || today) : today;
+  el('gameDate').value = keepDate ? (savedDate || todayKST()) : todayKST();
   el('gameTime').value = '';
   el('innings').value = '7';
-
   el('opponentCategory').value = '';
   resetOpponentSelect();
-
   el('tournament').value = '';
   el('stadium').value = '';
   el('weather').value = '';
@@ -490,10 +478,7 @@ function resetForm({ keepDate = false } = {}){
   el('oppScore').value = '0';
   el('gameMemo').value = '';
 
-  isHome = true;
-  isCold = false;
-  isStarter = true;
-
+  isHome = true; isCold = false; isStarter = true;
   setActive(el('btnHome'), el('btnAway'));
   setActive(el('btnColdNo'), el('btnColdYes'));
   setActive(el('btnStarterYes'), el('btnStarterNo'));
@@ -501,14 +486,15 @@ function resetForm({ keepDate = false } = {}){
   el('battingOrder').value = '';
   el('position').value = '';
 
-  ['ab','h','rbi','r','bb','so','hbp','sb','doubles','triples','hr','sf','sh','gb','fb','ip','er','pk','pbb','ph','pitches','e']
-    .forEach(id => el(id).value = '0');
+  ['ab','h','rbi','r','bb','so','hbp','sb','doubles','triples','hr','sf','sh','gb','fb',
+   'ip','er','pk','pbb','ph','pitches','e'].forEach(id => el(id).value = '0');
 
   el('maxVel').value = '';
   el('playerMemo').value = '';
-  setMsg('');
+  setFormErr('');
 }
 
+// ── 폼 채우기 ────────────────────────────────────
 async function fillFormFromRecord(r){
   el('gameDate').value = r.game_date ?? todayKST();
   el('gameTime').value = r.game_time ?? '';
@@ -518,8 +504,8 @@ async function fillFormFromRecord(r){
   el('opponentCategory').value = category || '';
 
   if(category){
-    const names = await ensureCategoryCache(category);
-    applySchoolOptions(names, r.opponent || '');
+    const rows = await ensureCategoryCache(category);
+    applySchoolOptions(rows, r.opponent || '');
   } else if(r.opponent){
     el('opponentInput').disabled = false;
     el('opponentInput').innerHTML = `<option value="${r.opponent}">${r.opponent}</option>`;
@@ -546,7 +532,6 @@ async function fillFormFromRecord(r){
 
   el('battingOrder').value = r.batting_order ?? '';
   el('position').value = r.position ?? '';
-
   el('ab').value = r.ab ?? 0;
   el('h').value = r.h ?? 0;
   el('rbi').value = r.rbi ?? 0;
@@ -562,7 +547,6 @@ async function fillFormFromRecord(r){
   el('sh').value = r.sh ?? 0;
   el('gb').value = r.gb ?? 0;
   el('fb').value = r.fb ?? 0;
-
   el('ip').value = r.ip ?? 0;
   el('er').value = r.er ?? 0;
   el('pk').value = r.pk ?? 0;
@@ -574,13 +558,11 @@ async function fillFormFromRecord(r){
   el('playerMemo').value = r.player_memo ?? '';
 }
 
+// ── 페이로드 수집 ────────────────────────────────
 function collectPayload(){
   const game_date = el('gameDate').value;
   const opponent = textVal('opponentInput');
-
-  if(!game_date || !opponent){
-    return { error: '필수값: 경기 날짜, 상대팀' };
-  }
+  if(!game_date || !opponent) return { error: '경기 날짜와 상대팀은 필수입니다.' };
 
   return {
     p_record_id: mode === 'edit' ? editingId : null,
@@ -597,48 +579,28 @@ function collectPayload(){
     p_our_score: numVal('ourScore'),
     p_opp_score: numVal('oppScore'),
     p_game_memo: textVal('gameMemo') || null,
-
     p_is_starter: isStarter,
     p_batting_order: el('battingOrder').value ? Number(el('battingOrder').value) : null,
     p_position: el('position').value || null,
-
-    p_ab: numVal('ab'),
-    p_h: numVal('h'),
-    p_rbi: numVal('rbi'),
-    p_r: numVal('r'),
-    p_bb: numVal('bb'),
-    p_so: numVal('so'),
-    p_hbp: numVal('hbp'),
-    p_sb: numVal('sb'),
-    p_doubles: numVal('doubles'),
-    p_triples: numVal('triples'),
-    p_hr: numVal('hr'),
-    p_sf: numVal('sf'),
-    p_sh: numVal('sh'),
-    p_gb: numVal('gb'),
-    p_fb: numVal('fb'),
-
-    p_ip: numVal('ip'),
-    p_er: numVal('er'),
-    p_pk: numVal('pk'),
-    p_pbb: numVal('pbb'),
-    p_ph: numVal('ph'),
-    p_pitches: numVal('pitches'),
+    p_ab: numVal('ab'), p_h: numVal('h'), p_rbi: numVal('rbi'), p_r: numVal('r'),
+    p_bb: numVal('bb'), p_so: numVal('so'), p_hbp: numVal('hbp'), p_sb: numVal('sb'),
+    p_doubles: numVal('doubles'), p_triples: numVal('triples'), p_hr: numVal('hr'),
+    p_sf: numVal('sf'), p_sh: numVal('sh'), p_gb: numVal('gb'), p_fb: numVal('fb'),
+    p_ip: numVal('ip'), p_er: numVal('er'), p_pk: numVal('pk'), p_pbb: numVal('pbb'),
+    p_ph: numVal('ph'), p_pitches: numVal('pitches'),
     p_max_vel: el('maxVel').value === '' ? null : Number(el('maxVel').value),
-
     p_e: numVal('e'),
     p_player_memo: textVal('playerMemo') || null
   };
 }
 
+// ── 목록 렌더 ────────────────────────────────────
 function renderGameList(rows){
   el('gameList').innerHTML = '';
-
   if(!rows || !rows.length){
     el('listHint').textContent = '등록된 기록이 없어요. + 버튼으로 추가하세요.';
     return;
   }
-
   el('listHint').textContent = '';
 
   const groups = new Map();
@@ -657,9 +619,7 @@ function renderGameList(rows){
     records.forEach(r => {
       const item = document.createElement('div');
       item.className = 'card';
-
       const badgeClass = r.result === 'W' ? 'W' : r.result === 'L' ? 'L' : 'D';
-
       item.innerHTML = `
         <div class="game-item">
           <div class="result-badge ${badgeClass}">${r.result || 'D'}</div>
@@ -670,56 +630,37 @@ function renderGameList(rows){
           <div class="game-score">${r.our_score}<span style="color:var(--muted);font-size:16px">:</span>${r.opp_score}</div>
         </div>
       `;
-
       item.addEventListener('click', () => openEdit(r.id));
       el('gameList').appendChild(item);
     });
   }
 }
 
-function invalidateGameListCache(){
-  gameListCache = null;
-}
+function invalidateGameListCache(){ gameListCache = null; }
 
 async function loadList(forceReload = false){
   if(loadingList) return;
   loadingList = true;
-
   try {
-    if(!forceReload && Array.isArray(gameListCache)){
-      renderGameList(gameListCache);
-      return;
-    }
-
+    if(!forceReload && Array.isArray(gameListCache)){ renderGameList(gameListCache); return; }
     el('listHint').textContent = '불러오는 중...';
-
     const { data, error } = await client
       .from('baseball_records')
       .select('id,game_date,opponent,tournament,our_score,opp_score,result')
       .order('game_date', { ascending:false })
       .order('id', { ascending:false })
       .limit(100);
-
-    if(error){
-      el('listHint').textContent = '불러오기 실패: ' + error.message;
-      return;
-    }
-
+    if(error){ el('listHint').textContent = '불러오기 실패: ' + error.message; return; }
     gameListCache = data || [];
     renderGameList(gameListCache);
-  } finally {
-    loadingList = false;
-  }
+  } finally { loadingList = false; }
 }
 
+// ── 등록 / 수정 진입 ─────────────────────────────
 function enterCreate(){
-  mode = 'create';
-  editingId = null;
-
+  mode = 'create'; editingId = null;
   el('formTitle').textContent = '경기 등록';
   el('formSub').textContent = '경기 정보와 선수 기록을 한 번에 입력하세요';
-  el('btnDelete').classList.add('hidden');
-
   resetForm();
   showForm();
 }
@@ -727,74 +668,34 @@ function enterCreate(){
 async function openEdit(id){
   if(loadingForm) return;
   loadingForm = true;
-
   try {
-    mode = 'edit';
-    editingId = id;
-
+    mode = 'edit'; editingId = id;
     el('formTitle').textContent = '경기 수정';
     el('formSub').textContent = `기록 #${id}`;
-    el('btnDelete').classList.remove('hidden');
-
     showForm();
-    setMsg('불러오는 중...');
-
-    const { data, error } = await client.rpc('baseball_record_detail', {
-      p_record_id: id
-    });
-
-    if(error){
-      setMsg(`<span class="err">불러오기 실패: ${error.message}</span>`);
-      return;
-    }
-
+    setFormErr('불러오는 중...');
+    const { data, error } = await client.rpc('baseball_record_detail', { p_record_id: id });
+    if(error){ setFormErr('불러오기 실패: ' + error.message); return; }
     await fillFormFromRecord(data || {});
-    setMsg('');
-  } finally {
-    loadingForm = false;
-  }
+    setFormErr('');
+  } finally { loadingForm = false; }
 }
 
-el('btnHome').addEventListener('click', () => {
-  isHome = true;
-  setActive(el('btnHome'), el('btnAway'));
-});
-el('btnAway').addEventListener('click', () => {
-  isHome = false;
-  setActive(el('btnAway'), el('btnHome'));
-});
-
-el('btnColdNo').addEventListener('click', () => {
-  isCold = false;
-  setActive(el('btnColdNo'), el('btnColdYes'));
-});
-el('btnColdYes').addEventListener('click', () => {
-  isCold = true;
-  setActive(el('btnColdYes'), el('btnColdNo'));
-});
-
-el('btnStarterYes').addEventListener('click', () => {
-  isStarter = true;
-  setActive(el('btnStarterYes'), el('btnStarterNo'));
-});
-el('btnStarterNo').addEventListener('click', () => {
-  isStarter = false;
-  setActive(el('btnStarterNo'), el('btnStarterYes'));
-});
+// ── 이벤트 바인딩 ────────────────────────────────
+el('btnHome').addEventListener('click', () => { isHome = true; setActive(el('btnHome'), el('btnAway')); });
+el('btnAway').addEventListener('click', () => { isHome = false; setActive(el('btnAway'), el('btnHome')); });
+el('btnColdNo').addEventListener('click', () => { isCold = false; setActive(el('btnColdNo'), el('btnColdYes')); });
+el('btnColdYes').addEventListener('click', () => { isCold = true; setActive(el('btnColdYes'), el('btnColdNo')); });
+el('btnStarterYes').addEventListener('click', () => { isStarter = true; setActive(el('btnStarterYes'), el('btnStarterNo')); });
+el('btnStarterNo').addEventListener('click', () => { isStarter = false; setActive(el('btnStarterNo'), el('btnStarterYes')); });
 
 el('opponentCategory').addEventListener('change', async () => {
   const cat = el('opponentCategory').value;
-
-  if(!cat){
-    resetOpponentSelect();
-    return;
-  }
-
+  if(!cat){ resetOpponentSelect(); return; }
   el('opponentInput').disabled = false;
   el('opponentInput').innerHTML = '<option value="">불러오는 중...</option>';
-
-  const names = await ensureCategoryCache(cat);
-  applySchoolOptions(names);
+  const rows = await ensureCategoryCache(cat);
+  applySchoolOptions(rows);
 });
 
 el('btnNew').addEventListener('click', enterCreate);
@@ -804,69 +705,31 @@ el('btnBack').addEventListener('click', async () => {
   await loadList(false);
 });
 
-el('btnReset').addEventListener('click', () => resetForm({ keepDate: true }));
-
 el('btnSave').addEventListener('click', async () => {
   if(saving) return;
-
   const payload = collectPayload();
-  if(payload.error){
-    setMsg(`<span class="err">${payload.error}</span>`);
-    return;
-  }
+  if(payload.error){ setFormErr(payload.error); return; }
 
   saving = true;
-  setButtonsDisabled(true);
-  setMsg('저장 중...');
+  el('btnSave').disabled = true;
+  el('btnSave').textContent = '저장 중...';
+  setFormErr('');
 
   try {
     const { data, error } = await client.rpc('baseball_record_save', payload);
-
-    if(error){
-      setMsg(`<span class="err">저장 실패: ${error.message}</span>`);
-      return;
-    }
+    if(error){ setFormErr('저장 실패: ' + error.message); return; }
 
     invalidateGameListCache();
+    showToast('✅ 저장되었습니다!', 'ok');
 
     if(data?.mode === 'create'){
-      setMsg(`<span class="ok">✅ 저장 완료! 기록 #${data.id}</span>`);
       await openEdit(data.id);
       return;
     }
-
-    setMsg(`<span class="ok">✅ 수정 완료!</span>`);
   } finally {
     saving = false;
-    setButtonsDisabled(false);
-  }
-});
-
-el('btnDelete').addEventListener('click', async () => {
-  if(mode !== 'edit' || !editingId) return;
-  if(!confirm('이 기록을 삭제할까요?')) return;
-
-  setButtonsDisabled(true);
-  setMsg('삭제 중...');
-
-  try {
-    const { data, error } = await client.rpc('baseball_record_delete', {
-      p_record_id: editingId
-    });
-
-    if(error){
-      setMsg(`<span class="err">삭제 실패: ${error.message}</span>`);
-      return;
-    }
-
-    invalidateGameListCache();
-    setMsg(`<span class="ok">✅ 삭제 완료</span>`);
-    mode = 'create';
-    editingId = null;
-    showList();
-    await loadList(true);
-  } finally {
-    setButtonsDisabled(false);
+    el('btnSave').disabled = false;
+    el('btnSave').textContent = '저장하기';
   }
 });
 
@@ -879,6 +742,7 @@ window.addEventListener('popstate', async (e) => {
   }
 });
 
+// ── 초기화 ───────────────────────────────────────
 (async function init(){
   try {
     const user = await requireLogin();
@@ -889,10 +753,7 @@ window.addEventListener('popstate', async (e) => {
     const params = new URLSearchParams(location.search);
     const recordId = Number(params.get('record'));
 
-    if(recordId){
-      await openEdit(recordId);
-      return;
-    }
+    if(recordId){ await openEdit(recordId); return; }
 
     history.replaceState({ view:'list' }, '', location.pathname);
     showList(false);
