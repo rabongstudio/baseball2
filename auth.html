@@ -78,15 +78,6 @@ textarea{resize:vertical;min-height:88px}
 .hidden{display:none!important}
 .divider{height:1px;background:var(--border);margin:16px 0}
 
-/* 임시 비밀번호 박스 */
-.temp-pw-box{
-  margin-top:16px;padding:18px 20px;
-  background:var(--brand-dim);border:1px solid var(--brand);border-radius:14px;
-  text-align:center;
-}
-.temp-pw-label{font-size:11px;font-weight:700;letter-spacing:1.5px;color:var(--brand);text-transform:uppercase;margin-bottom:8px}
-.temp-pw-value{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:3px;color:var(--brand)}
-.temp-pw-notice{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.6}
 
 /* 비밀번호 찾기 단계 표시 */
 .step-indicator{display:flex;align-items:center;gap:6px;margin-bottom:20px}
@@ -349,26 +340,31 @@ textarea{resize:vertical;min-height:88px}
         <div class="msg" id="forgotMsg2"></div>
       </div>
 
-      <!-- Step 3: 임시 비밀번호 발급 완료 -->
+      <!-- Step 3: 새 비밀번호 설정 -->
       <div id="forgotStep3" class="hidden">
         <div class="step-indicator">
           <div class="step-dot done"></div>
           <div class="step-dot done"></div>
           <div class="step-dot active"></div>
-          <span class="step-label">임시 비밀번호 발급</span>
+          <span class="step-label">새 비밀번호 설정</span>
         </div>
 
-        <div class="temp-pw-box">
-          <div class="temp-pw-label">임시 비밀번호</div>
-          <div class="temp-pw-value" id="tempPwDisplay"></div>
-          <div class="temp-pw-notice">
-            이 비밀번호로 로그인 후<br>
-            <strong style="color:var(--warn)">반드시 비밀번호를 변경</strong>해주세요.<br>
-            화면을 벗어나면 다시 확인할 수 없어요.
-          </div>
+        <label>새 비밀번호</label>
+        <div class="input-wrap">
+          <input id="newPassword" type="password" placeholder="6자 이상" autocomplete="new-password" />
+          <button class="eye-btn" id="eyeNewPw" type="button">👁</button>
         </div>
+        <div class="hint" id="hintNewPw"></div>
 
-        <button class="btn" id="btnGoLogin" type="button">로그인하러 가기</button>
+        <label>새 비밀번호 확인</label>
+        <div class="input-wrap">
+          <input id="newPasswordConfirm" type="password" placeholder="비밀번호 재입력" autocomplete="new-password" />
+          <button class="eye-btn" id="eyeNewPwConfirm" type="button">👁</button>
+        </div>
+        <div class="hint" id="hintNewPwConfirm"></div>
+
+        <button class="btn" id="btnSetNewPw">비밀번호 변경</button>
+        <div class="msg" id="forgotMsg3"></div>
       </div>
 
     </div>
@@ -478,7 +474,7 @@ el('btnForgotVerify').onclick = async () => {
   el('btnForgotVerify').disabled = true;
   msg.textContent = '확인 중...';
 
-  const { data, error } = await sb.rpc('baseball_reset_password_by_answer', {
+  const { data, error } = await sb.rpc('baseball_verify_security_answer', {
     p_username: username,
     p_answer:   answer
   });
@@ -497,10 +493,10 @@ el('btnForgotVerify').onclick = async () => {
     return;
   }
 
-  // Step 3: 임시 비밀번호 표시
-  el('tempPwDisplay').textContent = data.temp_pw;
+  // Step 3: 새 비밀번호 설정으로 이동
   el('forgotStep2').classList.add('hidden');
   el('forgotStep3').classList.remove('hidden');
+  el('newPassword').focus();
 };
 
 el('btnForgotBack').onclick = () => {
@@ -508,6 +504,71 @@ el('btnForgotBack').onclick = () => {
   el('forgotStep1').classList.remove('hidden');
   el('forgotMsg1').textContent = '';
 };
+
+// ─── 비밀번호 찾기 Step 3: 새 비밀번호 저장 ──────────────────
+el('eyeNewPw').onclick        = () => toggleEye('newPassword', el('eyeNewPw'));
+el('eyeNewPwConfirm').onclick = () => toggleEye('newPasswordConfirm', el('eyeNewPwConfirm'));
+
+el('newPassword').addEventListener('input', checkNewPwMatch);
+el('newPasswordConfirm').addEventListener('input', checkNewPwMatch);
+
+function checkNewPwMatch(){
+  const pw  = el('newPassword').value;
+  const pw2 = el('newPasswordConfirm').value;
+  const h1  = el('hintNewPw');
+  const h2  = el('hintNewPwConfirm');
+  if(pw.length > 0 && pw.length < 6){ h1.className='hint err'; h1.textContent='6자 이상 입력해주세요'; }
+  else{ h1.className='hint'; h1.textContent=''; }
+  if(!pw2){ h2.className='hint'; h2.textContent=''; el('newPasswordConfirm').className=''; return; }
+  if(pw === pw2){ h2.className='hint ok'; h2.textContent='비밀번호가 일치해요 ✓'; el('newPasswordConfirm').className='ok'; }
+  else{ h2.className='hint err'; h2.textContent='비밀번호가 일치하지 않아요'; el('newPasswordConfirm').className='err'; }
+}
+
+el('btnSetNewPw').onclick = async () => {
+  const msg      = el('forgotMsg3');
+  const username = el('forgotUsername').value.trim();
+  const pw       = el('newPassword').value;
+  const pw2      = el('newPasswordConfirm').value;
+  msg.className  = 'msg';
+  msg.textContent = '';
+
+  if(pw.length < 6){
+    msg.className = 'msg err';
+    msg.textContent = '비밀번호는 6자 이상이어야 해요.';
+    return;
+  }
+  if(pw !== pw2){
+    msg.className = 'msg err';
+    msg.textContent = '비밀번호가 일치하지 않아요.';
+    return;
+  }
+
+  el('btnSetNewPw').disabled = true;
+  msg.textContent = '변경 중...';
+
+  const { data, error } = await sb.rpc('baseball_reset_password_by_answer_set', {
+    p_username:    username,
+    p_new_password: pw
+  });
+
+  el('btnSetNewPw').disabled = false;
+
+  if(error || !data?.ok){
+    msg.className = 'msg err';
+    msg.textContent = data?.msg || '비밀번호 변경에 실패했어요. 다시 시도해주세요.';
+    return;
+  }
+
+  msg.className = 'msg ok';
+  msg.textContent = '비밀번호가 변경됐어요! 새 비밀번호로 로그인해주세요.';
+
+  setTimeout(() => {
+    showTab('login');
+    el('loginUsername').value = username;
+    el('loginPassword').focus();
+  }, 1800);
+};
+
 
 // ─── 로그인 ────────────────────────────────────────────────
 el('btnLogin').onclick = async () => {
