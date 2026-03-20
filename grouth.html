@@ -1,0 +1,427 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8226060642438570" crossorigin="anonymous"></script>
+<title>성장 기록 · ELITEREC</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+KR:wght@400;600;700;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --black:#0a0c10; --panel:#181c24; --panel2:#1e2330;
+  --border:rgba(255,255,255,.07); --border2:rgba(255,255,255,.13);
+  --text:#f0f2f5; --muted:#7a8294; --muted2:#4a5060;
+  --brand:#e8ff47; --brand-dim:rgba(232,255,71,.12);
+  --height:#38bdf8; --height-dim:rgba(56,189,248,.12);
+  --weight:#fb923c; --weight-dim:rgba(251,146,60,.12);
+  --ok:#4ade80; --err:#f87171;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--black);color:var(--text);min-height:100vh;padding-bottom:60px}
+.container{max-width:480px;margin:0 auto;padding:20px 16px}
+.page-title{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:.5px;margin-bottom:2px}
+.page-sub{font-size:13px;color:var(--muted);margin-bottom:20px}
+
+/* KPI 카드 */
+.kpi-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:20px}
+.kpi{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:14px 8px;text-align:center}
+.kpi .v{font-family:'Bebas Neue',sans-serif;font-size:26px;line-height:1}
+.kpi .v.h{color:var(--height)}
+.kpi .v.w{color:var(--weight)}
+.kpi .v.b{color:var(--brand)}
+.kpi .l{font-size:10px;font-weight:700;color:var(--muted);margin-top:4px;letter-spacing:.5px}
+.kpi .d{font-size:11px;color:var(--ok);margin-top:3px;font-weight:700}
+.kpi .d.neg{color:var(--err)}
+
+/* 차트 카드 */
+.chart-card{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:12px}
+.chart-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.chart-title{font-size:12px;font-weight:700;letter-spacing:1px;color:var(--muted);text-transform:uppercase}
+.chart-legend{display:flex;gap:12px}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted)}
+.legend-dot{width:8px;height:8px;border-radius:50%}
+.chart-wrap{position:relative;height:180px}
+
+/* 구분선 탭 */
+.tab-row{display:flex;gap:6px;margin-bottom:16px}
+.tab{flex:1;padding:10px;border-radius:10px;border:1px solid var(--border2);background:transparent;color:var(--muted);font-family:'Noto Sans KR',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s}
+.tab.active{background:var(--brand);color:var(--black);border-color:var(--brand)}
+
+/* 입력 폼 */
+.form-card{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:12px}
+.section-label{font-size:11px;font-weight:700;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;margin-bottom:12px}
+label{display:block;font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;margin-top:12px;margin-bottom:4px}
+input,textarea{width:100%;padding:12px 14px;border:1px solid var(--border2);border-radius:11px;font-size:15px;background:rgba(255,255,255,.05);color:var(--text);font-family:'Noto Sans KR',sans-serif;transition:border-color .15s}
+input:focus,textarea:focus{outline:none;border-color:var(--brand)}
+.row2{display:flex;gap:10px}
+.row2>div{flex:1}
+.btn{width:100%;margin-top:12px;padding:13px;border:none;border-radius:12px;font-family:'Noto Sans KR',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all .15s}
+.btn.primary{background:var(--brand);color:var(--black)}
+.btn.primary:hover{background:#d4ea3a}
+.btn.danger{background:rgba(248,113,113,.1);border:1px solid var(--err);color:var(--err)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.form-err{font-size:12px;color:var(--err);margin-top:6px;min-height:16px}
+.form-ok{font-size:12px;color:var(--ok);margin-top:6px;min-height:16px}
+
+/* 히스토리 테이블 */
+.table-card{background:var(--panel);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:12px}
+.tbl{width:100%;border-collapse:collapse}
+.tbl th{font-size:10px;font-weight:700;letter-spacing:1px;color:var(--muted);text-transform:uppercase;padding:10px 14px;border-bottom:1px solid var(--border);text-align:left;background:rgba(255,255,255,.02)}
+.tbl td{font-size:13px;padding:11px 14px;border-bottom:1px solid var(--border)}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:rgba(255,255,255,.02)}
+.tbl td.num{font-family:'Bebas Neue',sans-serif;font-size:16px}
+.tbl td.h{color:var(--height)}
+.tbl td.w{color:var(--weight)}
+.tbl td.diff{font-size:11px;font-weight:700}
+.tbl td.diff.up{color:var(--ok)}
+.tbl td.diff.dn{color:var(--err)}
+.del-btn{background:none;border:none;color:var(--muted2);cursor:pointer;font-size:14px;padding:2px 6px;border-radius:6px;transition:all .15s}
+.del-btn:hover{color:var(--err);background:rgba(248,113,113,.1)}
+
+.hint{font-size:12px;color:var(--muted);text-align:center;padding:20px 0}
+.hidden{display:none!important}
+
+/* 토스트 */
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--panel);border:1px solid var(--border2);border-radius:14px;padding:12px 22px;font-size:14px;font-weight:700;opacity:0;transition:opacity .25s,transform .25s;pointer-events:none;z-index:200;white-space:nowrap;box-shadow:0 8px 32px rgba(0,0,0,.5)}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.ok{border-color:var(--ok);color:var(--ok)}
+.toast.err{border-color:var(--err);color:var(--err)}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/config.js"></script>
+<script src="js/header.js"></script>
+</head>
+<body>
+<div id="appHeader" data-back="index.html"></div>
+
+<div class="container">
+  <div class="page-title">성장 기록</div>
+  <div class="page-sub" id="playerName">불러오는 중...</div>
+
+  <!-- KPI -->
+  <div class="kpi-row">
+    <div class="kpi">
+      <div class="v h" id="kpiHeight">-</div>
+      <div class="l">현재 키 (cm)</div>
+      <div class="d" id="kpiHeightDiff"></div>
+    </div>
+    <div class="kpi">
+      <div class="v w" id="kpiWeight">-</div>
+      <div class="l">현재 몸무게 (kg)</div>
+      <div class="d" id="kpiWeightDiff"></div>
+    </div>
+    <div class="kpi">
+      <div class="v b" id="kpiCount">-</div>
+      <div class="l">측정 횟수</div>
+      <div class="d" id="kpiLatest"></div>
+    </div>
+  </div>
+
+  <!-- 탭 -->
+  <div class="tab-row">
+    <button class="tab active" id="tabChart" onclick="switchTab('chart')">차트</button>
+    <button class="tab" id="tabTable" onclick="switchTab('table')">기록표</button>
+    <button class="tab" id="tabAdd" onclick="switchTab('add')">+ 측정 추가</button>
+  </div>
+
+  <!-- 차트 탭 -->
+  <div id="viewChart">
+    <div class="chart-card">
+      <div class="chart-header">
+        <div class="chart-title">키 변화</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--height)"></div>cm</div>
+      </div>
+      <div class="chart-wrap"><canvas id="chartHeight"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-header">
+        <div class="chart-title">몸무게 변화</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--weight)"></div>kg</div>
+      </div>
+      <div class="chart-wrap"><canvas id="chartWeight"></canvas></div>
+    </div>
+  </div>
+
+  <!-- 기록표 탭 -->
+  <div id="viewTable" class="hidden">
+    <div class="table-card">
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th>날짜</th>
+            <th>키 (cm)</th>
+            <th>몸무게 (kg)</th>
+            <th>메모</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="tblBody"></tbody>
+      </table>
+    </div>
+    <div class="hint hidden" id="tblHint">측정 기록이 없어요.</div>
+  </div>
+
+  <!-- 추가 탭 -->
+  <div id="viewAdd" class="hidden">
+    <div class="form-card">
+      <div class="section-label">새 측정 기록</div>
+      <label>측정일 *</label>
+      <input id="inputDate" type="date" />
+      <div class="row2">
+        <div>
+          <label>키 (cm)</label>
+          <input id="inputHeight" type="number" min="50" max="250" step="0.1" placeholder="예: 152.5" />
+        </div>
+        <div>
+          <label>몸무게 (kg)</label>
+          <input id="inputWeight" type="number" min="10" max="200" step="0.1" placeholder="예: 45.0" />
+        </div>
+      </div>
+      <label>메모</label>
+      <input id="inputMemo" placeholder="예: 시즌 전 측정" />
+      <button class="btn primary" id="btnSave">저장하기</button>
+      <div class="form-err" id="formErr"></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const client = window.sb;
+const el = id => document.getElementById(id);
+let playerId = null;
+let history = [];
+let chartH = null, chartW = null;
+let toastTimer = null;
+
+function showToast(msg, type='ok'){
+  const t = el('toast');
+  t.textContent = msg;
+  t.className = `toast ${type} show`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2600);
+}
+
+function today(){
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function switchTab(tab){
+  ['chart','table','add'].forEach(t => {
+    el(`tab${t.charAt(0).toUpperCase()+t.slice(1)}`).classList.toggle('active', t === tab);
+    el(`view${t.charAt(0).toUpperCase()+t.slice(1)}`).classList.toggle('hidden', t !== tab);
+  });
+}
+
+// ── KPI 렌더 ────────────────────────────────────
+function renderKPI(){
+  if(!history.length){ return; }
+  const latest = history[0];
+  const prev   = history[1];
+
+  el('kpiHeight').textContent = latest.height_cm ?? '-';
+  el('kpiWeight').textContent = latest.weight_kg ?? '-';
+  el('kpiCount').textContent  = history.length;
+  el('kpiLatest').textContent = latest.measured_at || '';
+
+  function diff(cur, prv, el2){
+    if(cur == null || prv == null){ el2.textContent = ''; return; }
+    const d = (Number(cur) - Number(prv)).toFixed(1);
+    el2.textContent = d > 0 ? `▲ +${d}` : d < 0 ? `▼ ${d}` : '변화없음';
+    el2.className   = `d ${d > 0 ? '' : d < 0 ? 'neg' : ''}`;
+  }
+  diff(latest.height_cm, prev?.height_cm, el('kpiHeightDiff'));
+  diff(latest.weight_kg, prev?.weight_kg, el('kpiWeightDiff'));
+}
+
+// ── 차트 렌더 ────────────────────────────────────
+function renderCharts(){
+  const sorted = [...history].reverse(); // 날짜 오름차순
+  const labels  = sorted.map(r => r.measured_at);
+  const heights = sorted.map(r => r.height_cm);
+  const weights = sorted.map(r => r.weight_kg);
+
+  const chartDefaults = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: { backgroundColor:'#1e2330', titleColor:'#7a8294', bodyColor:'#f0f2f5', borderColor:'rgba(255,255,255,.13)', borderWidth:1 } },
+    scales: {
+      x: { grid: { color:'rgba(255,255,255,.04)' }, ticks: { color:'#7a8294', font:{ size:10 }, maxRotation:0 } },
+      y: { grid: { color:'rgba(255,255,255,.04)' }, ticks: { color:'#7a8294', font:{ size:10 } } }
+    }
+  };
+
+  if(chartH) chartH.destroy();
+  if(chartW) chartW.destroy();
+
+  chartH = new Chart(el('chartHeight'), {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        data: heights,
+        borderColor: '#38bdf8',
+        backgroundColor: 'rgba(56,189,248,.08)',
+        borderWidth: 2.5,
+        pointBackgroundColor: '#38bdf8',
+        pointRadius: 4,
+        pointHoverRadius: 6,
+        tension: 0.35,
+        fill: true,
+        spanGaps: true
+      }]
+    },
+    options: { ...chartDefaults, scales: { ...chartDefaults.scales, y: { ...chartDefaults.scales.y, ticks: { ...chartDefaults.scales.y.ticks, callback: v => v + 'cm' } } } }
+  });
+
+  chartW = new Chart(el('chartWeight'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        data: weights,
+        backgroundColor: 'rgba(251,146,60,.55)',
+        borderColor: '#fb923c',
+        borderWidth: 1.5,
+        borderRadius: 6,
+        borderSkipped: false
+      }]
+    },
+    options: { ...chartDefaults, scales: { ...chartDefaults.scales, y: { ...chartDefaults.scales.y, ticks: { ...chartDefaults.scales.y.ticks, callback: v => v + 'kg' } } } }
+  });
+}
+
+// ── 테이블 렌더 ──────────────────────────────────
+function renderTable(){
+  const tbody = el('tblBody');
+  tbody.innerHTML = '';
+
+  if(!history.length){
+    el('tblHint').classList.remove('hidden');
+    return;
+  }
+  el('tblHint').classList.add('hidden');
+
+  history.forEach((r, i) => {
+    const prev = history[i + 1];
+    const hDiff = (r.height_cm != null && prev?.height_cm != null)
+      ? (Number(r.height_cm) - Number(prev.height_cm)).toFixed(1) : null;
+    const wDiff = (r.weight_kg != null && prev?.weight_kg != null)
+      ? (Number(r.weight_kg) - Number(prev.weight_kg)).toFixed(1) : null;
+
+    function diffCell(d){
+      if(d === null) return '<td></td>';
+      const cls = d > 0 ? 'up' : d < 0 ? 'dn' : '';
+      const txt = d > 0 ? `+${d}` : String(d);
+      return `<td class="diff ${cls}">${txt}</td>`;
+    }
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${r.measured_at}</td>
+      <td class="num h">${r.height_cm ?? '-'}</td>
+      <td class="num w">${r.weight_kg ?? '-'}</td>
+      <td style="font-size:11px;color:var(--muted)">${r.memo || ''}</td>
+      <td><button class="del-btn" onclick="deleteRecord(${r.id})">🗑</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+// ── 데이터 로드 ──────────────────────────────────
+async function loadHistory(){
+  const { data, error } = await client.rpc('baseball_player_body_history_list', {
+    p_player_id: playerId
+  });
+  if(error){ console.error(error); return; }
+  history = Array.isArray(data) ? data : (data || []);
+  renderKPI();
+  renderCharts();
+  renderTable();
+}
+
+// ── 저장 ────────────────────────────────────────
+el('btnSave').addEventListener('click', async () => {
+  const date   = el('inputDate').value;
+  const height = el('inputHeight').value === '' ? null : Number(el('inputHeight').value);
+  const weight = el('inputWeight').value === '' ? null : Number(el('inputWeight').value);
+  const memo   = el('inputMemo').value.trim() || null;
+
+  if(!date){ el('formErr').textContent = '측정일은 필수입니다.'; return; }
+  if(height == null && weight == null){ el('formErr').textContent = '키 또는 몸무게 중 하나는 입력해주세요.'; return; }
+  el('formErr').textContent = '';
+  el('btnSave').disabled = true;
+
+  const { error } = await client
+    .from('baseball_player_body_history')
+    .insert({
+      player_id: playerId,
+      owner_user_id: (await client.auth.getUser()).data.user.id,
+      measured_at: date,
+      height_cm: height,
+      weight_kg: weight,
+      memo
+    });
+
+  el('btnSave').disabled = false;
+
+  if(error){
+    el('formErr').textContent = '저장 실패: ' + error.message;
+    return;
+  }
+
+  showToast('✅ 저장되었습니다!');
+  el('inputHeight').value = '';
+  el('inputWeight').value = '';
+  el('inputMemo').value = '';
+  await loadHistory();
+  switchTab('chart');
+});
+
+// ── 삭제 ────────────────────────────────────────
+window.deleteRecord = async function(id){
+  if(!confirm('이 기록을 삭제할까요?')) return;
+  const { error } = await client
+    .from('baseball_player_body_history')
+    .delete()
+    .eq('id', id);
+  if(error){ showToast('삭제 실패: ' + error.message, 'err'); return; }
+  showToast('삭제되었습니다.', 'ok');
+  await loadHistory();
+};
+
+// ── 초기화 ───────────────────────────────────────
+(async function init(){
+  try {
+    const { data: { user }, error } = await client.auth.getUser();
+    if(error || !user){ location.href = 'auth.html?next=growth.html'; return; }
+
+    const { data: player } = await client
+      .from('baseball_players')
+      .select('id,name,grade')
+      .eq('owner_user_id', user.id)
+      .limit(1)
+      .maybeSingle();
+
+    if(!player){
+      el('playerName').textContent = '등록된 선수가 없습니다.';
+      return;
+    }
+
+    playerId = player.id;
+    el('playerName').textContent = `${player.name} 선수 · ${player.grade || ''}`;
+    el('inputDate').value = today();
+
+    await loadHistory();
+  } catch(e) {
+    console.error(e);
+  }
+})();
+</script>
+</body>
+</html>
