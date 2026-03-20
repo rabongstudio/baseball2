@@ -137,8 +137,8 @@ textarea{resize:vertical;min-height:88px}
 
       <div class="divider"></div>
 
-      <label>보호자/회원 이름</label>
-      <input id="displayName" placeholder="예: 홍길동 어머니" />
+      <label>회원 이름/보호자이름</label>
+      <input id="displayName" placeholder="예: 홍길동선수, 홍길동 어머니" />
 
       <label>학교 구분</label>
       <select id="categorySel">
@@ -154,8 +154,7 @@ textarea{resize:vertical;min-height:88px}
       <select id="schoolSel" disabled>
         <option value="">구분을 먼저 선택해주세요</option>
       </select>
-      <div class="hint" id="hintSchool">학교는 선수 프로필 정보로 저장되며, 권한과는 관계없어요.</div>
-
+      
       <div class="divider"></div>
 
       <label>선수 이름</label>
@@ -174,7 +173,7 @@ textarea{resize:vertical;min-height:88px}
 
       <div class="row2">
         <div>
-          <label>학제</label>
+          <label>학교구분</label>
           <select id="gradeLevel">
             <option value="">선택</option>
             <option value="초">초등학교</option>
@@ -597,7 +596,7 @@ el('btnSignup').onclick = async () => {
 
   if(!payload.display_name || !payload.player_name || !payload.grade || !payload.primary_position){
     msg.className = 'msg err';
-    msg.textContent = '이름, 선수 이름, 학제/학년, 주 포지션은 필수예요.';
+    msg.textContent = '이름, 선수 이름, 학교구분/학년, 주 포지션은 필수예요.';
     return;
   }
 
