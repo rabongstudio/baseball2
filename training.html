@@ -7,6 +7,7 @@
 <title>훈련 기록 · ELITEREC</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+KR:wght@400;600;700;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
 :root{
   --black:#0a0c10;--panel:#181c24;--panel2:#1e2330;
@@ -21,13 +22,9 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--black);color:var(--t
 .container{max-width:480px;margin:0 auto;padding:20px 16px}
 .page-title{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:.5px;margin-bottom:2px}
 .page-sub{font-size:13px;color:var(--muted);margin-bottom:18px}
-
-/* 탭 */
 .tab-row{display:flex;gap:6px;margin-bottom:16px}
 .tab{flex:1;padding:10px;border-radius:10px;border:1px solid var(--border2);background:transparent;color:var(--muted);font-family:'Noto Sans KR',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s}
 .tab.active{background:var(--brand);color:var(--black);border-color:var(--brand)}
-
-/* 폼 카드 */
 .form-card{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:12px}
 .section-label{font-size:11px;font-weight:700;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;margin-bottom:12px}
 label{display:block;font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;margin-top:14px;margin-bottom:4px}
@@ -35,12 +32,6 @@ input,select,textarea{width:100%;padding:12px 14px;border:1px solid var(--border
 input:focus,select:focus,textarea:focus{outline:none;border-color:var(--brand)}
 select option{background:var(--panel)}
 textarea{resize:none}
-.row2{display:flex;gap:10px}
-.row2>div{flex:1}
-.row3{display:flex;gap:8px}
-.row3>div{flex:1}
-
-/* 훈련 항목 그리드 */
 .train-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:10px}
 .train-item{background:var(--panel2);border:1px solid var(--border);border-radius:12px;padding:12px}
 .train-item-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
@@ -52,27 +43,19 @@ textarea{resize:none}
 .train-field{display:flex;align-items:center;gap:6px}
 .train-field label{margin:0;font-size:10px;color:var(--muted);min-width:36px;text-transform:none;letter-spacing:0}
 .train-field input{flex:1;padding:7px 10px;font-size:13px}
-
-/* 훈련 추가 버튼 */
 .add-train-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
 .add-train-btn{padding:8px 12px;border-radius:20px;border:1px solid var(--border2);background:transparent;color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:4px}
 .add-train-btn:hover{border-color:var(--brand);color:var(--brand)}
 .add-train-btn.added{background:var(--brand-dim);border-color:var(--brand);color:var(--brand)}
-
-/* 컨디션 칩 */
 .condition-row{display:flex;gap:6px;margin-top:6px}
 .cond-btn{flex:1;padding:10px 4px;border-radius:10px;border:1px solid var(--border2);background:transparent;color:var(--muted);font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;text-align:center}
 .cond-btn.active{border-color:var(--brand);background:var(--brand-dim);color:var(--brand)}
-
-/* 버튼 */
 .btn{width:100%;margin-top:12px;padding:13px;border:none;border-radius:12px;font-family:'Noto Sans KR',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all .15s}
 .btn.primary{background:var(--brand);color:var(--black)}
 .btn.primary:hover{background:#d4ea3a}
 .btn.ghost{background:transparent;border:1px solid var(--border2);color:var(--text)}
 .btn.danger{background:rgba(248,113,113,.1);border:1px solid var(--err);color:var(--err)}
 .btn:disabled{opacity:.5;cursor:not-allowed}
-
-/* 히스토리 목록 */
 .log-list{display:flex;flex-direction:column;gap:8px}
 .log-card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:14px 16px;cursor:pointer;transition:border-color .15s}
 .log-card:hover{border-color:var(--border2)}
@@ -83,7 +66,37 @@ textarea{resize:none}
 .log-tag{font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;background:var(--brand-dim);color:var(--brand)}
 .log-memo{font-size:12px;color:var(--muted);margin-top:6px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 
-/* 상세 시트 */
+/* ── 통계 ── */
+.stat-month-sel{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.month-nav{background:none;border:1px solid var(--border2);color:var(--text);border-radius:8px;width:36px;height:36px;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.month-nav:hover{border-color:var(--brand);color:var(--brand)}
+.month-label{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px}
+.kpi-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.kpi{background:var(--panel);border:1px solid var(--border);border-radius:13px;padding:12px 4px;text-align:center}
+.kpi .v{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--brand);line-height:1}
+.kpi .l{font-size:10px;font-weight:700;color:var(--muted);margin-top:4px}
+.cal-card{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:14px;margin-bottom:12px}
+.cal-header{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:6px}
+.cal-dow{font-size:10px;font-weight:700;color:var(--muted);text-align:center;padding:4px 0}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cal-day{aspect-ratio:1;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:12px;font-weight:700}
+.cal-day.empty{background:transparent}
+.cal-day.none{background:rgba(255,255,255,.03);color:var(--muted2)}
+.cal-day.trained{background:var(--brand-dim);border:1px solid rgba(232,255,71,.3);color:var(--brand)}
+.cal-day.today{box-shadow:0 0 0 2px var(--brand)}
+.cal-day .cond-dot{font-size:10px;margin-top:1px}
+.chart-card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:12px}
+.chart-title{font-size:11px;font-weight:700;letter-spacing:1px;color:var(--muted);text-transform:uppercase;margin-bottom:12px}
+.chart-wrap{position:relative;height:150px}
+.item-list{display:flex;flex-direction:column;gap:6px}
+.item-row{display:flex;align-items:center;gap:12px}
+.item-emoji{font-size:20px;flex-shrink:0}
+.item-body{flex:1;min-width:0}
+.item-name{font-size:13px;font-weight:700}
+.item-bar-wrap{height:4px;background:rgba(255,255,255,.06);border-radius:99px;margin-top:6px;overflow:hidden}
+.item-bar{height:100%;background:var(--brand);border-radius:99px;transition:width .4s}
+.item-count{font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--brand);flex-shrink:0}
+
 .sheet-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);z-index:300;opacity:0;pointer-events:none;transition:opacity .22s}
 .sheet-overlay.open{opacity:1;pointer-events:auto}
 .sheet{position:fixed;left:0;right:0;bottom:0;z-index:310;background:#12161d;border-top-left-radius:22px;border-top-right-radius:22px;border:1px solid var(--border2);border-bottom:none;transform:translateY(100%);transition:transform .28s;max-height:85vh;overflow:auto}
@@ -99,17 +112,13 @@ textarea{resize:none}
 .detail-box .v{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--brand)}
 .detail-box .k{font-size:10px;color:var(--muted);margin-top:2px;font-weight:700}
 .detail-memo{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:12px;font-size:13px;line-height:1.6;color:var(--text)}
-
 .hint{font-size:13px;color:var(--muted);text-align:center;padding:40px 0}
 .hidden{display:none!important}
 .form-err{font-size:12px;color:var(--err);margin-top:6px;min-height:16px}
-
-/* 토스트 */
 .toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--panel);border:1px solid var(--border2);border-radius:14px;padding:12px 22px;font-size:14px;font-weight:700;opacity:0;transition:opacity .25s,transform .25s;pointer-events:none;z-index:400;white-space:nowrap;box-shadow:0 8px 32px rgba(0,0,0,.5)}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .toast.ok{border-color:var(--ok);color:var(--ok)}
 .toast.err{border-color:var(--err);color:var(--err)}
-
 body.sheet-open{overflow:hidden}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -118,24 +127,22 @@ body.sheet-open{overflow:hidden}
 </head>
 <body>
 <div id="appHeader" data-back="index.html"></div>
-
 <div class="container">
   <div class="page-title">훈련 기록</div>
   <div class="page-sub" id="playerName">불러오는 중...</div>
 
   <div class="tab-row">
-    <button class="tab active" id="tabWrite" onclick="switchTab('write')">✍️ 오늘 기록</button>
-    <button class="tab" id="tabHistory" onclick="switchTab('history')">📋 기록 목록</button>
+    <button class="tab active" id="tabWrite"   onclick="switchTab('write')">✍️ 오늘 기록</button>
+    <button class="tab"        id="tabHistory" onclick="switchTab('history')">📋 기록 목록</button>
+    <button class="tab"        id="tabStats"   onclick="switchTab('stats')">📊 통계</button>
   </div>
 
-  <!-- ── 기록 작성 탭 ── -->
+  <!-- 기록 작성 -->
   <div id="viewWrite">
     <div class="form-card">
       <div class="section-label">기본 정보</div>
-
       <label>훈련 날짜 *</label>
       <input id="trainDate" type="date" />
-
       <label>컨디션</label>
       <div class="condition-row">
         <button class="cond-btn" data-val="5" onclick="setCond(this)">😄 최고</button>
@@ -144,34 +151,56 @@ body.sheet-open{overflow:hidden}
         <button class="cond-btn" data-val="2" onclick="setCond(this)">😓 피곤</button>
         <button class="cond-btn" data-val="1" onclick="setCond(this)">😵 최악</button>
       </div>
-
       <label>훈련 시간 (분)</label>
       <input id="trainDuration" type="number" min="0" step="10" placeholder="예: 90" />
     </div>
-
     <div class="form-card">
       <div class="section-label">훈련 항목</div>
       <div class="add-train-row" id="addTrainRow"></div>
       <div id="trainItemsWrap"></div>
     </div>
-
     <div class="form-card">
       <div class="section-label">메모</div>
       <textarea id="trainMemo" rows="4" placeholder="오늘 훈련 느낌, 코치 피드백, 개선할 점 등 자유롭게 작성하세요"></textarea>
     </div>
-
     <button class="btn primary" id="btnSave">저장하기</button>
     <div class="form-err" id="formErr"></div>
   </div>
 
-  <!-- ── 기록 목록 탭 ── -->
+  <!-- 기록 목록 -->
   <div id="viewHistory" class="hidden">
     <div class="hint hidden" id="historyHint">훈련 기록이 없어요. 오늘 첫 기록을 남겨보세요!</div>
     <div class="log-list" id="logList"></div>
   </div>
+
+  <!-- 통계 -->
+  <div id="viewStats" class="hidden">
+    <div class="stat-month-sel">
+      <button class="month-nav" onclick="changeMonth(-1)">‹</button>
+      <div class="month-label" id="statMonthLabel">-</div>
+      <button class="month-nav" onclick="changeMonth(1)">›</button>
+    </div>
+    <div class="kpi-row">
+      <div class="kpi"><div class="v" id="kpiDays">-</div><div class="l">훈련일수</div></div>
+      <div class="kpi"><div class="v" id="kpiTotalMin">-</div><div class="l">총 시간(분)</div></div>
+      <div class="kpi"><div class="v" id="kpiAvgCond">-</div><div class="l">평균 컨디션</div></div>
+    </div>
+    <div class="cal-card">
+      <div class="cal-header" id="calHeader"></div>
+      <div class="cal-grid" id="calGrid"></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">월별 훈련일수 (최근 6개월)</div>
+      <div class="chart-wrap"><canvas id="chartMonthly"></canvas></div>
+    </div>
+    <div class="form-card">
+      <div class="section-label" style="margin-bottom:10px">종목별 누적 (이달)</div>
+      <div class="item-list" id="itemList"></div>
+    </div>
+  </div>
 </div>
 
-<!-- 상세 시트 -->
+<!-- 시트 -->
 <div id="sheetOverlay" class="sheet-overlay"></div>
 <div id="detailSheet" class="sheet">
   <div class="sheet-inner">
@@ -183,276 +212,191 @@ body.sheet-open{overflow:hidden}
     <button class="btn ghost" onclick="closeSheet()" style="margin-top:8px">닫기</button>
   </div>
 </div>
-
 <div class="toast" id="toast"></div>
 
 <script>
-const client = window.sb;
-const el = id => document.getElementById(id);
-let playerId = null;
-let condVal = 4;
-let activeItems = {}; // { key: { sets, reps, dist, time, ... } }
-let currentLogId = null;
-let toastTimer = null;
+const client=window.sb, el=id=>document.getElementById(id);
+let playerId=null, condVal=4, activeItems={}, currentLogId=null, toastTimer=null;
+let allLogs=[], statYear, statMonth, chartMonthly=null;
 
-// ── 훈련 항목 정의 ───────────────────────────────
-const TRAIN_TYPES = [
-  { key:'batting',   emoji:'⚾', name:'타격',     fields:[{id:'count',label:'타수',unit:'개'},{id:'time',label:'시간',unit:'분'}] },
-  { key:'tee',       emoji:'🏌️', name:'티배팅',   fields:[{id:'count',label:'개수',unit:'개'}] },
-  { key:'pitching',  emoji:'🥎', name:'투구',     fields:[{id:'count',label:'투구수',unit:'개'},{id:'max_vel',label:'최고구속',unit:'km'}] },
-  { key:'shadow',    emoji:'👤', name:'쉐도피칭', fields:[{id:'count',label:'횟수',unit:'회'},{id:'time',label:'시간',unit:'분'}] },
-  { key:'fielding',  emoji:'🧤', name:'수비',     fields:[{id:'count',label:'횟수',unit:'개'},{id:'time',label:'시간',unit:'분'}] },
-  { key:'running',   emoji:'🏃', name:'러닝',     fields:[{id:'dist',label:'거리',unit:'m'},{id:'time',label:'시간',unit:'분'}] },
-  { key:'jump_rope', emoji:'⭕', name:'줄넘기',   fields:[{id:'count',label:'횟수',unit:'회'},{id:'sets',label:'세트',unit:'세트'}] },
-  { key:'pushup',    emoji:'💪', name:'팔굽혀펴기',fields:[{id:'count',label:'횟수',unit:'개'},{id:'sets',label:'세트',unit:'세트'}] },
-  { key:'squat',     emoji:'🦵', name:'스쿼트',   fields:[{id:'count',label:'횟수',unit:'개'},{id:'sets',label:'세트',unit:'세트'}] },
-  { key:'plank',     emoji:'🧘', name:'플랭크',   fields:[{id:'time',label:'시간',unit:'초'}] },
-  { key:'catch',     emoji:'🙌', name:'캐치볼',   fields:[{id:'count',label:'횟수',unit:'개'},{id:'dist',label:'거리',unit:'m'}] },
-  { key:'sprint',    emoji:'⚡', name:'스프린트', fields:[{id:'count',label:'횟수',unit:'회'},{id:'dist',label:'거리',unit:'m'}] },
-  { key:'stretch',   emoji:'🤸', name:'스트레칭', fields:[{id:'time',label:'시간',unit:'분'}] },
-  { key:'weight',    emoji:'🏋️', name:'웨이트',   fields:[{id:'time',label:'시간',unit:'분'}] },
+const TRAIN_TYPES=[
+  {key:'batting',  emoji:'⚾',name:'타격',     fields:[{id:'count',label:'타수',unit:'개'},{id:'time',label:'시간',unit:'분'}]},
+  {key:'tee',      emoji:'🏌️',name:'티배팅',   fields:[{id:'count',label:'개수',unit:'개'}]},
+  {key:'pitching', emoji:'🥎',name:'투구',     fields:[{id:'count',label:'투구수',unit:'개'},{id:'max_vel',label:'최고구속',unit:'km'}]},
+  {key:'shadow',   emoji:'👤',name:'쉐도피칭', fields:[{id:'count',label:'횟수',unit:'회'},{id:'time',label:'시간',unit:'분'}]},
+  {key:'fielding', emoji:'🧤',name:'수비',     fields:[{id:'count',label:'횟수',unit:'개'},{id:'time',label:'시간',unit:'분'}]},
+  {key:'running',  emoji:'🏃',name:'러닝',     fields:[{id:'dist',label:'거리',unit:'m'},{id:'time',label:'시간',unit:'분'}]},
+  {key:'jump_rope',emoji:'⭕',name:'줄넘기',   fields:[{id:'count',label:'횟수',unit:'회'},{id:'sets',label:'세트',unit:'세트'}]},
+  {key:'pushup',   emoji:'💪',name:'팔굽혀펴기',fields:[{id:'count',label:'횟수',unit:'개'},{id:'sets',label:'세트',unit:'세트'}]},
+  {key:'squat',    emoji:'🦵',name:'스쿼트',   fields:[{id:'count',label:'횟수',unit:'개'},{id:'sets',label:'세트',unit:'세트'}]},
+  {key:'plank',    emoji:'🧘',name:'플랭크',   fields:[{id:'time',label:'시간',unit:'초'}]},
+  {key:'catch',    emoji:'🙌',name:'캐치볼',   fields:[{id:'count',label:'횟수',unit:'개'},{id:'dist',label:'거리',unit:'m'}]},
+  {key:'sprint',   emoji:'⚡',name:'스프린트', fields:[{id:'count',label:'횟수',unit:'회'},{id:'dist',label:'거리',unit:'m'}]},
+  {key:'stretch',  emoji:'🤸',name:'스트레칭', fields:[{id:'time',label:'시간',unit:'분'}]},
+  {key:'weight',   emoji:'🏋️',name:'웨이트',   fields:[{id:'time',label:'시간',unit:'분'}]},
 ];
+const COND_EMOJI={5:'😄',4:'🙂',3:'😐',2:'😓',1:'😵'};
+const COND_LABEL={5:'최고',4:'좋음',3:'보통',2:'피곤',1:'최악'};
 
-const COND_EMOJI = { 5:'😄', 4:'🙂', 3:'😐', 2:'😓', 1:'😵' };
-const COND_LABEL = { 5:'최고', 4:'좋음', 3:'보통', 2:'피곤', 1:'최악' };
-
-function showToast(msg, type='ok'){
-  const t = el('toast');
-  t.textContent = msg;
-  t.className = `toast ${type} show`;
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove('show'), 2600);
-}
-
-function today(){
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-}
+function showToast(msg,type='ok'){const t=el('toast');t.textContent=msg;t.className=`toast ${type} show`;clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),2600);}
+function today(){const d=new Date();return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
 
 function switchTab(tab){
-  el('tabWrite').classList.toggle('active', tab==='write');
-  el('tabHistory').classList.toggle('active', tab==='history');
-  el('viewWrite').classList.toggle('hidden', tab!=='write');
-  el('viewHistory').classList.toggle('hidden', tab!=='history');
+  ['write','history','stats'].forEach(t=>{
+    el(`tab${t[0].toUpperCase()+t.slice(1)}`).classList.toggle('active',t===tab);
+    el(`view${t[0].toUpperCase()+t.slice(1)}`).classList.toggle('hidden',t!==tab);
+  });
   if(tab==='history') loadHistory();
+  if(tab==='stats')   renderStats();
 }
 
-// ── 컨디션 ───────────────────────────────────────
-window.setCond = function(btn){
-  condVal = Number(btn.dataset.val);
-  document.querySelectorAll('.cond-btn').forEach(b => b.classList.toggle('active', b === btn));
-};
+window.setCond=function(btn){condVal=Number(btn.dataset.val);document.querySelectorAll('.cond-btn').forEach(b=>b.classList.toggle('active',b===btn));};
 
-// ── 훈련 항목 추가 버튼 렌더 ─────────────────────
 function renderAddButtons(){
-  el('addTrainRow').innerHTML = TRAIN_TYPES.map(t => `
-    <button class="add-train-btn ${activeItems[t.key]?'added':''}" onclick="toggleTrainItem('${t.key}')">
-      ${t.emoji} ${t.name}
-    </button>
-  `).join('');
+  el('addTrainRow').innerHTML=TRAIN_TYPES.map(t=>`<button class="add-train-btn ${activeItems[t.key]?'added':''}" onclick="toggleTrainItem('${t.key}')">${t.emoji} ${t.name}</button>`).join('');
 }
-
-window.toggleTrainItem = function(key){
-  if(activeItems[key]){
-    delete activeItems[key];
-  } else {
-    activeItems[key] = {};
-  }
-  renderAddButtons();
-  renderTrainItems();
-};
-
+window.toggleTrainItem=function(key){if(activeItems[key])delete activeItems[key];else activeItems[key]={};renderAddButtons();renderTrainItems();};
 function renderTrainItems(){
-  const wrap = el('trainItemsWrap');
-  const keys = Object.keys(activeItems);
-  if(!keys.length){ wrap.innerHTML = '<div style="font-size:12px;color:var(--muted);margin-top:10px;text-align:center">위 버튼을 눌러 훈련 항목을 추가하세요</div>'; return; }
-
-  wrap.innerHTML = `<div class="train-grid">${keys.map(key => {
-    const type = TRAIN_TYPES.find(t => t.key === key);
-    if(!type) return '';
-    const fieldsHTML = type.fields.map(f => `
-      <div class="train-field">
-        <label>${f.label}</label>
-        <input type="number" min="0" step="1" placeholder="0"
-          id="tf_${key}_${f.id}"
-          value="${activeItems[key][f.id]||''}"
-          oninput="updateTrainField('${key}','${f.id}',this.value)" />
-        <span style="font-size:11px;color:var(--muted);white-space:nowrap">${f.unit}</span>
-      </div>
-    `).join('');
-    return `
-      <div class="train-item">
-        <div class="train-item-header">
-          <span class="train-emoji">${type.emoji}</span>
-          <span class="train-name">${type.name}</span>
-          <button class="train-del" onclick="toggleTrainItem('${key}')">✕</button>
-        </div>
-        <div class="train-fields">${fieldsHTML}</div>
-      </div>
-    `;
-  }).join('')}</div>`;
+  const wrap=el('trainItemsWrap'),keys=Object.keys(activeItems);
+  if(!keys.length){wrap.innerHTML='<div style="font-size:12px;color:var(--muted);margin-top:10px;text-align:center">위 버튼을 눌러 훈련 항목을 추가하세요</div>';return;}
+  wrap.innerHTML=`<div class="train-grid">${keys.map(key=>{const type=TRAIN_TYPES.find(t=>t.key===key);if(!type)return'';const fh=type.fields.map(f=>`<div class="train-field"><label>${f.label}</label><input type="number" min="0" step="1" placeholder="0" id="tf_${key}_${f.id}" value="${activeItems[key][f.id]||''}" oninput="updateTrainField('${key}','${f.id}',this.value)"/><span style="font-size:11px;color:var(--muted);white-space:nowrap">${f.unit}</span></div>`).join('');return`<div class="train-item"><div class="train-item-header"><span class="train-emoji">${type.emoji}</span><span class="train-name">${type.name}</span><button class="train-del" onclick="toggleTrainItem('${key}')">✕</button></div><div class="train-fields">${fh}</div></div>`;}).join('')}</div>`;
 }
+window.updateTrainField=function(key,field,val){if(!activeItems[key])activeItems[key]={};activeItems[key][field]=val===''?null:Number(val);};
 
-window.updateTrainField = function(key, field, val){
-  if(!activeItems[key]) activeItems[key] = {};
-  activeItems[key][field] = val === '' ? null : Number(val);
-};
-
-// ── 저장 ────────────────────────────────────────
-el('btnSave').addEventListener('click', async () => {
-  const date = el('trainDate').value;
-  if(!date){ el('formErr').textContent = '훈련 날짜는 필수입니다.'; return; }
-  el('formErr').textContent = '';
-  el('btnSave').disabled = true;
-  el('btnSave').textContent = '저장 중...';
-
-  const items = Object.entries(activeItems).map(([key, vals]) => ({ key, ...vals }));
-  const payload = {
-    player_id:    playerId,
-    owner_user_id:(await client.auth.getUser()).data.user.id,
-    train_date:   date,
-    condition:    condVal,
-    duration_min: el('trainDuration').value ? Number(el('trainDuration').value) : null,
-    memo:         el('trainMemo').value.trim() || null,
-    items:        items.length ? JSON.stringify(items) : null,
-  };
-
-  const { error } = await client.from('baseball_training_logs').insert(payload);
-  el('btnSave').disabled = false;
-  el('btnSave').textContent = '저장하기';
-
-  if(error){ el('formErr').textContent = '저장 실패: ' + error.message; return; }
-
+el('btnSave').addEventListener('click',async()=>{
+  const date=el('trainDate').value;
+  if(!date){el('formErr').textContent='훈련 날짜는 필수입니다.';return;}
+  el('formErr').textContent='';el('btnSave').disabled=true;el('btnSave').textContent='저장 중...';
+  const items=Object.entries(activeItems).map(([key,vals])=>({key,...vals}));
+  const payload={player_id:playerId,owner_user_id:(await client.auth.getUser()).data.user.id,train_date:date,condition:condVal,duration_min:el('trainDuration').value?Number(el('trainDuration').value):null,memo:el('trainMemo').value.trim()||null,items:items.length?JSON.stringify(items):null};
+  const{error}=await client.from('baseball_training_logs').insert(payload);
+  el('btnSave').disabled=false;el('btnSave').textContent='저장하기';
+  if(error){el('formErr').textContent='저장 실패: '+error.message;return;}
   showToast('✅ 훈련 기록이 저장됐어요!');
-  // 초기화
-  activeItems = {};
-  el('trainMemo').value = '';
-  el('trainDuration').value = '';
-  condVal = 4;
-  document.querySelectorAll('.cond-btn').forEach(b => b.classList.toggle('active', b.dataset.val==='4'));
-  renderAddButtons();
-  renderTrainItems();
+  allLogs=[];activeItems={};el('trainMemo').value='';el('trainDuration').value='';condVal=4;
+  document.querySelectorAll('.cond-btn').forEach(b=>b.classList.toggle('active',b.dataset.val==='4'));
+  renderAddButtons();renderTrainItems();
 });
 
-// ── 히스토리 로드 ────────────────────────────────
+async function ensureLogs(){
+  if(allLogs.length)return;
+  const{data}=await client.from('baseball_training_logs').select('*').eq('player_id',playerId).order('train_date',{ascending:false}).order('id',{ascending:false}).limit(500);
+  allLogs=data||[];
+}
+
 async function loadHistory(){
-  el('logList').innerHTML = '';
-  el('historyHint').classList.add('hidden');
-
-  const { data, error } = await client
-    .from('baseball_training_logs')
-    .select('*')
-    .eq('player_id', playerId)
-    .order('train_date', { ascending: false })
-    .order('id', { ascending: false })
-    .limit(100);
-
-  if(error || !data?.length){
-    el('historyHint').classList.remove('hidden');
-    return;
-  }
-
-  data.forEach(log => {
-    const items = log.items ? JSON.parse(log.items) : [];
-    const tags  = items.map(i => {
-      const type = TRAIN_TYPES.find(t => t.key === i.key);
-      return type ? `<span class="log-tag">${type.emoji} ${type.name}</span>` : '';
-    }).join('');
-
-    const card = document.createElement('div');
-    card.className = 'log-card';
-    card.innerHTML = `
-      <div class="log-card-header">
-        <div class="log-date">${log.train_date} <span style="font-size:12px;color:var(--muted)">${log.duration_min ? log.duration_min+'분' : ''}</span></div>
-        <div class="log-cond">${COND_EMOJI[log.condition] || '🙂'}</div>
-      </div>
-      ${tags ? `<div class="log-tags">${tags}</div>` : ''}
-      ${log.memo ? `<div class="log-memo">${log.memo}</div>` : ''}
-    `;
-    card.onclick = () => openSheet(log);
-    el('logList').appendChild(card);
+  el('logList').innerHTML='';el('historyHint').classList.add('hidden');
+  await ensureLogs();
+  if(!allLogs.length){el('historyHint').classList.remove('hidden');return;}
+  allLogs.forEach(log=>{
+    const items=log.items?JSON.parse(log.items):[];
+    const tags=items.map(i=>{const t=TRAIN_TYPES.find(x=>x.key===i.key);return t?`<span class="log-tag">${t.emoji} ${t.name}</span>`:''}).join('');
+    const card=document.createElement('div');card.className='log-card';
+    card.innerHTML=`<div class="log-card-header"><div class="log-date">${log.train_date} <span style="font-size:12px;color:var(--muted)">${log.duration_min?log.duration_min+'분':''}</span></div><div class="log-cond">${COND_EMOJI[log.condition]||'🙂'}</div></div>${tags?`<div class="log-tags">${tags}</div>`:''}${log.memo?`<div class="log-memo">${log.memo}</div>`:''}`;
+    card.onclick=()=>openSheet(log);el('logList').appendChild(card);
   });
 }
 
-// ── 상세 시트 ────────────────────────────────────
-function openSheet(log){
-  currentLogId = log.id;
-  el('sheetTitle').textContent = log.train_date;
-  el('sheetSub').textContent   = `${COND_EMOJI[log.condition]||'🙂'} 컨디션 ${COND_LABEL[log.condition]||'-'}${log.duration_min?' · '+log.duration_min+'분 훈련':''}`;
+// ── 통계 ────────────────────────────────────────
+window.changeMonth=function(delta){
+  statMonth+=delta;
+  if(statMonth>12){statMonth=1;statYear++;}
+  if(statMonth<1){statMonth=12;statYear--;}
+  renderStats();
+};
 
-  const items = log.items ? JSON.parse(log.items) : [];
-  let html = '';
+async function renderStats(){
+  await ensureLogs();
+  const ym=`${statYear}-${String(statMonth).padStart(2,'0')}`;
+  el('statMonthLabel').textContent=`${statYear}년 ${statMonth}월`;
+  const monthLogs=allLogs.filter(l=>l.train_date?.startsWith(ym));
 
-  if(items.length){
-    html += `<div class="detail-section"><div class="detail-label">훈련 항목</div><div class="detail-grid">`;
-    items.forEach(item => {
-      const type = TRAIN_TYPES.find(t => t.key === item.key);
-      if(!type) return;
-      type.fields.forEach(f => {
-        if(item[f.id] != null){
-          html += `<div class="detail-box"><div class="v">${item[f.id]}</div><div class="k">${type.emoji} ${f.label}</div></div>`;
-        }
-      });
+  // KPI
+  const totalMin=monthLogs.reduce((s,l)=>s+(l.duration_min||0),0);
+  const avgCond=monthLogs.length?(monthLogs.reduce((s,l)=>s+(l.condition||4),0)/monthLogs.length).toFixed(1):null;
+  el('kpiDays').textContent=monthLogs.length||'-';
+  el('kpiTotalMin').textContent=totalMin||'-';
+  el('kpiAvgCond').textContent=avgCond?`${COND_EMOJI[Math.round(Number(avgCond))]} ${avgCond}`:'-';
+
+  // 달력
+  const trainedMap={};
+  monthLogs.forEach(l=>{trainedMap[l.train_date]=l.condition;});
+  const todayStr=today();
+  const firstDay=new Date(statYear,statMonth-1,1).getDay();
+  const lastDate=new Date(statYear,statMonth,0).getDate();
+  el('calHeader').innerHTML=['일','월','화','수','목','금','토'].map(d=>`<div class="cal-dow">${d}</div>`).join('');
+  let cal='';
+  for(let i=0;i<firstDay;i++)cal+='<div class="cal-day empty"></div>';
+  for(let d=1;d<=lastDate;d++){
+    const ds=`${statYear}-${String(statMonth).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const cond=trainedMap[ds];const trained=cond!==undefined;
+    cal+=`<div class="cal-day ${trained?'trained':'none'} ${ds===todayStr?'today':''}">${d}${trained?`<div class="cond-dot">${COND_EMOJI[cond]||''}</div>`:''}</div>`;
+  }
+  el('calGrid').innerHTML=cal;
+
+  // 월별 차트
+  const months=[],counts=[];
+  for(let i=5;i>=0;i--){let y=statYear,m=statMonth-i;while(m<1){m+=12;y--;}const ym2=`${y}-${String(m).padStart(2,'0')}`;months.push(`${m}월`);counts.push(allLogs.filter(l=>l.train_date?.startsWith(ym2)).length);}
+  if(chartMonthly)chartMonthly.destroy();
+  chartMonthly=new Chart(el('chartMonthly'),{type:'bar',data:{labels:months,datasets:[{data:counts,backgroundColor:'rgba(232,255,71,.5)',borderColor:'#e8ff47',borderWidth:1.5,borderRadius:6,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{backgroundColor:'#1e2330',titleColor:'#7a8294',bodyColor:'#f0f2f5',borderColor:'rgba(255,255,255,.13)',borderWidth:1}},scales:{x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#7a8294',font:{size:11}}},y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#7a8294',font:{size:11},stepSize:1}}}}});
+
+  // 종목별 누적
+  const totals={};
+  monthLogs.forEach(log=>{
+    const items=log.items?JSON.parse(log.items):[];
+    items.forEach(item=>{
+      if(!totals[item.key])totals[item.key]=0;
+      const type=TRAIN_TYPES.find(t=>t.key===item.key);
+      if(type&&type.fields[0])totals[item.key]+=Number(item[type.fields[0].id]||0);
+      else totals[item.key]+=1;
     });
-    html += `</div></div>`;
-  }
-
-  if(log.memo){
-    html += `<div class="detail-section"><div class="detail-label">메모</div><div class="detail-memo">${log.memo}</div></div>`;
-  }
-
-  if(!items.length && !log.memo){
-    html = '<div style="color:var(--muted);font-size:13px;padding:16px 0">기록된 내용이 없어요.</div>';
-  }
-
-  el('sheetBody').innerHTML = html;
-  el('sheetOverlay').classList.add('open');
-  el('detailSheet').classList.add('open');
-  document.body.classList.add('sheet-open');
+  });
+  const entries=Object.entries(totals).sort((a,b)=>b[1]-a[1]);
+  if(!entries.length){el('itemList').innerHTML='<div style="font-size:12px;color:var(--muted);text-align:center;padding:8px 0">이달 훈련 항목이 없어요.</div>';return;}
+  const maxVal=entries[0][1]||1;
+  el('itemList').innerHTML=entries.map(([key,val])=>{
+    const type=TRAIN_TYPES.find(t=>t.key===key);if(!type)return'';
+    const unit=type.fields[0]?.unit||'회';
+    const pct=Math.round((val/maxVal)*100);
+    return`<div class="item-row"><div class="item-emoji">${type.emoji}</div><div class="item-body"><div class="item-name">${type.name}</div><div class="item-bar-wrap"><div class="item-bar" style="width:${pct}%"></div></div></div><div class="item-count">${val}<span style="font-size:11px;color:var(--muted);font-family:'Noto Sans KR'">${unit}</span></div></div>`;
+  }).join('');
 }
 
-function closeSheet(){
-  el('sheetOverlay').classList.remove('open');
-  el('detailSheet').classList.remove('open');
-  document.body.classList.remove('sheet-open');
-  currentLogId = null;
+function openSheet(log){
+  currentLogId=log.id;
+  el('sheetTitle').textContent=log.train_date;
+  el('sheetSub').textContent=`${COND_EMOJI[log.condition]||'🙂'} 컨디션 ${COND_LABEL[log.condition]||'-'}${log.duration_min?' · '+log.duration_min+'분 훈련':''}`;
+  const items=log.items?JSON.parse(log.items):[];let html='';
+  if(items.length){html+=`<div class="detail-section"><div class="detail-label">훈련 항목</div><div class="detail-grid">`;items.forEach(item=>{const type=TRAIN_TYPES.find(t=>t.key===item.key);if(!type)return;type.fields.forEach(f=>{if(item[f.id]!=null)html+=`<div class="detail-box"><div class="v">${item[f.id]}</div><div class="k">${type.emoji} ${f.label}</div></div>`;});});html+=`</div></div>`;}
+  if(log.memo)html+=`<div class="detail-section"><div class="detail-label">메모</div><div class="detail-memo">${log.memo}</div></div>`;
+  if(!items.length&&!log.memo)html='<div style="color:var(--muted);font-size:13px;padding:16px 0">기록된 내용이 없어요.</div>';
+  el('sheetBody').innerHTML=html;
+  el('sheetOverlay').classList.add('open');el('detailSheet').classList.add('open');document.body.classList.add('sheet-open');
 }
-
-el('sheetOverlay').addEventListener('click', closeSheet);
-window.addEventListener('keydown', e => { if(e.key==='Escape') closeSheet(); });
-
-el('btnDelete').addEventListener('click', async () => {
-  if(!currentLogId || !confirm('이 훈련 기록을 삭제할까요?')) return;
-  const { error } = await client.from('baseball_training_logs').delete().eq('id', currentLogId);
-  if(error){ showToast('삭제 실패', 'err'); return; }
+function closeSheet(){el('sheetOverlay').classList.remove('open');el('detailSheet').classList.remove('open');document.body.classList.remove('sheet-open');currentLogId=null;}
+el('sheetOverlay').addEventListener('click',closeSheet);
+window.addEventListener('keydown',e=>{if(e.key==='Escape')closeSheet();});
+el('btnDelete').addEventListener('click',async()=>{
+  if(!currentLogId||!confirm('이 훈련 기록을 삭제할까요?'))return;
+  const{error}=await client.from('baseball_training_logs').delete().eq('id',currentLogId);
+  if(error){showToast('삭제 실패','err');return;}
   showToast('삭제됐습니다.');
-  closeSheet();
-  loadHistory();
+  allLogs=allLogs.filter(l=>l.id!==currentLogId);
+  closeSheet();loadHistory();
 });
 
-// ── 초기화 ───────────────────────────────────────
 (async function init(){
-  try {
-    const { data:{ user }, error } = await client.auth.getUser();
-    if(error || !user){ location.href = 'auth.html?next=training.html'; return; }
-
-    const { data: player } = await client
-      .from('baseball_players')
-      .select('id,name,grade')
-      .eq('owner_user_id', user.id)
-      .limit(1).maybeSingle();
-
-    if(!player){
-      el('playerName').textContent = '등록된 선수가 없습니다.';
-      return;
-    }
-
-    playerId = player.id;
-    el('playerName').textContent = `${player.name} 선수 · ${player.grade || ''}`;
-    el('trainDate').value = today();
-    renderAddButtons();
-    renderTrainItems();
-  } catch(e){ console.error(e); }
+  try{
+    const{data:{user},error}=await client.auth.getUser();
+    if(error||!user){location.href='auth.html?next=training.html';return;}
+    const{data:player}=await client.from('baseball_players').select('id,name,grade').eq('owner_user_id',user.id).limit(1).maybeSingle();
+    if(!player){el('playerName').textContent='등록된 선수가 없습니다.';return;}
+    playerId=player.id;
+    el('playerName').textContent=`${player.name} 선수 · ${player.grade||''}`;
+    el('trainDate').value=today();
+    const now=new Date();statYear=now.getFullYear();statMonth=now.getMonth()+1;
+    renderAddButtons();renderTrainItems();
+  }catch(e){console.error(e);}
 })();
 </script>
 </body>
