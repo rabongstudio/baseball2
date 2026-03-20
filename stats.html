@@ -222,8 +222,8 @@ function getRecordsFor(key){
 
 // ── 차트 (월별 AVG / ERA 추이) ───────────────────
 function renderTrendCharts(months){
-  const container = document.getElementById('trendCharts');
-  if(!container) return;
+  // canvas 요소가 DOM에 있는지 확인
+  if(!document.getElementById('cAvg') || !document.getElementById('cEra')) return;
 
   const labels = [...months].reverse();
   const avgData = labels.map(m => {
@@ -326,26 +326,31 @@ function renderMain(){
   const s = calcStats(arr);
   const months = getMonths();
 
-  let trendHTML = '';
-  if(mode === 'month' && months.length > 1){
-    trendHTML = `
-      <div class="chart-card">
-        <div class="chart-title">월별 타율 추이</div>
-        <div class="chart-wrap"><canvas id="cAvg"></canvas></div>
-      </div>
-      <div class="chart-card">
-        <div class="chart-title">월별 ERA 추이</div>
-        <div class="chart-wrap"><canvas id="cEra"></canvas></div>
-      </div>
-      <div id="trendCharts"></div>
-    `;
+  // 월별 모드: 선택한 월 성적 + 전체 월 추이 차트
+  if(mode === 'month'){
+    let trendHTML = '';
+    if(months.length > 1){
+      trendHTML = `
+        <div class="chart-card">
+          <div class="chart-title">월별 타율 추이</div>
+          <div class="chart-wrap"><canvas id="cAvg"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">월별 ERA 추이</div>
+          <div class="chart-wrap"><canvas id="cEra"></canvas></div>
+        </div>
+      `;
+    }
+    el('mainContent').innerHTML = renderStats(s) + trendHTML;
+    if(months.length > 1){
+      // DOM이 완전히 그려진 후 차트 렌더
+      requestAnimationFrame(() => renderTrendCharts(months));
+    }
+    return;
   }
 
-  el('mainContent').innerHTML = renderStats(s) + trendHTML;
-
-  if(mode === 'month' && months.length > 1){
-    setTimeout(() => renderTrendCharts(months), 50);
-  }
+  // 대회별 모드
+  el('mainContent').innerHTML = renderStats(s);
 }
 
 // ── 모드 전환 ────────────────────────────────────
