@@ -1,0 +1,381 @@
+[
+  {
+    "schema_name": "public",
+    "function_name": "baseball_game_list_simple",
+    "arguments": "p_school_id bigint",
+    "return_type": "TABLE(id bigint, game_date date, opponent text, tournament text, stadium text, our_score integer, opp_score integer, result text)",
+    "language": "sql",
+    "source_code": "\r\n  select\r\n    g.id,\r\n    g.game_date,\r\n    g.opponent,\r\n    g.tournament,\r\n    g.stadium,\r\n    g.our_score,\r\n    g.opp_score,\r\n    g.result\r\n  from public.baseball_games g\r\n  where g.school_id = p_school_id\r\n  order by g.game_date desc, g.id desc;\r\n"
+  },
+  {
+    "schema_name": "public",
+    "function_name": "baseball_game_detail_with_schools",
+    "arguments": "p_game_id bigint",
+    "return_type": "jsonb",
+    "language": "plpgsql",
+    "source_code": "\r\ndeclare\r\n  v_result jsonb;\r\nbegin\r\n  with g as (\r\n    select *\r\n    from public.baseball_games\r\n    where id = p_game_id\r\n  ),\r\n  school_info as (\r\n    select s.category\r\n    from public.baseball_schools s\r\n    join g on s.name = g.opponent\r\n    limit 1\r\n  ),\r\n  school_list as (\r\n    select name\r\n    from public.baseball_schools\r\n    where category = (select category from school_info)\r\n    order by name\r\n  )\r\n  select jsonb_build_object(\r\n    'game', (select to_jsonb(g.*) from g),\r\n    'category', (select category from school_info),\r\n    'schools', coalesce((select jsonb_agg(name) from school_list), '[]'::jsonb)\r\n  )\r\n  into v_result;\r\n\r\n  return v_result;\r\nend;\r\n"
+  },
+  {
+    "schema_name": "public",
+    "function_name": "baseball_schools_by_category",
+    "arguments": "p_category text",
+    "return_type": "TABLE(name text)",
+    "language": "sql",
+    "source_code": "\r\n  select s.name\r\n  from public.baseball_schools s\r\n  where s.category = p_category\r\n  order by s.name;\r\n"
+  },
+  {
+    "schema_name": "public",
+    "function_name": "baseball_is_approved_user",
+    "arguments": "",
+    "return_type": "boolean",
+    "language": "sql",
+    "source_code": "\r\n  SELECT EXISTS (\r\n    SELECT 1\r\n    FROM public.baseball_profiles\r\n    WHERE id = auth.uid()\r\n      AND role IN ('admin', 'member', 'recorder')\r\n  )\r\n"
+  },
+  {
+    "schema_name": "public",
+    "function_name": "baseball_game_save",
+    "arguments": "p_game_id bigint DEFAULT NULL::bigint, p_game_date date DEFAULT NULL::date, p_game_time time without time zone DEFAULT NULL::time without time zone, p_innings integer DEFAULT 7, p_opponent text DEFAULT NULL::text, p_tournament text DEFAULT NULL::text, p_stadium text DEFAULT NULL::text, p_is_home boolean DEFAULT true, p_weather text DEFAULT NULL::text, p_is_cold boolean DEFAULT false, p_end_reason text DEFAULT NULL::text, p_our_score integer DEFAULT 0, p_opp_score integer DEFAULT 0, p_our_hits integer DEFAULT 0, p_our_errors integer DEFAULT 0, p_our_hr integer DEFAULT 0, p_our_bb integer DEFAULT 0, p_opp_bb integer DEFAULT 0, p_our_k integer DEFAULT 0, p_opp_k integer DEFAULT 0, p_our_hbp integer DEFAULT 0, p_opp_hbp integer DEFAULT 0, p_our_sb integer DEFAULT 0, p_opp_sb integer DEFAULT 0, p_memo text DEFAULT NULL::text",
+    "return_type": "jsonb",
+    "language": "plpgsql",
+    "source_code": "\r\ndeclare\r\n  v_school_id bigint;\r\n  v_is_admin boolean;\r\n  v_id bigint;\r\n  v_row public.baseball_games%rowtype;\r\nbegin\r\n  v_school_id := public.baseball_my_school_id();\r\n  v_is_admin := public.baseball_is_school_admin();\r\n\r\n  if auth.uid() is null then\r\n    raise exception '로그인이 필요합니다.';\r\n  end if;\r\n\r\n  if coalesce(v_is_admin, false) = false then\r\n    raise exception '관리자만 저장할 수 있습니다.';\r\n  end if;\r\n\r\n  if v_school_id is null then\r\n    raise exception '학교 정보가 없습니다.';\r\n  end if;\r\n\r\n  if p_game_date is null then\r\n    raise exception '경기 날짜는 필수입니다.';\r\n  end if;\r\n\r\n  if coalesce(btrim(p_opponent), '') = '' then\r\n    raise exception '상대팀은 필수입니다.';\r\n  end if;\r\n\r\n  if coalesce(p_innings, 0) < 1 then\r\n    raise exception '이닝은 1 이상이어야 합니다.';\r\n  end if;\r\n\r\n  if p_game_id is null then\r\n    insert into public.baseball_games (\r\n      game_date, game_time, school_id, innings, opponent, tournament, stadium,\r\n      is_home, weather, is_cold, end_reason,\r\n      our_score, opp_score, our_hits, our_errors, our_hr,\r\n      our_bb, opp_bb, our_k, opp_k, our_hbp, opp_hbp, our_sb, opp_sb,\r\n      memo\r\n    )\r\n    values (\r\n      p_game_date, p_game_time, v_school_id, p_innings, btrim(p_opponent),\r\n      nullif(btrim(p_tournament), ''),\r\n      nullif(btrim(p_stadium), ''),\r\n      coalesce(p_is_home, true),\r\n      nullif(btrim(p_weather), ''),\r\n      coalesce(p_is_cold, false),\r\n      nullif(btrim(p_end_reason), ''),\r\n      greatest(coalesce(p_our_score, 0), 0),\r\n      greatest(coalesce(p_opp_score, 0), 0),\r\n      greatest(coalesce(p_our_hits, 0), 0),\r\n      greatest(coalesce(p_our_errors, 0), 0),\r\n      greatest(coalesce(p_our_hr, 0), 0),\r\n      greatest(coalesce(p_our_bb, 0), 0),\r\n      greatest(coalesce(p_opp_bb, 0), 0),\r\n      greatest(coalesce(p_our_k, 0), 0),\r\n      greatest(coalesce(p_opp_k, 0), 0),\r\n      greatest(coalesce(p_our_hbp, 0), 0),\r\n      greatest(coalesce(p_opp_hbp, 0), 0),\r\n      greatest(coalesce(p_our_sb, 0), 0),\r\n      greatest(coalesce(p_opp_sb, 0), 0),\r\n      nullif(btrim(p_memo), '')\r\n    )\r\n    returning id into v_id;\r\n  else\r\n    update public.baseball_games\r\n    set\r\n      game_date   = p_game_date,\r\n      game_time   = p_game_time,\r\n      innings     = p_innings,\r\n      opponent    = btrim(p_opponent),\r\n      tournament  = nullif(btrim(p_tournament), ''),\r\n      stadium     = nullif(btrim(p_stadium), ''),\r\n      is_home     = coalesce(p_is_home, true),\r\n      weather     = nullif(btrim(p_weather), ''),\r\n      is_cold     = coalesce(p_is_cold, false),\r\n      end_reason  = nullif(btrim(p_end_reason), ''),\r\n      our_score   = greatest(coalesce(p_our_score, 0), 0),\r\n      opp_score   = greatest(coalesce(p_opp_score, 0), 0),\r\n      our_hits    = greatest(coalesce(p_our_hits, 0), 0),\r\n      our_errors  = greatest(coalesce(p_our_errors, 0), 0),\r\n      our_hr      = greatest(coalesce(p_our_hr, 0), 0),\r\n      our_bb      = greatest(coalesce(p_our_bb, 0), 0),\r\n      opp_bb      = greatest(coalesce(p_opp_bb, 0), 0),\r\n      our_k       = greatest(coalesce(p_our_k, 0), 0),\r\n      opp_k       = greatest(coalesce(p_opp_k, 0), 0),\r\n      our_hbp     = greatest(coalesce(p_our_hbp, 0), 0),\r\n      opp_hbp     = greatest(coalesce(p_opp_hbp, 0), 0),\r\n      our_sb      = greatest(coalesce(p_our_sb, 0), 0),\r\n      opp_sb      = greatest(coalesce(p_opp_sb, 0), 0),\r\n      memo        = nullif(btrim(p_memo), '')\r\n    where id = p_game_id\r\n      and school_id = v_school_id\r\n    returning id into v_id;\r\n\r\n    if v_id is null then\r\n      raise exception '수정할 경기 정보를 찾을 수 없습니다.';\r\n    end if;\r\n  end if;\r\n\r\n  select *\r\n    into v_row\r\n  from public.baseball_games\r\n  where id = v_id;\r\n\r\n  return jsonb_build_object(\r\n    'id', v_row.id,\r\n    'game_date', v_row.game_date,\r\n    'opponent', v_row.opponent,\r\n    'result', v_row.result,\r\n    'our_score', v_row.our_score,\r\n    'opp_score', v_row.opp_score,\r\n    'mode', case when p_game_id is null then 'create' else 'update' end\r\n  );\r\nend;\r\n"
+  },
+  {
+    "schema_name": "public",
+    "function_name": "baseball_game_delete",
+    "arguments": "p_game_id bigint",
+    "return_type": "jsonb",
+    "language": "plpgsql",
+    "source_code": "\r\ndeclare\r\n  v_school_id bigint;\r\n  v_is_admin boolean;\r\n  v_row public.baseball_games%rowtype;\r\nbegin\r\n  v_school_id := public.baseball_my_school_id();\r\n  v_is_admin := public.baseball_is_school_admin();\r\n\r\n  if auth.uid() is null then\r\n    raise exception '로그인이 필요합니다.';\r\n  end if;\r\n\r\n  if coalesce(v_is_admin, false) = false then\r\n    raise exception '관리자만 삭제할 수 있습니다.';\r\n  end if;\r\n\r\n  delete from public.baseball_games\r\n  where id = p_game_id\r\n    and school_id = v_school_id\r\n  returning * into v_row;\r\n\r\n  if v_row.id is null then\r\n    raise exception '삭제할 경기 정보를 찾을 수 없습니다.';\r\n  end if;\r\n\r\n  return jsonb_build_object(\r\n    'id', v_row.id,\r\n    'game_date', v_row.game_date,\r\n    'opponent', v_row.opponent,\r\n    'deleted', true\r\n  );\r\nend;\r\n"
+  },
+  {
+    "schema_name": "public",
+    "function_name": "baseball_my_context",
+    "arguments": "",
+    "return_type": "jsonb",
+    "language": "plpgsql",
+    "source_code": "\r\ndeclare\r\n  v_uid uuid;\r\n  v_role text;\r\n  v_school_id bigint;\r\n  v_player_id bigint;\r\nbegin\r\n  v_uid := auth.uid();\r\n\r\n  if v_uid is null then\r\n    return jsonb_build_object(\r\n      'user_id', null,\r\n      'role', null,\r\n      'school_id', null,\r\n      'player_id', null\r\n    );\r\n  end if;\r\n\r\n  select p.role, p.school_id\r\n    into v_role, v_school_id\r\n  from public.baseball_profiles p\r\n  where p.id = v_uid;\r\n\r\n  select bp.id\r\n    into v_player_id\r\n  from public.baseball_players bp\r\n  where bp.owner_user_id = v_uid\r\n  order by bp.id\r\n  limit 1;\r\n\r\n  return jsonb_build_object(\r\n    'user_id', v_uid,\r\n    'role', v_role,\r\n    'school_id', v_school_id,\r\n    'player_id', v_player_id\r\n  );\r\nend;\r\n"
+  },
+  {
+    "schema_name": "public",
+    "function_name": "baseball_report_detail",
+    "arguments": "p_game_id bigint",
+    "return_type": "jsonb",
+    "language": "plpgsql",
+    "source_code": "\r\ndeclare\r\n  v_result jsonb;\r\nbegin\r\n  with game_info as (\r\n    select\r\n      g.id,\r\n      g.game_date,\r\n      g.opponent,\r\n      g.tournament,\r\n      g.stadium,\r\n      g.innings,\r\n      g.weather,\r\n      g.our_score,\r\n      g.opp_score,\r\n      g.result,\r\n      g.our_hits,\r\n      g.our_errors,\r\n      g.our_hr\r\n    from public.baseball_games g\r\n    where g.id = p_game_id\r\n  ),\r\n  player_records as (\r\n    select\r\n      r.id,\r\n      r.game_id,\r\n      r.player_id,\r\n      r.is_starter,\r\n      r.batting_order,\r\n      r.position,\r\n      r.ab,\r\n      r.h,\r\n      r.rbi,\r\n      r.r,\r\n      r.bb,\r\n      r.so,\r\n      r.sb,\r\n      r.hr,\r\n      r.ip,\r\n      r.pk,\r\n      r.er,\r\n      r.pbb,\r\n      r.pitches,\r\n      r.max_vel,\r\n      r.player_memo,\r\n      p.id as p_id,\r\n      p.name as p_name,\r\n      p.jersey_number as p_jersey_number,\r\n      p.grade as p_grade\r\n    from public.baseball_game_player_records r\r\n    left join public.baseball_players p\r\n      on p.id = r.player_id\r\n    where r.game_id = p_game_id\r\n    order by r.batting_order asc nulls last, r.id asc\r\n  )\r\n  select jsonb_build_object(\r\n    'game',\r\n      (\r\n        select to_jsonb(gi.*)\r\n        from game_info gi\r\n      ),\r\n    'records',\r\n      coalesce(\r\n        (\r\n          select jsonb_agg(\r\n            jsonb_build_object(\r\n              'id', pr.id,\r\n              'game_id', pr.game_id,\r\n              'player_id', pr.player_id,\r\n              'is_starter', pr.is_starter,\r\n              'batting_order', pr.batting_order,\r\n              'position', pr.position,\r\n              'ab', pr.ab,\r\n              'h', pr.h,\r\n              'rbi', pr.rbi,\r\n              'r', pr.r,\r\n              'bb', pr.bb,\r\n              'so', pr.so,\r\n              'sb', pr.sb,\r\n              'hr', pr.hr,\r\n              'ip', pr.ip,\r\n              'pk', pr.pk,\r\n              'er', pr.er,\r\n              'pbb', pr.pbb,\r\n              'pitches', pr.pitches,\r\n              'max_vel', pr.max_vel,\r\n              'player_memo', pr.player_memo,\r\n              'baseball_players', jsonb_build_object(\r\n                'id', pr.p_id,\r\n                'name', pr.p_name,\r\n                'jersey_number', pr.p_jersey_number,\r\n                'grade', pr.p_grade\r\n              )\r\n            )\r\n          )\r\n          from player_records pr\r\n        ),\r\n        '[]'::jsonb\r\n      )\r\n  )\r\n  into v_result;\r\n\r\n  return v_result;\r\nend;\r\n"
+  },
+  {
+    "schema_name": "public",
+    "function_name": "baseball_report_list",
+    "arguments": "p_school_id bigint, p_tournament text DEFAULT NULL::text, p_limit integer DEFAULT 20, p_offset integer DEFAULT 0",
+    "return_type": "jsonb",
+    "language": "plpgsql",
+    "source_code": "\r\ndeclare\r\n  v_result jsonb;\r\nbegin\r\n  with filtered_games as (\r\n    select\r\n      g.id,\r\n      g.game_date,\r\n      g.opponent,\r\n      g.stadium,\r\n      g.result,\r\n      g.our_score,\r\n      g.opp_score,\r\n      g.tournament\r\n    from public.baseball_games g\r\n    where g.school_id = p_school_id\r\n      and (\r\n        p_tournament is null\r\n        or p_tournament = ''\r\n        or g.tournament = p_tournament\r\n      )\r\n  ),\r\n  paged_games as (\r\n    select *\r\n    from filtered_games\r\n    order by game_date desc, id desc\r\n    limit greatest(coalesce(p_limit, 20), 1)\r\n    offset greatest(coalesce(p_offset, 0), 0)\r\n  ),\r\n  tournaments as (\r\n    select distinct g.tournament\r\n    from public.baseball_games g\r\n    where g.school_id = p_school_id\r\n      and g.tournament is not null\r\n      and btrim(g.tournament) <> ''\r\n    order by g.tournament\r\n  ),\r\n  kpi as (\r\n    select\r\n      count(*)::int as total_games,\r\n      count(*) filter (where result = 'W')::int as wins,\r\n      count(*) filter (where result = 'L')::int as losses,\r\n      count(*) filter (\r\n        where result not in ('W', 'L')\r\n           or result is null\r\n      )::int as draws\r\n    from filtered_games\r\n  )\r\n  select jsonb_build_object(\r\n    'tournaments',\r\n      coalesce(\r\n        (select jsonb_agg(t.tournament) from tournaments t),\r\n        '[]'::jsonb\r\n      ),\r\n    'kpi',\r\n      (\r\n        select jsonb_build_object(\r\n          'total_games', k.total_games,\r\n          'wins', k.wins,\r\n          'losses', k.losses,\r\n          'draws', k.draws\r\n        )\r\n        from kpi k\r\n      ),\r\n    'games',\r\n      coalesce(\r\n        (\r\n          select jsonb_agg(\r\n            jsonb_build_object(\r\n              'id', pg.id,\r\n              'game_date', pg.game_date,\r\n              'opponent', pg.opponent,\r\n              'stadium', pg.stadium,\r\n              'result', pg.result,\r\n              'our_score', pg.our_score,\r\n              'opp_score', pg.opp_score,\r\n              'tournament', pg.tournament\r\n            )\r\n          )\r\n          from paged_games pg\r\n        ),\r\n        '[]'::jsonb\r\n      )\r\n  )\r\n  into v_result;\r\n\r\n  return v_result;\r\nend;\r\n"
+  },
+  {
+    "schema_name": "public",
+    "function_name": "baseball_handle_new_user",
+    "arguments": "",
+    "return_type": "trigger",
+    "language": "plpgsql",
+    "source_code": "\r\nDECLARE\r\n  v_school_id bigint;\r\n  v_role text;\r\nBEGIN\r\n  v_school_id := nullif(new.raw_user_meta_data ->> 'school_id', '')::bigint;\r\n\r\n  IF v_school_id IS NULL THEN\r\n    RAISE LOG 'baseball_handle_new_user: school_id is null | metadata: %', new.raw_user_meta_data;\r\n    RETURN new;\r\n  END IF;\r\n\r\n  -- 같은 학교 동시 가입 시 admin 중복 방지용 학교별 락\r\n  PERFORM pg_advisory_xact_lock(938100, v_school_id::integer);\r\n\r\n  -- 해당 학교에 이미 가입한 사용자가 있는지 확인\r\n  IF EXISTS (\r\n    SELECT 1\r\n    FROM public.baseball_profiles\r\n    WHERE school_id = v_school_id\r\n  ) THEN\r\n    v_role := 'pending';\r\n  ELSE\r\n    v_role := 'admin';\r\n  END IF;\r\n\r\n  -- 프로필 생성\r\n  INSERT INTO public.baseball_profiles (id, display_name, username, school_id, role)\r\n  VALUES (\r\n    new.id,\r\n    coalesce(new.raw_user_meta_data ->> 'display_name', new.raw_user_meta_data ->> 'username'),\r\n    new.raw_user_meta_data ->> 'username',\r\n    v_school_id,\r\n    v_role\r\n  )\r\n  ON CONFLICT (id) DO NOTHING;\r\n\r\n  -- 선수 생성 (player_name 있을 때만)\r\n  IF coalesce(new.raw_user_meta_data ->> 'player_name', '') <> '' THEN\r\n    IF NOT EXISTS (\r\n      SELECT 1\r\n      FROM public.baseball_players\r\n      WHERE owner_user_id = new.id\r\n    ) THEN\r\n      INSERT INTO public.baseball_players (\r\n        name,\r\n        jersey_number,\r\n        grade,\r\n        birth_year,\r\n        primary_position,\r\n        throws,\r\n        bats,\r\n        school_id,\r\n        owner_user_id,\r\n        is_active\r\n      )\r\n      VALUES (\r\n        new.raw_user_meta_data ->> 'player_name',\r\n        nullif(new.raw_user_meta_data ->> 'jersey_number', '')::int,\r\n        new.raw_user_meta_data ->> 'grade',\r\n        nullif(new.raw_user_meta_data ->> 'birth_year', '')::int,\r\n        new.raw_user_meta_data ->> 'primary_position',\r\n        coalesce(new.raw_user_meta_data ->> 'throws', '우'),\r\n        coalesce(new.raw_user_meta_data ->> 'bats', '우'),\r\n        v_school_id,\r\n        new.id,\r\n        true\r\n      );\r\n    END IF;\r\n  END IF;\r\n\r\n  RETURN new;\r\n\r\nEXCEPTION WHEN OTHERS THEN\r\n  RAISE LOG 'baseball_handle_new_user error: % | metadata: %', SQLERRM, new.raw_user_meta_data;\r\n  RETURN new;\r\nEND;\r\n"
+  },
+  {
+    "schema_name": "public",
+    "function_name": "baseball_dashboard_summary",
+    "arguments": "",
+    "return_type": "jsonb",
+    "language": "plpgsql",
+    "source_code": "\r\ndeclare\r\n  v_school_id bigint;\r\n  v_year int;\r\n  v_month int;\r\n  v_year_start date;\r\n  v_year_end date;\r\n  v_month_start date;\r\n  v_month_end date;\r\n  v_result jsonb;\r\nbegin\r\n  v_school_id := public.baseball_my_school_id();\r\n\r\n  if v_school_id is null then\r\n    return jsonb_build_object(\r\n      'year', to_char(current_date, 'YYYY'),\r\n      'month', to_char(current_date, 'YYYY-MM'),\r\n      'year_w', 0, 'year_l', 0, 'year_d', 0,\r\n      'month_w', 0, 'month_l', 0, 'month_d', 0\r\n    );\r\n  end if;\r\n\r\n  v_year := extract(year from current_date);\r\n  v_month := extract(month from current_date);\r\n\r\n  v_year_start := make_date(v_year, 1, 1);\r\n  v_year_end   := make_date(v_year + 1, 1, 1);\r\n\r\n  v_month_start := make_date(v_year, v_month, 1);\r\n  v_month_end   := (v_month_start + interval '1 month')::date;\r\n\r\n  select jsonb_build_object(\r\n    'year', v_year,\r\n    'month', to_char(v_month_start, 'YYYY-MM'),\r\n    'year_w', coalesce(sum(case when game_date >= v_year_start and game_date < v_year_end and result = 'W' then 1 else 0 end), 0),\r\n    'year_l', coalesce(sum(case when game_date >= v_year_start and game_date < v_year_end and result = 'L' then 1 else 0 end), 0),\r\n    'year_d', coalesce(sum(case when game_date >= v_year_start and game_date < v_year_end and result = 'D' then 1 else 0 end), 0),\r\n    'month_w', coalesce(sum(case when game_date >= v_month_start and game_date < v_month_end and result = 'W' then 1 else 0 end), 0),\r\n    'month_l', coalesce(sum(case when game_date >= v_month_start and game_date < v_month_end and result = 'L' then 1 else 0 end), 0),\r\n    'month_d', coalesce(sum(case when game_date >= v_month_start and game_date < v_month_end and result = 'D' then 1 else 0 end), 0)\r\n  )\r\n  into v_result\r\n  from public.baseball_games\r\n  where school_id = v_school_id\r\n    and game_date >= v_year_start\r\n    and game_date < v_year_end;\r\n\r\n  return coalesce(v_result, jsonb_build_object(\r\n    'year', v_year,\r\n    'month', to_char(v_month_start, 'YYYY-MM'),\r\n    'year_w', 0, 'year_l', 0, 'year_d', 0,\r\n    'month_w', 0, 'month_l', 0, 'month_d', 0\r\n  ));\r\nend;\r\n"
+  },
+  {
+    "schema_name": "public",
+    "function_name": "baseball_game_list_recent_my",
+    "arguments": "",
+    "return_type": "TABLE(id bigint, game_date date, opponent text, tournament text, our_score integer, opp_score integer, result text)",
+    "language": "sql",
+    "source_code": "\r\n  select\r\n    g.id,\r\n    g.game_date,\r\n    g.opponent,\r\n    g.tournament,\r\n    g.our_score,\r\n    g.opp_score,\r\n    g.result\r\n  from public.baseball_games g\r\n  where g.school_id = public.baseball_my_school_id()\r\n  order by g.game_date desc, g.id desc\r\n  limit 5\r\n"
+  },
+  {
+    "schema_name": "public",
+    "function_name": "baseball_dashboard_all_in_one",
+    "arguments": "",
+    "return_type": "jsonb",
+    "language": "plpgsql",
+    "source_code": "\r\ndeclare\r\n  v_ctx jsonb;\r\n  v_school_id bigint;\r\n  v_year int;\r\n  v_month int;\r\n  v_year_start date;\r\n  v_year_end date;\r\n  v_month_start date;\r\n  v_month_end date;\r\n  v_summary jsonb;\r\n  v_recent jsonb;\r\nbegin\r\n  v_ctx := public.baseball_my_context();\r\n  v_school_id := public.baseball_my_school_id();\r\n\r\n  v_year := extract(year from current_date)::int;\r\n  v_month := extract(month from current_date)::int;\r\n\r\n  v_year_start := make_date(v_year, 1, 1);\r\n  v_year_end := make_date(v_year + 1, 1, 1);\r\n\r\n  v_month_start := make_date(v_year, v_month, 1);\r\n  v_month_end := (v_month_start + interval '1 month')::date;\r\n\r\n  if v_school_id is null then\r\n    return jsonb_build_object(\r\n      'context', coalesce(v_ctx, '{}'::jsonb),\r\n      'summary', jsonb_build_object(\r\n        'year', v_year,\r\n        'month', to_char(v_month_start, 'YYYY-MM'),\r\n        'year_w', 0, 'year_l', 0, 'year_d', 0,\r\n        'month_w', 0, 'month_l', 0, 'month_d', 0\r\n      ),\r\n      'recent_games', '[]'::jsonb\r\n    );\r\n  end if;\r\n\r\n  select jsonb_build_object(\r\n    'year', v_year,\r\n    'month', to_char(v_month_start, 'YYYY-MM'),\r\n    'year_w', coalesce(sum(case when g.game_date >= v_year_start and g.game_date < v_year_end and g.result = 'W' then 1 else 0 end), 0),\r\n    'year_l', coalesce(sum(case when g.game_date >= v_year_start and g.game_date < v_year_end and g.result = 'L' then 1 else 0 end), 0),\r\n    'year_d', coalesce(sum(case when g.game_date >= v_year_start and g.game_date < v_year_end and g.result = 'D' then 1 else 0 end), 0),\r\n    'month_w', coalesce(sum(case when g.game_date >= v_month_start and g.game_date < v_month_end and g.result = 'W' then 1 else 0 end), 0),\r\n    'month_l', coalesce(sum(case when g.game_date >= v_month_start and g.game_date < v_month_end and g.result = 'L' then 1 else 0 end), 0),\r\n    'month_d', coalesce(sum(case when g.game_date >= v_month_start and g.game_date < v_month_end and g.result = 'D' then 1 else 0 end), 0)\r\n  )\r\n  into v_summary\r\n  from public.baseball_games g\r\n  where g.school_id = v_school_id\r\n    and g.game_date >= v_year_start\r\n    and g.game_date < v_year_end;\r\n\r\n  select coalesce(\r\n    jsonb_agg(\r\n      jsonb_build_object(\r\n        'id', x.id,\r\n        'game_date', x.game_date,\r\n        'opponent', x.opponent,\r\n        'tournament', x.tournament,\r\n        'our_score', x.our_score,\r\n        'opp_score', x.opp_score,\r\n        'result', x.result\r\n      )\r\n      order by x.game_date desc, x.id desc\r\n    ),\r\n    '[]'::jsonb\r\n  )\r\n  into v_recent\r\n  from (\r\n    select\r\n      g.id,\r\n      g.game_date,\r\n      g.opponent,\r\n      g.tournament,\r\n      g.our_score,\r\n      g.opp_score,\r\n      g.result\r\n    from public.baseball_games g\r\n    where g.school_id = v_school_id\r\n    order by g.game_date desc, g.id desc\r\n    limit 5\r\n  ) x;\r\n\r\n  return jsonb_build_object(\r\n    'context', coalesce(v_ctx, '{}'::jsonb),\r\n    'summary', coalesce(v_summary, jsonb_build_object(\r\n      'year', v_year,\r\n      'month', to_char(v_month_start, 'YYYY-MM'),\r\n      'year_w', 0, 'year_l', 0, 'year_d', 0,\r\n      'month_w', 0, 'month_l', 0, 'month_d', 0\r\n    )),\r\n    'recent_games', coalesce(v_recent, '[]'::jsonb)\r\n  );\r\nend;\r\n"
+  },
+  {
+    "schema_name": "public",
+    "function_name": "baseball_admin_list_profiles",
+    "arguments": "",
+    "return_type": "TABLE(id uuid, display_name text, username text, role text, school_id bigint, created_at timestamp with time zone)",
+    "language": "sql",
+    "source_code": "\r\n  SELECT\r\n    p.id,\r\n    p.display_name,\r\n    p.username,\r\n    p.role,\r\n    p.school_id,\r\n    p.created_at\r\n  FROM public.baseball_profiles p\r\n  WHERE p.school_id = public.baseball_my_school_id()\r\n  ORDER BY\r\n    CASE p.role\r\n      WHEN 'admin' THEN 1\r\n      WHEN 'recorder' THEN 2\r\n      ELSE 3\r\n    END,\r\n    p.created_at ASC\r\n"
+  },
+  {
+    "schema_name": "public",
+    "function_name": "baseball_update_timestamp",
+    "arguments": "",
+    "return_type": "trigger",
+    "language": "plpgsql",
+    "source_code": "\r\nBEGIN\r\n  NEW.updated_at = now();\r\n  RETURN NEW;\r\nEND;\r\n"
+  },
+  {
+    "schema_name": "public",
+    "function_name": "baseball_players_update_timestamp",
+    "arguments": "",
+    "return_type": "trigger",
+    "language": "plpgsql",
+    "source_code": "\r\nBEGIN\r\n  NEW.updated_at = now();\r\n  RETURN NEW;\r\nEND;\r\n"
+  },
+  {
+    "schema_name": "public",
+    "function_name": "baseball_bgr_update_ts",
+    "arguments": "",
+    "return_type": "trigger",
+    "language": "plpgsql",
+    "source_code": "\r\nBEGIN\r\n  NEW.updated_at = now();\r\n  RETURN NEW;\r\nEND;\r\n"
+  },
+  {
+    "schema_name": "public",
+    "function_name": "baseball_set_updated_at",
+    "arguments": "",
+    "return_type": "trigger",
+    "language": "plpgsql",
+    "source_code": "\r\nbegin\r\n  new.updated_at = now();\r\n  return new;\r\nend;\r\n"
+  },
+  {
+    "schema_name": "public",
+    "function_name": "baseball_is_school_admin",
+    "arguments": "",
+    "return_type": "boolean",
+    "language": "sql",
+    "source_code": "\r\n  SELECT EXISTS (\r\n    SELECT 1\r\n    FROM public.baseball_profiles\r\n    WHERE id = auth.uid()\r\n      AND role = 'admin'\r\n  )\r\n"
+  },
+  {
+    "schema_name": "public",
+    "function_name": "baseball_owns_player",
+    "arguments": "p_player_id bigint",
+    "return_type": "boolean",
+    "language": "sql",
+    "source_code": "\r\n  select exists (\r\n    select 1\r\n    from public.baseball_players p\r\n    where p.id = p_player_id\r\n      and p.owner_user_id = auth.uid()\r\n  )\r\n"
+  },
+  {
+    "schema_name": "public",
+    "function_name": "baseball_admin_update_role",
+    "arguments": "p_user_id uuid, p_role text",
+    "return_type": "baseball_profiles",
+    "language": "plpgsql",
+    "source_code": "\r\nDECLARE\r\n  v_my_school bigint;\r\n  v_target public.baseball_profiles;\r\n  v_result public.baseball_profiles;\r\nBEGIN\r\n  v_my_school := public.baseball_my_school_id();\r\n\r\n  IF NOT public.baseball_is_school_admin() THEN\r\n    RAISE EXCEPTION '관리자만 변경할 수 있습니다.';\r\n  END IF;\r\n\r\n  IF p_role NOT IN ('admin', 'member', 'recorder') THEN\r\n    RAISE EXCEPTION '허용되지 않은 권한입니다.';\r\n  END IF;\r\n\r\n  SELECT *\r\n    INTO v_target\r\n  FROM public.baseball_profiles\r\n  WHERE id = p_user_id\r\n    AND school_id = v_my_school;\r\n\r\n  IF NOT FOUND THEN\r\n    RAISE EXCEPTION '같은 학교 사용자만 변경할 수 있습니다.';\r\n  END IF;\r\n\r\n  -- admin은 오직 1명만 허용\r\n  IF p_role = 'admin' THEN\r\n    -- 같은 학교의 기존 admin을 모두 member로 변경 (대상자 제외)\r\n    UPDATE public.baseball_profiles\r\n    SET role = 'member'\r\n    WHERE school_id = v_my_school\r\n      AND role = 'admin'\r\n      AND id <> p_user_id;\r\n  END IF;\r\n\r\n  UPDATE public.baseball_profiles\r\n  SET role = p_role\r\n  WHERE id = p_user_id\r\n    AND school_id = v_my_school\r\n  RETURNING * INTO v_result;\r\n\r\n  RETURN v_result;\r\nEND;\r\n"
+  },
+  {
+    "schema_name": "public",
+    "function_name": "baseball_my_school_id",
+    "arguments": "",
+    "return_type": "bigint",
+    "language": "plpgsql",
+    "source_code": "\r\nDECLARE\r\n  v_school_id bigint;\r\nBEGIN\r\n  SELECT school_id INTO v_school_id\r\n  FROM public.baseball_profiles\r\n  WHERE id = auth.uid()\r\n  LIMIT 1;\r\n  RETURN v_school_id;\r\nEND;\r\n"
+  }
+]
+
+[
+  {
+    "schemaname": "public",
+    "tablename": "baseball_game_player_records",
+    "policyname": "baseball_records_delete_admin_or_owner",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "action": "DELETE",
+    "using_expression": "(EXISTS ( SELECT 1\n   FROM (baseball_games g\n     JOIN baseball_players p ON ((p.id = baseball_game_player_records.player_id)))\n  WHERE ((g.id = baseball_game_player_records.game_id) AND (g.school_id = baseball_my_school_id()) AND (p.school_id = baseball_my_school_id()) AND (baseball_is_school_admin() OR (p.owner_user_id = auth.uid())))))",
+    "check_expression": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "baseball_game_player_records",
+    "policyname": "baseball_records_insert_admin_or_owner",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "action": "INSERT",
+    "using_expression": null,
+    "check_expression": "(EXISTS ( SELECT 1\n   FROM (baseball_games g\n     JOIN baseball_players p ON ((p.id = baseball_game_player_records.player_id)))\n  WHERE ((g.id = baseball_game_player_records.game_id) AND (g.school_id = baseball_my_school_id()) AND (p.school_id = baseball_my_school_id()) AND (baseball_is_school_admin() OR (p.owner_user_id = auth.uid())))))"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "baseball_game_player_records",
+    "policyname": "baseball_records_select_same_school",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "action": "SELECT",
+    "using_expression": "(EXISTS ( SELECT 1\n   FROM baseball_games g\n  WHERE ((g.id = baseball_game_player_records.game_id) AND (g.school_id = baseball_my_school_id()))))",
+    "check_expression": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "baseball_game_player_records",
+    "policyname": "baseball_records_update_admin_or_owner",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "action": "UPDATE",
+    "using_expression": "(EXISTS ( SELECT 1\n   FROM (baseball_games g\n     JOIN baseball_players p ON ((p.id = baseball_game_player_records.player_id)))\n  WHERE ((g.id = baseball_game_player_records.game_id) AND (g.school_id = baseball_my_school_id()) AND (p.school_id = baseball_my_school_id()) AND (baseball_is_school_admin() OR (p.owner_user_id = auth.uid())))))",
+    "check_expression": "(EXISTS ( SELECT 1\n   FROM (baseball_games g\n     JOIN baseball_players p ON ((p.id = baseball_game_player_records.player_id)))\n  WHERE ((g.id = baseball_game_player_records.game_id) AND (g.school_id = baseball_my_school_id()) AND (p.school_id = baseball_my_school_id()) AND (baseball_is_school_admin() OR (p.owner_user_id = auth.uid())))))"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "baseball_games",
+    "policyname": "baseball_games_select_same_school",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "action": "SELECT",
+    "using_expression": "(school_id = baseball_my_school_id())",
+    "check_expression": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "baseball_games",
+    "policyname": "Allow insert for authenticated users",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "action": "INSERT",
+    "using_expression": null,
+    "check_expression": "true"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "baseball_games",
+    "policyname": "baseball_games_update_admin",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "action": "UPDATE",
+    "using_expression": "(baseball_is_school_admin() AND (school_id = baseball_my_school_id()))",
+    "check_expression": "(baseball_is_school_admin() AND (school_id = baseball_my_school_id()))"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "baseball_games",
+    "policyname": "baseball_games select",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "action": "SELECT",
+    "using_expression": "true",
+    "check_expression": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "baseball_games",
+    "policyname": "baseball_games_delete_admin",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "action": "DELETE",
+    "using_expression": "(baseball_is_school_admin() AND (school_id = baseball_my_school_id()))",
+    "check_expression": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "baseball_games",
+    "policyname": "baseball_games_insert_admin",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "action": "INSERT",
+    "using_expression": null,
+    "check_expression": "((school_id = baseball_my_school_id()) AND baseball_is_school_admin())"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "baseball_players",
+    "policyname": "baseball_players_delete_admin_only",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "action": "DELETE",
+    "using_expression": "(baseball_is_school_admin() AND (school_id = baseball_my_school_id()))",
+    "check_expression": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "baseball_players",
+    "policyname": "baseball_players_insert_self_or_admin",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "action": "INSERT",
+    "using_expression": null,
+    "check_expression": "((school_id = baseball_my_school_id()) AND ((owner_user_id = auth.uid()) OR baseball_is_school_admin()))"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "baseball_players",
+    "policyname": "baseball_players_select_same_school",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "action": "SELECT",
+    "using_expression": "(school_id = baseball_my_school_id())",
+    "check_expression": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "baseball_players",
+    "policyname": "baseball_players_update_self_or_admin",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "action": "UPDATE",
+    "using_expression": "((school_id = baseball_my_school_id()) AND ((owner_user_id = auth.uid()) OR baseball_is_school_admin()))",
+    "check_expression": "((school_id = baseball_my_school_id()) AND ((owner_user_id = auth.uid()) OR baseball_is_school_admin()))"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "baseball_profiles",
+    "policyname": "baseball_profiles_select_own",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "action": "SELECT",
+    "using_expression": "(id = auth.uid())",
+    "check_expression": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "baseball_profiles",
+    "policyname": "baseball_profiles_select_school_admin",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "action": "SELECT",
+    "using_expression": "(baseball_is_school_admin() AND (school_id = baseball_my_school_id()))",
+    "check_expression": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "baseball_profiles",
+    "policyname": "baseball_profiles_update_own",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "action": "UPDATE",
+    "using_expression": "(id = auth.uid())",
+    "check_expression": "(id = auth.uid())"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "baseball_profiles",
+    "policyname": "baseball_profiles_update_school_admin",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "action": "UPDATE",
+    "using_expression": "(baseball_is_school_admin() AND (school_id = baseball_my_school_id()))",
+    "check_expression": "(baseball_is_school_admin() AND (school_id = baseball_my_school_id()) AND (role = ANY (ARRAY['admin'::text, 'member'::text, 'recorder'::text])))"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "baseball_schools",
+    "policyname": "allow read",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "action": "SELECT",
+    "using_expression": "true",
+    "check_expression": null
+  },
+  {
+    "schemaname": "public",
+    "tablename": "baseball_schools",
+    "policyname": "baseball_schools_select_all",
+    "permissive": "PERMISSIVE",
+    "roles": "{anon,authenticated}",
+    "action": "SELECT",
+    "using_expression": "true",
+    "check_expression": null
+  }
+]
