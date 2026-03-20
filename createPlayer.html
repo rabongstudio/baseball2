@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="ko">
 <head>
@@ -553,7 +554,7 @@ el('btnSave').addEventListener('click', async () => {
       .eq('id', user.id);
 
     if(profileErr){
-      setMsg(`<span class="err">선수는 저장됐지만 프로필 학교 변경 실패: ${profileErr.message}</span>`);
+      setMsg(`<span class="err">선수는 저장됐지만 프로필 학교 반영 실패: ${profileErr.message}</span>`);
       return;
     }
 
@@ -563,6 +564,21 @@ el('btnSave').addEventListener('click', async () => {
     await loadMyPlayer();
     return;
   }
+
+  const { data: beforePlayer, error: beforeErr } = await client
+    .from('baseball_players')
+    .select('id,school_id')
+    .eq('id', editingId)
+    .single();
+
+  if(beforeErr){
+    setMsg(`<span class="err">기존 선수 정보 조회 실패: ${beforeErr.message}</span>`);
+    return;
+  }
+
+  const prevSchoolId = beforePlayer?.school_id ?? null;
+  const nextSchoolId = payload.school_id ?? null;
+  const schoolChanged = String(prevSchoolId ?? '') !== String(nextSchoolId ?? '');
 
   const { data, error } = await client
     .from('baseball_players')
@@ -576,17 +592,27 @@ el('btnSave').addEventListener('click', async () => {
     return;
   }
 
+  const profileUpdate = { school_id: payload.school_id };
+  if(schoolChanged) profileUpdate.role = 'pending';
+
   const { error: profileErr } = await client
     .from('baseball_profiles')
-    .update({ school_id: payload.school_id })
+    .update(profileUpdate)
     .eq('id', user.id);
 
   if(profileErr){
-    setMsg(`<span class="err">선수는 수정됐지만 프로필 학교 변경 실패: ${profileErr.message}</span>`);
+    setMsg(`<span class="err">선수는 수정됐지만 프로필 반영 실패: ${profileErr.message}</span>`);
     return;
   }
 
   try{ localStorage.removeItem('baseball_home_cache_v3'); }catch(e){}
+
+  if(schoolChanged){
+    alert('학교가 변경되어 승인 대기 상태로 전환되었습니다. 관리자 승인 후 다시 이용해주세요.');
+    await client.auth.signOut();
+    location.href = 'auth.html';
+    return;
+  }
 
   setMsg(`<span class="ok">✅ 수정 완료! ${data.name} (${data.grade})</span>`);
 });
