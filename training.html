@@ -270,10 +270,22 @@ el('btnSave').addEventListener('click',async()=>{
   const items=Object.entries(activeItems).map(([key,vals])=>({key,...vals}));
   const uid=(await client.auth.getUser()).data.user.id;
   const fields={condition:condVal,duration_min:el('trainDuration').value?Number(el('trainDuration').value):null,memo:el('trainMemo').value.trim()||null,items:items.length?JSON.stringify(items):null};
-  const{data:existing}=await client.from('baseball_training_logs').select('id').eq('player_id',playerId).eq('train_date',date).maybeSingle();
+  const{data:existing}=await client.from('baseball_training_logs').select('*').eq('player_id',playerId).eq('train_date',date).maybeSingle();
   let error;
   if(existing?.id){
-    ({error}=await client.from('baseball_training_logs').update(fields).eq('id',existing.id));
+    // 기존 데이터와 병합 — 새로 입력한 항목만 덮어쓰고 나머지는 기존값 유지
+    const existingItems = existing.items ? JSON.parse(existing.items) : [];
+    const newItemKeys   = items.map(i=>i.key);
+    // 기존 항목 중 이번에 입력 안 한 것은 그대로 유지
+    const keptItems     = existingItems.filter(i=>!newItemKeys.includes(i.key));
+    const mergedItems   = [...keptItems, ...items];
+    const mergedFields  = {
+      condition:   condVal,
+      duration_min:fields.duration_min ?? existing.duration_min,
+      memo:        fields.memo ?? existing.memo,
+      items:       mergedItems.length ? JSON.stringify(mergedItems) : null,
+    };
+    ({error}=await client.from('baseball_training_logs').update(mergedFields).eq('id',existing.id));
   }else{
     ({error}=await client.from('baseball_training_logs').insert({player_id:playerId,owner_user_id:uid,train_date:date,...fields}));
   }
