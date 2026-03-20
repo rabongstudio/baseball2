@@ -75,7 +75,7 @@ textarea{resize:vertical;min-height:90px}
 <div class="container">
   <div id="viewForm" class="hidden">
     <div class="page-title" id="formTitle">선수 등록</div>
-    <div class="page-sub" id="formSub">회원가입 후 내 선수 정보를 수정할 수 있어요</div>
+    <div class="page-sub" id="formSub">회원가입 후 선수 정보를 수정할 수 있어요</div>
 
     <div class="card static">
       <div class="section-label">기본 정보</div>
@@ -448,7 +448,7 @@ async function loadMyPlayer(){
   if(!data){
     mode = 'create';
     editingId = null;
-    el('formTitle').textContent = '내 선수 등록';
+    el('formTitle').textContent = '선수 등록';
     el('formSub').textContent = '1인 1계정 기준 · 첫 선수 정보를 등록하세요';
     resetForm();
     return;
@@ -456,8 +456,7 @@ async function loadMyPlayer(){
 
   mode = 'edit';
   editingId = data.id;
-  el('formTitle').textContent = '내 선수 정보 수정';
-  el('formSub').textContent = `선수 ID #${data.id}`;
+  el('formTitle').textContent = '선수 정보 수정';
 
   el('name').value = data.name ?? '';
   el('jersey').value = data.jersey_number ?? '';
