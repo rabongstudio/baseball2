@@ -28,7 +28,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--black);color:var(--t
 .card{background:var(--panel);border:1px solid var(--border);border-radius:20px;padding:20px;margin-top:16px}
 
 .tabs{display:flex;gap:8px;margin-bottom:20px}
-.tab{flex:1;padding:12px;border-radius:12px;border:1px solid var(--border2);background:transparent;color:var(--muted);font-family:'Noto Sans KR',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all .15s}
+.tab{flex:1;padding:12px;border-radius:12px;border:1px solid var(--border2);background:transparent;color:var(--muted);font-family:'Noto Sans KR',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s}
 .tab.active{background:var(--brand);color:var(--black);border-color:var(--brand)}
 
 label{display:block;margin-top:16px;font-size:12px;font-weight:700;letter-spacing:.5px;color:var(--muted);text-transform:uppercase}
@@ -65,6 +65,8 @@ textarea{resize:vertical;min-height:88px}
 .btn{width:100%;margin-top:20px;padding:15px;border:none;border-radius:14px;background:var(--brand);color:var(--black);font-family:'Noto Sans KR',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all .15s}
 .btn:hover{background:#d4ea3a}
 .btn:disabled{opacity:.5;cursor:not-allowed}
+.btn-ghost{width:100%;margin-top:10px;padding:13px;border:1px solid var(--border2);border-radius:14px;background:transparent;color:var(--muted);font-family:'Noto Sans KR',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all .15s}
+.btn-ghost:hover{border-color:var(--brand);color:var(--brand)}
 
 .msg{margin-top:10px;font-size:13px;line-height:1.5}
 .msg.err{color:var(--err)}
@@ -75,6 +77,31 @@ textarea{resize:vertical;min-height:88px}
 .row2>div{flex:1}
 .hidden{display:none!important}
 .divider{height:1px;background:var(--border);margin:16px 0}
+
+/* 임시 비밀번호 박스 */
+.temp-pw-box{
+  margin-top:16px;padding:18px 20px;
+  background:var(--brand-dim);border:1px solid var(--brand);border-radius:14px;
+  text-align:center;
+}
+.temp-pw-label{font-size:11px;font-weight:700;letter-spacing:1.5px;color:var(--brand);text-transform:uppercase;margin-bottom:8px}
+.temp-pw-value{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:3px;color:var(--brand)}
+.temp-pw-notice{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.6}
+
+/* 비밀번호 찾기 단계 표시 */
+.step-indicator{display:flex;align-items:center;gap:6px;margin-bottom:20px}
+.step-dot{width:8px;height:8px;border-radius:50%;background:var(--border2);transition:all .3s}
+.step-dot.active{background:var(--brand);box-shadow:0 0 8px rgba(232,255,71,.5)}
+.step-dot.done{background:var(--ok)}
+.step-label{font-size:12px;color:var(--muted);margin-left:4px}
+
+/* 보안 질문 select 특별 처리 */
+#securityQuestion{
+  width:100%;margin-top:6px;padding:14px 16px;border:1px solid var(--border2);border-radius:12px;
+  font-size:15px;background:rgba(255,255,255,.05);color:var(--text);font-family:'Noto Sans KR',sans-serif;
+  cursor:pointer;
+}
+#securityQuestion:focus{outline:none;border-color:var(--brand)}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/config.js"></script>
@@ -95,8 +122,10 @@ textarea{resize:vertical;min-height:88px}
     <div class="tabs">
       <button class="tab active" id="tabLogin" type="button">로그인</button>
       <button class="tab" id="tabSignup" type="button">회원가입</button>
+      <button class="tab" id="tabForgot" type="button">비밀번호 찾기</button>
     </div>
 
+    <!-- ===================== 로그인 ===================== -->
     <div id="loginView">
       <label>아이디</label>
       <div class="input-wrap">
@@ -110,9 +139,11 @@ textarea{resize:vertical;min-height:88px}
       </div>
 
       <button class="btn" id="btnLogin">로그인</button>
+      <button class="btn-ghost" id="btnGoForgot" type="button">비밀번호를 잊어버렸어요</button>
       <div class="msg" id="loginMsg"></div>
     </div>
 
+    <!-- ===================== 회원가입 ===================== -->
     <div id="signupView" class="hidden">
       <label>아이디</label>
       <div class="id-wrap">
@@ -134,6 +165,31 @@ textarea{resize:vertical;min-height:88px}
         <button class="eye-btn" id="eyePwConfirm" type="button">👁</button>
       </div>
       <div class="hint" id="hintPasswordConfirm"></div>
+
+      <div class="divider"></div>
+
+      <!-- 보안 질문 (회원가입 시 등록) -->
+      <label>보안 질문 <span style="color:var(--brand);font-size:10px">비밀번호 찾기에 사용</span></label>
+      <select id="securityQuestion">
+        <option value="">질문 선택</option>
+        <option value="내가 처음 사용한 글러브 브랜드는?">내가 처음 사용한 글러브 브랜드는?</option>
+        <option value="내가 처음 출전한 대회 이름은?">내가 처음 출전한 대회 이름은?</option>
+        <option value="나의 등번호로 가장 오래 쓴 번호는?">나의 등번호로 가장 오래 쓴 번호는?</option>
+        <option value="내가 존경하는 야구 선수는?">내가 존경하는 야구 선수는?</option>
+        <option value="내 첫 번째 팀 이름은?">내 첫 번째 팀 이름은?</option>
+        <option value="어린 시절 살던 동네 이름은?">어린 시절 살던 동네 이름은?</option>
+        <option value="나의 가장 친한 친구 이름은?">나의 가장 친한 친구 이름은?</option>
+        <option value="초등학교 담임 선생님 성함은?">초등학교 담임 선생님 성함은?</option>
+      </select>
+      <div class="hint" id="hintQuestion"></div>
+
+      <label>보안 답변</label>
+      <div class="input-wrap">
+        <input id="securityAnswer" placeholder="답변을 입력하세요 (대소문자 무관)" autocomplete="off" />
+      </div>
+      <div class="hint" style="color:var(--muted);font-size:11px;margin-top:4px">
+        💡 답변은 암호화되어 저장돼요. 비밀번호를 잊었을 때 본인 확인에 사용돼요.
+      </div>
 
       <div class="divider"></div>
 
@@ -247,6 +303,76 @@ textarea{resize:vertical;min-height:88px}
       <div class="msg" id="signupMsg"></div>
       <div class="small">회원가입 후 바로 로그인해서 내 선수 프로필과 경기 기록을 직접 관리할 수 있어요.</div>
     </div>
+
+    <!-- ===================== 비밀번호 찾기 ===================== -->
+    <div id="forgotView" class="hidden">
+
+      <!-- Step 1: 아이디 입력 -->
+      <div id="forgotStep1">
+        <div class="step-indicator">
+          <div class="step-dot active" id="dot1"></div>
+          <div class="step-dot" id="dot2"></div>
+          <div class="step-dot" id="dot3"></div>
+          <span class="step-label">아이디 확인</span>
+        </div>
+
+        <label>아이디</label>
+        <div class="input-wrap">
+          <input id="forgotUsername" placeholder="아이디를 입력하세요" autocomplete="username" />
+        </div>
+
+        <button class="btn" id="btnForgotNext">다음</button>
+        <div class="msg" id="forgotMsg1"></div>
+      </div>
+
+      <!-- Step 2: 보안 질문 답변 -->
+      <div id="forgotStep2" class="hidden">
+        <div class="step-indicator">
+          <div class="step-dot done" id="dot1b"></div>
+          <div class="step-dot active" id="dot2b"></div>
+          <div class="step-dot" id="dot3b"></div>
+          <span class="step-label">본인 확인</span>
+        </div>
+
+        <div style="padding:14px 16px;background:rgba(255,255,255,.04);border:1px solid var(--border2);border-radius:12px;margin-bottom:4px">
+          <div style="font-size:11px;font-weight:700;letter-spacing:.5px;color:var(--muted);text-transform:uppercase;margin-bottom:6px">보안 질문</div>
+          <div id="displayedQuestion" style="font-size:15px;font-weight:600;line-height:1.5;color:var(--text)"></div>
+        </div>
+
+        <label>답변</label>
+        <div class="input-wrap">
+          <input id="forgotAnswer" placeholder="답변을 입력하세요" autocomplete="off" />
+        </div>
+        <div class="hint" style="color:var(--muted);font-size:11px;margin-top:4px">대소문자 구분 없이 입력하세요</div>
+
+        <button class="btn" id="btnForgotVerify">확인</button>
+        <button class="btn-ghost" id="btnForgotBack" type="button">← 이전으로</button>
+        <div class="msg" id="forgotMsg2"></div>
+      </div>
+
+      <!-- Step 3: 임시 비밀번호 발급 완료 -->
+      <div id="forgotStep3" class="hidden">
+        <div class="step-indicator">
+          <div class="step-dot done"></div>
+          <div class="step-dot done"></div>
+          <div class="step-dot active"></div>
+          <span class="step-label">임시 비밀번호 발급</span>
+        </div>
+
+        <div class="temp-pw-box">
+          <div class="temp-pw-label">임시 비밀번호</div>
+          <div class="temp-pw-value" id="tempPwDisplay"></div>
+          <div class="temp-pw-notice">
+            이 비밀번호로 로그인 후<br>
+            <strong style="color:var(--warn)">반드시 비밀번호를 변경</strong>해주세요.<br>
+            화면을 벗어나면 다시 확인할 수 없어요.
+          </div>
+        </div>
+
+        <button class="btn" id="btnGoLogin" type="button">로그인하러 가기</button>
+      </div>
+
+    </div>
   </div>
 </div>
 
@@ -257,310 +383,133 @@ const ID_REGEX = /^[a-z0-9_]{3,20}$/;
 const SCHOOL_CACHE_KEY = 'baseball_school_category_cache_v1';
 const schoolCategoryCache = new Map();
 
-function toEmail(u){
-  return u.trim().toLowerCase() + FAKE_DOMAIN;
-}
+function toEmail(u){ return u.trim().toLowerCase() + FAKE_DOMAIN; }
 
+// ─── 탭 전환 ───────────────────────────────────────────────
 function showTab(mode){
-  const login = mode === 'login';
-  el('tabLogin').classList.toggle('active', login);
-  el('tabSignup').classList.toggle('active', !login);
-  el('loginView').classList.toggle('hidden', !login);
-  el('signupView').classList.toggle('hidden', login);
+  ['login','signup','forgot'].forEach(m => {
+    el('tab' + m.charAt(0).toUpperCase() + m.slice(1)).classList.toggle('active', m === mode);
+    el(m + 'View').classList.toggle('hidden', m !== mode);
+  });
+  if(mode === 'forgot') resetForgotSteps();
 }
-el('tabLogin').onclick = () => showTab('login');
+el('tabLogin').onclick  = () => showTab('login');
 el('tabSignup').onclick = () => showTab('signup');
+el('tabForgot').onclick = () => showTab('forgot');
+el('btnGoForgot').onclick = () => showTab('forgot');
+el('btnGoLogin').onclick  = () => showTab('login');
 
+// ─── 눈 버튼 ───────────────────────────────────────────────
 function toggleEye(inputId, btn){
   const input = el(inputId);
   const show = input.type === 'password';
   input.type = show ? 'text' : 'password';
   btn.textContent = show ? '🙈' : '👁';
 }
-el('eyeLogin').onclick = () => toggleEye('loginPassword', el('eyeLogin'));
-el('eyePw').onclick = () => toggleEye('signupPassword', el('eyePw'));
+el('eyeLogin').onclick    = () => toggleEye('loginPassword', el('eyeLogin'));
+el('eyePw').onclick       = () => toggleEye('signupPassword', el('eyePw'));
 el('eyePwConfirm').onclick = () => toggleEye('signupPasswordConfirm', el('eyePwConfirm'));
 
-function getSchoolYearBase(){
-  const now = new Date();
-  const y = now.getFullYear();
-  const m = now.getMonth() + 1;
-  return m >= 3 ? y : y - 1;
+// ─── 비밀번호 찾기 단계 리셋 ────────────────────────────────
+function resetForgotSteps(){
+  el('forgotStep1').classList.remove('hidden');
+  el('forgotStep2').classList.add('hidden');
+  el('forgotStep3').classList.add('hidden');
+  el('forgotUsername').value = '';
+  el('forgotAnswer').value = '';
+  el('forgotMsg1').textContent = '';
+  el('forgotMsg2').textContent = '';
 }
 
-function fillGradeYearOptions(level){
-  const sel = el('gradeYear');
-  const current = sel.value;
-  sel.innerHTML = '<option value="">선택</option>';
+// ─── 비밀번호 찾기 Step 1: 아이디로 보안질문 조회 ────────────
+el('btnForgotNext').onclick = async () => {
+  const msg  = el('forgotMsg1');
+  const username = el('forgotUsername').value.trim();
+  msg.className = 'msg';
+  msg.textContent = '';
 
-  let max = 0;
-  if(level === '초') max = 6;
-  else if(level === '중') max = 3;
-  else if(level === '고') max = 3;
-  else if(level === '대') max = 4;
-
-  for(let i = 1; i <= max; i++){
-    const opt = document.createElement('option');
-    opt.value = String(i);
-    opt.textContent = `${i}학년`;
-    sel.appendChild(opt);
-  }
-
-  if(current && Number(current) <= max){
-    sel.value = current;
-  }
-}
-
-function buildGradeText(){
-  const level = el('gradeLevel').value;
-  const year = el('gradeYear').value;
-  if(!level || !year) return '';
-  return `${level}${year}`;
-}
-
-function suggestGradeFromBirthYear(){
-  const raw = el('birthYear').value.trim();
-  const hint = el('hintGrade');
-
-  if(!raw){
-    hint.className = 'hint';
-    hint.textContent = '';
+  if(!username){
+    msg.className = 'msg err';
+    msg.textContent = '아이디를 입력해주세요.';
     return;
   }
 
-  const birthYear = Number(raw);
-  if(!Number.isFinite(birthYear)){
-    hint.className = 'hint warn';
-    hint.textContent = '생년을 정확히 입력해주세요.';
-    return;
-  }
+  el('btnForgotNext').disabled = true;
+  msg.textContent = '확인 중...';
 
-  const baseYear = getSchoolYearBase();
-  const koreanAgeYear = baseYear - birthYear + 1;
-
-  let level = '';
-  let grade = 0;
-
-  if(koreanAgeYear >= 8 && koreanAgeYear <= 13){
-    level = '초';
-    grade = koreanAgeYear - 7;
-  }else if(koreanAgeYear >= 14 && koreanAgeYear <= 16){
-    level = '중';
-    grade = koreanAgeYear - 13;
-  }else if(koreanAgeYear >= 17 && koreanAgeYear <= 19){
-    level = '고';
-    grade = koreanAgeYear - 16;
-  }else if(koreanAgeYear >= 20 && koreanAgeYear <= 23){
-    level = '대';
-    grade = koreanAgeYear - 19;
-  }else{
-    hint.className = 'hint warn';
-    hint.textContent = '자동 학년 추천 대상이 아니에요. 직접 선택해주세요.';
-    return;
-  }
-
-  el('gradeLevel').value = level;
-  fillGradeYearOptions(level);
-  el('gradeYear').value = String(grade);
-  hint.className = 'hint ok';
-  hint.textContent = `생년 기준으로 ${level}${grade} 자동 추천했어요`;
-}
-
-function loadSchoolCacheFromSession(){
-  try{
-    const raw = sessionStorage.getItem(SCHOOL_CACHE_KEY);
-    if(!raw) return;
-    const obj = JSON.parse(raw);
-    Object.entries(obj).forEach(([k, v]) => {
-      if(Array.isArray(v)) schoolCategoryCache.set(k, v);
-    });
-  }catch(e){}
-}
-
-function saveSchoolCacheToSession(){
-  try{
-    const obj = Object.fromEntries(schoolCategoryCache.entries());
-    sessionStorage.setItem(SCHOOL_CACHE_KEY, JSON.stringify(obj));
-  }catch(e){}
-}
-
-async function ensureSchoolCategory(cat){
-  if(!cat) return [];
-
-  if(schoolCategoryCache.has(cat)){
-    return schoolCategoryCache.get(cat);
-  }
-
-  const { data, error } = await sb
-    .from('baseball_schools')
-    .select('id,name')
-    .eq('category', cat)
-    .order('name');
-
-  if(error){
-    throw error;
-  }
-
-  const rows = data || [];
-  schoolCategoryCache.set(cat, rows);
-  saveSchoolCacheToSession();
-  return rows;
-}
-
-function renderSchoolOptions(rows){
-  const sel = el('schoolSel');
-  sel.innerHTML = '<option value="">학교 선택</option>';
-
-  (rows || []).forEach(s => {
-    const opt = document.createElement('option');
-    opt.value = s.id;
-    opt.textContent = s.name;
-    sel.appendChild(opt);
+  const { data, error } = await sb.rpc('baseball_get_security_question', {
+    p_username: username
   });
 
-  sel.disabled = false;
-}
+  el('btnForgotNext').disabled = false;
 
-async function loadSchools(){
-  el('categorySel').addEventListener('change', async () => {
-    const cat = el('categorySel').value;
-    const sel = el('schoolSel');
-    const msg = el('signupMsg');
-
-    sel.innerHTML = '<option value="">학교 선택</option>';
-
-    if(!cat){
-      sel.disabled = true;
-      return;
-    }
-
-    try{
-      sel.disabled = false;
-      sel.innerHTML = '<option value="">불러오는 중...</option>';
-      const rows = await ensureSchoolCategory(cat);
-      renderSchoolOptions(rows);
-    }catch(error){
-      sel.disabled = true;
-      sel.innerHTML = '<option value="">학교 선택</option>';
-      msg.className = 'msg err';
-      msg.textContent = '학교 목록 오류: ' + error.message;
-    }
-  });
-}
-
-function nextUrl(){
-  const next = new URLSearchParams(location.search).get('next');
-  return next || 'index.html';
-}
-
-let idChecked = false;
-
-el('signupUsername').addEventListener('input', () => {
-  idChecked = false;
-  const val = el('signupUsername').value.trim();
-  const hint = el('hintUsername');
-  const input = el('signupUsername');
-
-  if(!val){
-    hint.className = 'hint';
-    hint.textContent = '';
-    input.className = '';
+  if(error || !data){
+    msg.className = 'msg err';
+    msg.textContent = '오류가 발생했어요. 잠시 후 다시 시도해주세요.';
     return;
   }
 
-  if(!ID_REGEX.test(val)){
-    hint.className = 'hint err';
-    hint.textContent = '영문 소문자, 숫자, _ 만 가능 (3~20자)';
-    input.className = 'err';
+  if(!data.ok){
+    msg.className = 'msg err';
+    msg.textContent = data.msg || '존재하지 않는 아이디예요.';
     return;
   }
 
-  hint.className = 'hint warn';
-  hint.textContent = '중복확인을 눌러주세요';
-  input.className = '';
-});
-
-el('btnCheckId').onclick = async () => {
-  const username = el('signupUsername').value.trim();
-  const hint = el('hintUsername');
-  const input = el('signupUsername');
-  idChecked = false;
-
-  if(!ID_REGEX.test(username)){
-    hint.className = 'hint err';
-    hint.textContent = '올바른 아이디 형식이 아니에요';
-    return;
-  }
-
-  el('btnCheckId').disabled = true;
-  hint.className = 'hint';
-  hint.textContent = '확인 중...';
-
-  // ✅ 기존 .from() 쿼리 대신 RPC 호출
-  const { data, error } = await sb.rpc('baseball_check_username', { p_username: username });
-
-  el('btnCheckId').disabled = false;
-
-  if(error){
-    hint.className = 'hint err';
-    hint.textContent = '확인 중 오류가 발생했어요';
-    return;
-  }
-
-  if(data === true){
-    hint.className = 'hint err';
-    hint.textContent = '이미 사용 중인 아이디예요';
-    input.className = 'err';
-    idChecked = false;
-  } else {
-    hint.className = 'hint ok';
-    hint.textContent = '사용 가능한 아이디예요 ✓';
-    input.className = 'ok';
-    idChecked = true;
-  }
+  // Step 2로 이동
+  el('displayedQuestion').textContent = data.question;
+  el('forgotStep1').classList.add('hidden');
+  el('forgotStep2').classList.remove('hidden');
 };
 
-el('signupPassword').addEventListener('input', checkPasswordMatch);
-el('signupPasswordConfirm').addEventListener('input', checkPasswordMatch);
+// ─── 비밀번호 찾기 Step 2: 답변 검증 ────────────────────────
+el('btnForgotVerify').onclick = async () => {
+  const msg    = el('forgotMsg2');
+  const username = el('forgotUsername').value.trim();
+  const answer   = el('forgotAnswer').value.trim();
+  msg.className = 'msg';
+  msg.textContent = '';
 
-function checkPasswordMatch(){
-  const pw = el('signupPassword').value;
-  const pw2 = el('signupPasswordConfirm').value;
-  const hintPw = el('hintPassword');
-  const hintConf = el('hintPasswordConfirm');
-
-  if(pw.length > 0 && pw.length < 6){
-    hintPw.className = 'hint err';
-    hintPw.textContent = '6자 이상 입력해주세요';
-  }else{
-    hintPw.className = 'hint';
-    hintPw.textContent = '';
-  }
-
-  if(!pw2){
-    hintConf.className = 'hint';
-    hintConf.textContent = '';
-    el('signupPasswordConfirm').className = '';
+  if(!answer){
+    msg.className = 'msg err';
+    msg.textContent = '답변을 입력해주세요.';
     return;
   }
 
-  if(pw === pw2){
-    hintConf.className = 'hint ok';
-    hintConf.textContent = '비밀번호가 일치해요 ✓';
-    el('signupPasswordConfirm').className = 'ok';
-  }else{
-    hintConf.className = 'hint err';
-    hintConf.textContent = '비밀번호가 일치하지 않아요';
-    el('signupPasswordConfirm').className = 'err';
+  el('btnForgotVerify').disabled = true;
+  msg.textContent = '확인 중...';
+
+  const { data, error } = await sb.rpc('baseball_reset_password_by_answer', {
+    p_username: username,
+    p_answer:   answer
+  });
+
+  el('btnForgotVerify').disabled = false;
+
+  if(error || !data){
+    msg.className = 'msg err';
+    msg.textContent = '오류가 발생했어요. 잠시 후 다시 시도해주세요.';
+    return;
   }
-}
 
-el('gradeLevel').addEventListener('change', () => {
-  fillGradeYearOptions(el('gradeLevel').value);
-});
+  if(!data.ok){
+    msg.className = 'msg err';
+    msg.textContent = data.msg || '답변이 일치하지 않아요.';
+    return;
+  }
 
-el('birthYear').addEventListener('input', suggestGradeFromBirthYear);
+  // Step 3: 임시 비밀번호 표시
+  el('tempPwDisplay').textContent = data.temp_pw;
+  el('forgotStep2').classList.add('hidden');
+  el('forgotStep3').classList.remove('hidden');
+};
 
+el('btnForgotBack').onclick = () => {
+  el('forgotStep2').classList.add('hidden');
+  el('forgotStep1').classList.remove('hidden');
+  el('forgotMsg1').textContent = '';
+};
+
+// ─── 로그인 ────────────────────────────────────────────────
 el('btnLogin').onclick = async () => {
   const msg = el('loginMsg');
   msg.className = 'msg';
@@ -587,6 +536,153 @@ el('btnLogin').onclick = async () => {
   location.href = nextUrl();
 };
 
+// ─── 학교 목록 ─────────────────────────────────────────────
+function loadSchoolCacheFromSession(){
+  try{
+    const raw = sessionStorage.getItem(SCHOOL_CACHE_KEY);
+    if(!raw) return;
+    const obj = JSON.parse(raw);
+    Object.entries(obj).forEach(([k, v]) => { if(Array.isArray(v)) schoolCategoryCache.set(k, v); });
+  }catch(e){}
+}
+function saveSchoolCacheToSession(){
+  try{
+    const obj = Object.fromEntries(schoolCategoryCache.entries());
+    sessionStorage.setItem(SCHOOL_CACHE_KEY, JSON.stringify(obj));
+  }catch(e){}
+}
+async function ensureSchoolCategory(cat){
+  if(!cat) return [];
+  if(schoolCategoryCache.has(cat)) return schoolCategoryCache.get(cat);
+  const { data, error } = await sb.from('baseball_schools').select('id,name').eq('category', cat).order('name');
+  if(error) throw error;
+  const rows = data || [];
+  schoolCategoryCache.set(cat, rows);
+  saveSchoolCacheToSession();
+  return rows;
+}
+function renderSchoolOptions(rows){
+  const sel = el('schoolSel');
+  sel.innerHTML = '<option value="">학교 선택</option>';
+  (rows || []).forEach(s => {
+    const opt = document.createElement('option');
+    opt.value = s.id;
+    opt.textContent = s.name;
+    sel.appendChild(opt);
+  });
+  sel.disabled = false;
+}
+async function loadSchools(){
+  el('categorySel').addEventListener('change', async () => {
+    const cat = el('categorySel').value;
+    const sel = el('schoolSel');
+    sel.innerHTML = '<option value="">학교 선택</option>';
+    if(!cat){ sel.disabled = true; return; }
+    try{
+      sel.disabled = false;
+      sel.innerHTML = '<option value="">불러오는 중...</option>';
+      const rows = await ensureSchoolCategory(cat);
+      renderSchoolOptions(rows);
+    }catch(err){
+      sel.disabled = true;
+      sel.innerHTML = '<option value="">학교 선택</option>';
+      el('signupMsg').className = 'msg err';
+      el('signupMsg').textContent = '학교 목록 오류: ' + err.message;
+    }
+  });
+}
+
+// ─── 학년 ──────────────────────────────────────────────────
+function getSchoolYearBase(){
+  const now = new Date();
+  return now.getMonth() + 1 >= 3 ? now.getFullYear() : now.getFullYear() - 1;
+}
+function fillGradeYearOptions(level){
+  const sel = el('gradeYear');
+  const current = sel.value;
+  sel.innerHTML = '<option value="">선택</option>';
+  const maxMap = {'초':6,'중':3,'고':3,'대':4};
+  const max = maxMap[level] || 0;
+  for(let i = 1; i <= max; i++){
+    const opt = document.createElement('option');
+    opt.value = String(i);
+    opt.textContent = `${i}학년`;
+    sel.appendChild(opt);
+  }
+  if(current && Number(current) <= max) sel.value = current;
+}
+function buildGradeText(){
+  const level = el('gradeLevel').value;
+  const year  = el('gradeYear').value;
+  return (!level || !year) ? '' : `${level}${year}`;
+}
+function suggestGradeFromBirthYear(){
+  const raw = el('birthYear').value.trim();
+  const hint = el('hintGrade');
+  if(!raw){ hint.className='hint'; hint.textContent=''; return; }
+  const birthYear = Number(raw);
+  if(!Number.isFinite(birthYear)){ hint.className='hint warn'; hint.textContent='생년을 정확히 입력해주세요.'; return; }
+  const baseYear = getSchoolYearBase();
+  const korAge   = baseYear - birthYear + 1;
+  let level='', grade=0;
+  if(korAge>=8&&korAge<=13){level='초';grade=korAge-7;}
+  else if(korAge>=14&&korAge<=16){level='중';grade=korAge-13;}
+  else if(korAge>=17&&korAge<=19){level='고';grade=korAge-16;}
+  else if(korAge>=20&&korAge<=23){level='대';grade=korAge-19;}
+  else{ hint.className='hint warn'; hint.textContent='자동 추천 대상이 아니에요. 직접 선택해주세요.'; return; }
+  el('gradeLevel').value = level;
+  fillGradeYearOptions(level);
+  el('gradeYear').value = String(grade);
+  hint.className='hint ok'; hint.textContent=`생년 기준으로 ${level}${grade} 자동 추천했어요`;
+}
+el('gradeLevel').addEventListener('change', () => fillGradeYearOptions(el('gradeLevel').value));
+el('birthYear').addEventListener('input', suggestGradeFromBirthYear);
+
+// ─── 아이디 중복 확인 ──────────────────────────────────────
+let idChecked = false;
+el('signupUsername').addEventListener('input', () => {
+  idChecked = false;
+  const val = el('signupUsername').value.trim();
+  const hint = el('hintUsername');
+  const input = el('signupUsername');
+  if(!val){ hint.className='hint'; hint.textContent=''; input.className=''; return; }
+  if(!ID_REGEX.test(val)){ hint.className='hint err'; hint.textContent='영문 소문자, 숫자, _ 만 가능 (3~20자)'; input.className='err'; return; }
+  hint.className='hint warn'; hint.textContent='중복확인을 눌러주세요'; input.className='';
+});
+el('btnCheckId').onclick = async () => {
+  const username = el('signupUsername').value.trim();
+  const hint = el('hintUsername');
+  const input = el('signupUsername');
+  idChecked = false;
+  if(!ID_REGEX.test(username)){ hint.className='hint err'; hint.textContent='올바른 아이디 형식이 아니에요'; return; }
+  el('btnCheckId').disabled = true;
+  hint.className='hint'; hint.textContent='확인 중...';
+  const { data, error } = await sb.rpc('baseball_check_username', { p_username: username });
+  el('btnCheckId').disabled = false;
+  if(error){ hint.className='hint err'; hint.textContent='확인 중 오류가 발생했어요'; return; }
+  if(data === true){
+    hint.className='hint err'; hint.textContent='이미 사용 중인 아이디예요'; input.className='err'; idChecked = false;
+  } else {
+    hint.className='hint ok'; hint.textContent='사용 가능한 아이디예요 ✓'; input.className='ok'; idChecked = true;
+  }
+};
+
+// ─── 비밀번호 일치 확인 ────────────────────────────────────
+el('signupPassword').addEventListener('input', checkPasswordMatch);
+el('signupPasswordConfirm').addEventListener('input', checkPasswordMatch);
+function checkPasswordMatch(){
+  const pw  = el('signupPassword').value;
+  const pw2 = el('signupPasswordConfirm').value;
+  const hintPw   = el('hintPassword');
+  const hintConf = el('hintPasswordConfirm');
+  if(pw.length > 0 && pw.length < 6){ hintPw.className='hint err'; hintPw.textContent='6자 이상 입력해주세요'; }
+  else{ hintPw.className='hint'; hintPw.textContent=''; }
+  if(!pw2){ hintConf.className='hint'; hintConf.textContent=''; el('signupPasswordConfirm').className=''; return; }
+  if(pw === pw2){ hintConf.className='hint ok'; hintConf.textContent='비밀번호가 일치해요 ✓'; el('signupPasswordConfirm').className='ok'; }
+  else{ hintConf.className='hint err'; hintConf.textContent='비밀번호가 일치하지 않아요'; el('signupPasswordConfirm').className='err'; }
+}
+
+// ─── 회원가입 ──────────────────────────────────────────────
 el('btnSignup').onclick = async () => {
   const msg = el('signupMsg');
   msg.className = 'msg';
@@ -595,55 +691,35 @@ el('btnSignup').onclick = async () => {
   const username = el('signupUsername').value.trim();
   const password = el('signupPassword').value;
   const password2 = el('signupPasswordConfirm').value;
-  const schoolId = el('schoolSel').value ? Number(el('schoolSel').value) : null;
+  const schoolId  = el('schoolSel').value ? Number(el('schoolSel').value) : null;
   const gradeText = buildGradeText();
+  const secQuestion = el('securityQuestion').value;
+  const secAnswer   = el('securityAnswer').value.trim();
 
-  if(!username){
-    msg.className = 'msg err';
-    msg.textContent = '아이디를 입력해주세요.';
-    return;
-  }
-
-  if(!idChecked){
-    msg.className = 'msg err';
-    msg.textContent = '아이디 중복확인을 해주세요.';
-    return;
-  }
-
-  if(password.length < 6){
-    msg.className = 'msg err';
-    msg.textContent = '비밀번호는 6자 이상이어야 해요.';
-    return;
-  }
-
-  if(password !== password2){
-    msg.className = 'msg err';
-    msg.textContent = '비밀번호가 일치하지 않아요.';
-    return;
-  }
+  if(!username){ msg.className='msg err'; msg.textContent='아이디를 입력해주세요.'; return; }
+  if(!idChecked){ msg.className='msg err'; msg.textContent='아이디 중복확인을 해주세요.'; return; }
+  if(password.length < 6){ msg.className='msg err'; msg.textContent='비밀번호는 6자 이상이어야 해요.'; return; }
+  if(password !== password2){ msg.className='msg err'; msg.textContent='비밀번호가 일치하지 않아요.'; return; }
+  if(!secQuestion || !secAnswer){ msg.className='msg err'; msg.textContent='보안 질문과 답변을 입력해주세요. (비밀번호 찾기에 사용돼요)'; return; }
 
   const payload = {
     username,
-    display_name: el('displayName').value.trim(),
-    school_id: schoolId,
-    player_name: el('playerName').value.trim(),
-    jersey_number: el('jerseyNumber').value === '' ? null : Number(el('jerseyNumber').value),
-    grade: gradeText,
-    birth_year: el('birthYear').value === '' ? null : Number(el('birthYear').value),
+    display_name:    el('displayName').value.trim(),
+    school_id:       schoolId,
+    player_name:     el('playerName').value.trim(),
+    jersey_number:   el('jerseyNumber').value === '' ? null : Number(el('jerseyNumber').value),
+    grade:           gradeText,
+    birth_year:      el('birthYear').value === '' ? null : Number(el('birthYear').value),
     primary_position: el('primaryPos').value,
-    throws: el('throws').value,
-    bats: el('bats').value,
-    height_cm: el('heightCm').value === '' ? null : Number(el('heightCm').value),
-    weight_kg: el('weightKg').value === '' ? null : Number(el('weightKg').value),
-    note: el('playerNote').value.trim()
-
-    
+    throws:          el('throws').value,
+    bats:            el('bats').value,
+    height_cm:       el('heightCm').value === '' ? null : Number(el('heightCm').value),
+    weight_kg:       el('weightKg').value === '' ? null : Number(el('weightKg').value),
+    note:            el('playerNote').value.trim()
   };
 
   if(!payload.display_name || !payload.player_name || !payload.grade || !payload.primary_position){
-    msg.className = 'msg err';
-    msg.textContent = '이름, 선수 이름, 학교구분/학년, 주 포지션은 필수예요.';
-    return;
+    msg.className='msg err'; msg.textContent='이름, 선수 이름, 학교구분/학년, 주 포지션은 필수예요.'; return;
   }
 
   el('btnSignup').disabled = true;
@@ -656,34 +732,21 @@ el('btnSignup').onclick = async () => {
       options: { data: payload }
     });
 
-    console.log('SIGNUP RESULT', { data, error });
-
-    if(error){
-      msg.className = 'msg err';
-      msg.textContent = error.message;
-      return;
-    }
-
-    if(!data?.user){
-      msg.className = 'msg err';
-      msg.textContent = '회원가입이 정상적으로 완료되지 않았어요. 잠시 후 다시 시도해주세요.';
-      return;
-    }
-
+    if(error){ msg.className='msg err'; msg.textContent=error.message; return; }
+    if(!data?.user){ msg.className='msg err'; msg.textContent='회원가입이 정상적으로 완료되지 않았어요.'; return; }
     if(Array.isArray(data.user.identities) && data.user.identities.length === 0){
-      msg.className = 'msg err';
-      msg.textContent = '계정 생성이 완료되지 않았어요. 다른 아이디로 다시 시도해주세요.';
-      return;
+      msg.className='msg err'; msg.textContent='계정 생성이 완료되지 않았어요. 다른 아이디로 다시 시도해주세요.'; return;
     }
 
-    const { data: userCheck, error: userCheckError } = await sb.auth.getUser();
+    // 보안 질문/답변 저장 (로그인된 상태에서 RPC 호출)
+    const { error: sqErr } = await sb.rpc('baseball_set_security_question', {
+      p_question: secQuestion,
+      p_answer:   secAnswer
+    });
 
-    console.log('AFTER SIGNUP GETUSER', { userCheck, userCheckError });
-
-    if(userCheckError){
-      msg.className = 'msg err';
-      msg.textContent = '회원가입 후 사용자 확인 중 오류가 발생했어요.';
-      return;
+    if(sqErr){
+      console.warn('보안 질문 저장 실패:', sqErr);
+      // 회원가입 자체는 성공했으므로 경고만 표시
     }
 
     if(data.session){
@@ -691,27 +754,28 @@ el('btnSignup').onclick = async () => {
       return;
     }
 
-    msg.className = 'msg ok';
-    msg.textContent = '회원가입이 완료됐어요! 이제 로그인해서 바로 사용할 수 있어요.';
+    msg.className='msg ok';
+    msg.textContent='회원가입이 완료됐어요! 이제 로그인해서 바로 사용할 수 있어요.';
     showTab('login');
   }catch(err){
     console.error(err);
-    msg.className = 'msg err';
-    msg.textContent = '회원가입 처리 중 예상치 못한 오류가 발생했어요.';
+    msg.className='msg err'; msg.textContent='회원가입 처리 중 예상치 못한 오류가 발생했어요.';
   }finally{
     el('btnSignup').disabled = false;
   }
 };
 
+function nextUrl(){
+  const next = new URLSearchParams(location.search).get('next');
+  return next || 'index.html';
+}
+
 (async function init(){
   fillGradeYearOptions('');
   loadSchoolCacheFromSession();
   await loadSchools();
-
   const { data:{ user } } = await sb.auth.getUser();
-  if(user){
-    location.href = nextUrl();
-  }
+  if(user) location.href = nextUrl();
 })();
 </script>
 </body>
