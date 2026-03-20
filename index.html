@@ -11,8 +11,9 @@
 :root { --black:#0a0c10; --dark:#11141a; --panel:#181c24; --border:rgba(255,255,255,.07); --border2:rgba(255,255,255,.12); --text:#f0f2f5; --muted:#7a8294; --muted2:#4a5060; --brand:#e8ff47; --brand-dim:rgba(232,255,71,.12); --win:#4ade80; --win-bg:rgba(74,222,128,.1); --loss:#f87171; --loss-bg:rgba(248,113,113,.1); --draw:#94a3b8; --draw-bg:rgba(148,163,184,.1); }
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Noto Sans KR',sans-serif;background:var(--black);color:var(--text);min-height:100vh;padding-bottom:40px}
-.header{position:sticky;top:0;z-index:100;background:rgba(10,12,16,.85);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 16px}
+/*.header{position:sticky;top:0;z-index:100;background:rgba(10,12,16,.85);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 16px}
 .header-inner{max-width:480px;margin:0 auto;height:56px;display:flex;align-items:center;justify-content:space-between}.logo{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:1px;color:var(--brand);line-height:1}.logo span{color:var(--text)}
+  */
 #authArea{display:flex;gap:8px}.auth-btn{padding:7px 16px;border-radius:8px;border:1px solid var(--border2);background:transparent;color:var(--text);font-size:13px;font-weight:700;cursor:pointer}.auth-btn:hover{border-color:var(--brand);color:var(--brand)}.auth-btn.primary{background:var(--brand);color:var(--black);border-color:var(--brand)}.auth-btn.primary:hover{background:#d4ea3a}
 .container{max-width:480px;margin:0 auto;padding:20px 16px}.hero{background:var(--panel);border:1px solid var(--border);border-radius:20px;padding:24px;margin-bottom:16px;position:relative;overflow:hidden}.hero::before{content:'⚾';position:absolute;right:-10px;top:-10px;font-size:100px;opacity:.04;transform:rotate(20deg)}.hero-label{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--brand);margin-bottom:8px}.hero-title{font-family:'Bebas Neue',sans-serif;font-size:42px;line-height:1;margin-bottom:8px}.hero-sub{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:18px}.hero-btns{display:flex;gap:10px}.hero-btn{flex:1;padding:13px;border-radius:12px;border:none;font-size:14px;font-weight:700;cursor:pointer}.hero-btn.solid{background:var(--brand);color:var(--black)}.hero-btn.ghost{background:transparent;border:1px solid var(--border2);color:var(--text)}
 .section-title{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin:24px 0 12px}.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}.stat-card{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:16px}.stat-label{font-size:11px;font-weight:700;color:var(--muted);margin-bottom:10px}.stat-value{font-family:'Bebas Neue',sans-serif;font-size:34px;line-height:1}.stat-sub{font-size:11px;color:var(--muted2);margin-top:6px}
@@ -26,9 +27,11 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--black);color:var(--t
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/config.js"></script>
+<script src="js/header.js"></script>
 </head>
 <body>
-<header class="header"><div class="header-inner"><div class="logo">ELITE<span> BASEBALL</span></div><div id="authArea"><button class="auth-btn primary" onclick="location.href='auth.html'">로그인</button></div></div></header>
+<!--<header class="header"><div class="header-inner"><div class="logo">ELITE<span> BASEBALL</span></div><div id="authArea"><button class="auth-btn primary" onclick="location.href='auth.html'">로그인</button></div></div></header>-->
+<div id="appHeader"></div>  
 <div class="container">
   <div class="hero">
     <div class="hero-label">엘리트 야구 기록 시스템</div>
