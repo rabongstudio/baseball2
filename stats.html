@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8226060642438570" crossorigin="anonymous"></script>
+<title>성적 분석 · ELITEREC</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+KR:wght@400;600;700;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --black:#0a0c10;--panel:#181c24;--panel2:#1e2330;
+  --border:rgba(255,255,255,.07);--border2:rgba(255,255,255,.13);
+  --text:#f0f2f5;--muted:#7a8294;--muted2:#4a5060;
+  --brand:#e8ff47;--brand-dim:rgba(232,255,71,.12);
+  --win:#4ade80;--loss:#f87171;--draw:#94a3b8;
+  --c1:#38bdf8;--c2:#a78bfa;--c3:#fb923c;--c4:#34d399;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--black);color:var(--text);min-height:100vh;padding-bottom:60px}
+.container{max-width:480px;margin:0 auto;padding:20px 16px}
+.page-title{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:.5px;margin-bottom:2px}
+.page-sub{font-size:13px;color:var(--muted);margin-bottom:18px}
+
+/* 모드 탭 */
+.mode-row{display:flex;gap:6px;margin-bottom:16px}
+.mode-btn{flex:1;padding:11px;border-radius:11px;border:1px solid var(--border2);background:transparent;color:var(--muted);font-family:'Noto Sans KR',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s}
+.mode-btn.active{background:var(--brand);color:var(--black);border-color:var(--brand)}
+
+/* 셀렉트 */
+.sel-wrap{margin-bottom:14px}
+select{width:100%;padding:12px 14px;border:1px solid var(--border2);border-radius:12px;font-size:14px;background:var(--panel);color:var(--text);font-family:'Noto Sans KR',sans-serif}
+select:focus{outline:none;border-color:var(--brand)}
+select option{background:var(--panel)}
+
+/* KPI 그리드 */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
+.kpi{background:var(--panel);border:1px solid var(--border);border-radius:13px;padding:12px 4px;text-align:center}
+.kpi .v{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--brand);line-height:1}
+.kpi .l{font-size:9px;font-weight:700;color:var(--muted);margin-top:4px;letter-spacing:.5px}
+
+/* 스탯 섹션 */
+.stat-section{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:10px}
+.stat-section.bat{border-left:3px solid var(--brand)}
+.stat-section.pit{border-left:3px solid var(--win)}
+.stat-section.fld{border-left:3px solid var(--c1)}
+.stat-title{font-size:11px;font-weight:700;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;margin-bottom:10px}
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.stat-box{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;padding:8px 4px;text-align:center}
+.stat-box .v{font-family:'Bebas Neue',sans-serif;font-size:17px}
+.stat-box .k{font-size:9px;color:var(--muted);margin-top:2px;font-weight:700}
+
+/* 차트 카드 */
+.chart-card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:10px}
+.chart-title{font-size:11px;font-weight:700;letter-spacing:1px;color:var(--muted);text-transform:uppercase;margin-bottom:12px}
+.chart-wrap{position:relative;height:160px}
+
+/* 비교 테이블 */
+.cmp-table{width:100%;border-collapse:collapse;font-size:12px}
+.cmp-table th{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.8px;text-transform:uppercase;padding:8px 10px;border-bottom:1px solid var(--border);text-align:left;background:rgba(255,255,255,.02)}
+.cmp-table td{padding:9px 10px;border-bottom:1px solid var(--border)}
+.cmp-table tr:last-child td{border-bottom:none}
+.cmp-table tr:hover td{background:rgba(255,255,255,.02)}
+.cmp-table td.num{font-family:'Bebas Neue',sans-serif;font-size:15px;color:var(--brand)}
+.cmp-table td.label{color:var(--muted);font-size:11px}
+.cmp-table-wrap{background:var(--panel);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:10px}
+
+.hint{font-size:13px;color:var(--muted);text-align:center;padding:40px 0}
+.hidden{display:none!important}
+.wld-row{display:flex;gap:6px;margin-bottom:14px}
+.wld-chip{flex:1;border-radius:11px;padding:10px 4px;text-align:center;font-family:'Bebas Neue',sans-serif;font-size:22px}
+.wld-chip .l{font-size:10px;font-weight:700;letter-spacing:.5px;margin-top:2px}
+.wld-chip.W{background:rgba(74,222,128,.1);color:var(--win)}
+.wld-chip.L{background:rgba(248,113,113,.1);color:var(--loss)}
+.wld-chip.D{background:rgba(148,163,184,.1);color:var(--draw)}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/config.js"></script>
+<script src="js/header.js"></script>
+</head>
+<body>
+<div id="appHeader" data-back="index.html"></div>
+
+<div class="container">
+  <div class="page-title">성적 분석</div>
+  <div class="page-sub" id="playerName">불러오는 중...</div>
+
+  <!-- 모드 탭 -->
+  <div class="mode-row">
+    <button class="mode-btn active" id="modeTour" onclick="setMode('tour')">대회별</button>
+    <button class="mode-btn" id="modeMonth" onclick="setMode('month')">월별</button>
+    <button class="mode-btn" id="modeCmp" onclick="setMode('cmp')">비교</button>
+  </div>
+
+  <!-- 셀렉트 -->
+  <div class="sel-wrap">
+    <select id="selA"></select>
+  </div>
+  <div class="sel-wrap hidden" id="selBWrap">
+    <select id="selB"></select>
+  </div>
+
+  <div id="mainContent"></div>
+</div>
+
+<script>
+const client = window.sb;
+const el = id => document.getElementById(id);
+let records = [];
+let mode = 'tour';
+let chartAvg = null, chartEra = null;
+
+const num = v => Number.isFinite(Number(v)) ? Number(v) : 0;
+const fmt3 = x => Number.isFinite(x) ? x.toFixed(3) : '.000';
+const fmt2 = x => Number.isFinite(x) ? x.toFixed(2) : '-';
+
+function calcStats(arr){
+  let s={ab:0,h:0,rbi:0,r:0,bb:0,so:0,hbp:0,sb:0,d2:0,d3:0,hr:0,sf:0,sh:0,gb:0,fb:0,ip:0,er:0,pk:0,pbb:0,ph:0,pit:0,max_v:0,e:0,w:0,l:0,d:0,g:arr.length};
+  arr.forEach(r=>{
+    s.ab+=num(r.ab);s.h+=num(r.h);s.rbi+=num(r.rbi);s.r+=num(r.r);
+    s.bb+=num(r.bb);s.so+=num(r.so);s.hbp+=num(r.hbp);s.sb+=num(r.sb);
+    s.d2+=num(r.doubles);s.d3+=num(r.triples);s.hr+=num(r.hr);
+    s.sf+=num(r.sf);s.sh+=num(r.sh);s.gb+=num(r.gb);s.fb+=num(r.fb);
+    s.ip+=num(r.ip);s.er+=num(r.er);s.pk+=num(r.pk);s.pbb+=num(r.pbb);
+    s.ph+=num(r.ph);s.pit+=num(r.pitches);
+    if(num(r.max_vel)>s.max_v) s.max_v=num(r.max_vel);
+    s.e+=num(r.e);
+    if(r.result==='W')s.w++; else if(r.result==='L')s.l++; else s.d++;
+  });
+  s.avg = s.ab>0 ? s.h/s.ab : NaN;
+  s.obp = (s.ab+s.bb+s.hbp+s.sf)>0 ? (s.h+s.bb+s.hbp)/(s.ab+s.bb+s.hbp+s.sf) : NaN;
+  s.slg = s.ab>0 ? ((s.h-s.d2-s.d3-s.hr)+s.d2*2+s.d3*3+s.hr*4)/s.ab : NaN;
+  s.ops = (Number.isFinite(s.obp)&&Number.isFinite(s.slg)) ? s.obp+s.slg : NaN;
+  s.era = s.ip>0 ? (s.er*9)/s.ip : NaN;
+  s.whip = s.ip>0 ? (s.pbb+s.ph)/s.ip : NaN;
+  return s;
+}
+
+function renderStats(s){
+  const b=(k,v)=>`<div class="stat-box"><div class="v">${v}</div><div class="k">${k}</div></div>`;
+  return `
+    <div class="wld-row">
+      <div class="wld-chip W">${s.w}<div class="l">승</div></div>
+      <div class="wld-chip L">${s.l}<div class="l">패</div></div>
+      <div class="wld-chip D">${s.d}<div class="l">무</div></div>
+    </div>
+    <div class="kpi-grid">
+      <div class="kpi"><div class="v">${fmt3(s.avg)}</div><div class="l">타율</div></div>
+      <div class="kpi"><div class="v">${fmt3(s.obp)}</div><div class="l">출루율</div></div>
+      <div class="kpi"><div class="v">${fmt3(s.slg)}</div><div class="l">장타율</div></div>
+      <div class="kpi"><div class="v">${Number.isFinite(s.ops)?s.ops.toFixed(3):'.000'}</div><div class="l">OPS</div></div>
+      <div class="kpi"><div class="v">${fmt2(s.era)}</div><div class="l">ERA</div></div>
+      <div class="kpi"><div class="v">${fmt2(s.whip)}</div><div class="l">WHIP</div></div>
+      <div class="kpi"><div class="v">${s.pk}</div><div class="l">탈삼진</div></div>
+      <div class="kpi"><div class="v">${s.g}</div><div class="l">경기수</div></div>
+    </div>
+    <div class="stat-section bat">
+      <div class="stat-title">⚾ 타격</div>
+      <div class="stat-grid">
+        ${b('타수',s.ab)}${b('안타',s.h)}${b('2루타',s.d2)}${b('3루타',s.d3)}
+        ${b('홈런',s.hr)}${b('타점',s.rbi)}${b('득점',s.r)}${b('볼넷',s.bb)}
+        ${b('삼진',s.so)}${b('사구',s.hbp)}${b('도루',s.sb)}${b('희플',s.sf)}
+        ${b('희번',s.sh)}${b('땅볼',s.gb)}${b('플라이',s.fb)}
+      </div>
+    </div>
+    <div class="stat-section pit">
+      <div class="stat-title">🥎 투구</div>
+      <div class="stat-grid">
+        ${b('이닝',s.ip.toFixed(1))}${b('자책',s.er)}${b('탈삼진',s.pk)}${b('볼넷',s.pbb)}
+        ${b('피안타',s.ph)}${b('투구수',s.pit)}${b('최고구속',s.max_v||'-')}
+      </div>
+    </div>
+    <div class="stat-section fld">
+      <div class="stat-title">🧤 수비</div>
+      <div class="stat-grid">${b('실책',s.e)}</div>
+    </div>
+  `;
+}
+
+// ── 대회 목록 ────────────────────────────────────
+function getTours(){
+  const set = new Set(records.map(r => r.tournament || '기타'));
+  return [...set].sort();
+}
+
+function getMonths(){
+  const set = new Set(records.map(r => (r.game_date||'').slice(0,7)));
+  return [...set].filter(Boolean).sort().reverse();
+}
+
+function populateSelects(){
+  const tours  = getTours();
+  const months = getMonths();
+
+  function fill(sel, items){
+    sel.innerHTML = items.map(v => `<option value="${v}">${v}</option>`).join('');
+  }
+
+  if(mode === 'tour'){
+    fill(el('selA'), tours);
+    el('selBWrap').classList.add('hidden');
+  } else if(mode === 'month'){
+    fill(el('selA'), months);
+    el('selBWrap').classList.add('hidden');
+  } else {
+    // 비교 모드
+    fill(el('selA'), [...tours, ...months.map(m=>`[월] ${m}`)]);
+    fill(el('selB'), [...tours, ...months.map(m=>`[월] ${m}`)]);
+    if(el('selB').options.length > 1) el('selB').selectedIndex = 1;
+    el('selBWrap').classList.remove('hidden');
+  }
+}
+
+function getRecordsFor(key){
+  if(key.startsWith('[월] ')){
+    const m = key.replace('[월] ','');
+    return records.filter(r => (r.game_date||'').startsWith(m));
+  }
+  return records.filter(r => (r.tournament||'기타') === key);
+}
+
+// ── 차트 (월별 AVG / ERA 추이) ───────────────────
+function renderTrendCharts(months){
+  const container = document.getElementById('trendCharts');
+  if(!container) return;
+
+  const labels = [...months].reverse();
+  const avgData = labels.map(m => {
+    const arr = records.filter(r => (r.game_date||'').startsWith(m));
+    const s = calcStats(arr);
+    return Number.isFinite(s.avg) ? parseFloat(s.avg.toFixed(3)) : null;
+  });
+  const eraData = labels.map(m => {
+    const arr = records.filter(r => (r.game_date||'').startsWith(m));
+    const s = calcStats(arr);
+    return Number.isFinite(s.era) ? parseFloat(s.era.toFixed(2)) : null;
+  });
+
+  const base = {
+    responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{display:false}, tooltip:{backgroundColor:'#1e2330',titleColor:'#7a8294',bodyColor:'#f0f2f5',borderColor:'rgba(255,255,255,.13)',borderWidth:1} },
+    scales:{
+      x:{ grid:{color:'rgba(255,255,255,.04)'}, ticks:{color:'#7a8294',font:{size:10},maxRotation:0} },
+      y:{ grid:{color:'rgba(255,255,255,.04)'}, ticks:{color:'#7a8294',font:{size:10}} }
+    }
+  };
+
+  if(chartAvg) chartAvg.destroy();
+  if(chartEra) chartEra.destroy();
+
+  chartAvg = new Chart(document.getElementById('cAvg'),{
+    type:'line',
+    data:{ labels, datasets:[{ data:avgData, borderColor:'#e8ff47', backgroundColor:'rgba(232,255,71,.06)', borderWidth:2.5, pointBackgroundColor:'#e8ff47', pointRadius:4, tension:0.3, fill:true, spanGaps:true }] },
+    options:{...base, scales:{...base.scales, y:{...base.scales.y, ticks:{...base.scales.y.ticks, callback:v=>'.'+String(Math.round(v*1000)).padStart(3,'0')}}}}
+  });
+
+  chartEra = new Chart(document.getElementById('cEra'),{
+    type:'bar',
+    data:{ labels, datasets:[{ data:eraData, backgroundColor:'rgba(248,113,113,.5)', borderColor:'#f87171', borderWidth:1.5, borderRadius:5, borderSkipped:false }] },
+    options:{...base, scales:{...base.scales, y:{...base.scales.y, ticks:{...base.scales.y.ticks, callback:v=>v.toFixed(2)}}}}
+  });
+}
+
+// ── 비교 렌더 ────────────────────────────────────
+function renderComparison(keyA, keyB){
+  const sA = calcStats(getRecordsFor(keyA));
+  const sB = calcStats(getRecordsFor(keyB));
+
+  const rows = [
+    ['경기수','g',''],['타율','avg','.'],['출루율','obp','.'],['장타율','slg','.'],
+    ['OPS','ops','.'],['안타','h',''],['홈런','hr',''],['타점','rbi',''],
+    ['득점','r',''],['볼넷','bb',''],['삼진(타)','so',''],['도루','sb',''],
+    ['ERA','era','2'],['WHIP','whip','2'],['탈삼진(투)','pk',''],['투구수','pit',''],['실책','e','']
+  ];
+
+  function fmt(s, key, type){
+    const v = s[key];
+    if(type==='.') return Number.isFinite(v) ? v.toFixed(3) : '-';
+    if(type==='2') return Number.isFinite(v) ? v.toFixed(2) : '-';
+    return v ?? '-';
+  }
+
+  const trs = rows.map(([label, key, type]) => {
+    const va = fmt(sA, key, type);
+    const vb = fmt(sB, key, type);
+    return `<tr>
+      <td class="num">${va}</td>
+      <td class="label" style="text-align:center">${label}</td>
+      <td class="num" style="text-align:right">${vb}</td>
+    </tr>`;
+  }).join('');
+
+  el('mainContent').innerHTML = `
+    <div class="cmp-table-wrap">
+      <table class="cmp-table">
+        <thead>
+          <tr>
+            <th style="color:var(--brand)">${keyA}</th>
+            <th style="text-align:center">항목</th>
+            <th style="text-align:right;color:var(--c1)">${keyB}</th>
+          </tr>
+        </thead>
+        <tbody>${trs}</tbody>
+      </table>
+    </div>
+  `;
+}
+
+// ── 메인 렌더 ────────────────────────────────────
+function renderMain(){
+  if(mode === 'cmp'){
+    const keyA = el('selA').value;
+    const keyB = el('selB').value;
+    if(!keyA || !keyB){ el('mainContent').innerHTML = '<div class="hint">비교할 항목을 선택해주세요.</div>'; return; }
+    renderComparison(keyA, keyB);
+    return;
+  }
+
+  const key = el('selA').value;
+  if(!key){ el('mainContent').innerHTML = '<div class="hint">항목을 선택해주세요.</div>'; return; }
+
+  const arr = getRecordsFor(key);
+  if(!arr.length){ el('mainContent').innerHTML = '<div class="hint">해당 기간 기록이 없어요.</div>'; return; }
+
+  const s = calcStats(arr);
+  const months = getMonths();
+
+  let trendHTML = '';
+  if(mode === 'month' && months.length > 1){
+    trendHTML = `
+      <div class="chart-card">
+        <div class="chart-title">월별 타율 추이</div>
+        <div class="chart-wrap"><canvas id="cAvg"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">월별 ERA 추이</div>
+        <div class="chart-wrap"><canvas id="cEra"></canvas></div>
+      </div>
+      <div id="trendCharts"></div>
+    `;
+  }
+
+  el('mainContent').innerHTML = renderStats(s) + trendHTML;
+
+  if(mode === 'month' && months.length > 1){
+    setTimeout(() => renderTrendCharts(months), 50);
+  }
+}
+
+// ── 모드 전환 ────────────────────────────────────
+window.setMode = function(m){
+  mode = m;
+  ['tour','month','cmp'].forEach(t => {
+    el(`mode${t.charAt(0).toUpperCase()+t.slice(1)}`).classList.toggle('active', t === m);
+  });
+  populateSelects();
+  renderMain();
+};
+
+el('selA').addEventListener('change', renderMain);
+el('selB').addEventListener('change', renderMain);
+
+// ── 초기화 ───────────────────────────────────────
+(async function init(){
+  try {
+    const { data:{ user }, error } = await client.auth.getUser();
+    if(error || !user){ location.href = 'auth.html?next=stats.html'; return; }
+
+    const { data: player } = await client
+      .from('baseball_players')
+      .select('id,name,grade')
+      .eq('owner_user_id', user.id)
+      .limit(1).maybeSingle();
+
+    if(!player){ el('playerName').textContent = '등록된 선수가 없습니다.'; return; }
+
+    el('playerName').textContent = `${player.name} 선수 · ${player.grade || ''}`;
+
+    const { data } = await client
+      .from('baseball_records')
+      .select('*')
+      .eq('player_id', player.id)
+      .order('game_date', { ascending: false });
+
+    records = data || [];
+
+    if(!records.length){
+      el('mainContent').innerHTML = '<div class="hint">등록된 경기 기록이 없어요.</div>';
+      return;
+    }
+
+    populateSelects();
+    renderMain();
+  } catch(e){ console.error(e); }
+})();
+</script>
+</body>
+</html>
