@@ -55,6 +55,14 @@ select option{background:var(--panel)}
 .chart-card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:10px}
 .chart-title{font-size:11px;font-weight:700;letter-spacing:1px;color:var(--muted);text-transform:uppercase;margin-bottom:12px}
 .chart-wrap{position:relative;height:160px}
+.year-sel{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.year-nav{background:none;border:1px solid var(--border2);color:var(--text);border-radius:8px;width:36px;height:36px;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.year-nav:hover{border-color:var(--brand);color:var(--brand)}
+.year-label{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px}
+.month-kpi-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:14px}
+.month-kpi{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:8px 2px;text-align:center}
+.month-kpi .v{font-family:'Bebas Neue',sans-serif;font-size:16px;color:var(--brand);line-height:1}
+.month-kpi .l{font-size:9px;font-weight:700;color:var(--muted);margin-top:3px}
 
 /* 비교 테이블 */
 .cmp-table{width:100%;border-collapse:collapse;font-size:12px}
@@ -220,45 +228,108 @@ function getRecordsFor(key){
   return records.filter(r => (r.tournament||'기타') === key);
 }
 
-// ── 차트 (월별 AVG / ERA 추이) ───────────────────
-function renderTrendCharts(months){
-  // canvas 요소가 DOM에 있는지 확인
-  if(!document.getElementById('cAvg') || !document.getElementById('cEra')) return;
+// ── 월별 차트 (1년 기준 5개 지표) ──────────────────
+let monthlyCharts = {};
+let currentYear = new Date().getFullYear();
 
-  const labels = [...months].reverse();
-  const avgData = labels.map(m => {
-    const arr = records.filter(r => (r.game_date||'').startsWith(m));
-    const s = calcStats(arr);
-    return Number.isFinite(s.avg) ? parseFloat(s.avg.toFixed(3)) : null;
-  });
-  const eraData = labels.map(m => {
-    const arr = records.filter(r => (r.game_date||'').startsWith(m));
-    const s = calcStats(arr);
-    return Number.isFinite(s.era) ? parseFloat(s.era.toFixed(2)) : null;
-  });
+window.changeYear = function(delta){
+  currentYear += delta;
+  renderMonthlyMode();
+};
 
-  const base = {
+function get12MonthLabels(year){
+  return Array.from({length:12}, (_,i) => `${i+1}월`);
+}
+
+function getMonthData(year, field, transform){
+  return Array.from({length:12}, (_,i) => {
+    const ym = `${year}-${String(i+1).padStart(2,'0')}`;
+    const arr = records.filter(r => (r.game_date||'').startsWith(ym));
+    if(!arr.length) return null;
+    const s = calcStats(arr);
+    const v = transform(s);
+    return Number.isFinite(v) ? v : null;
+  });
+}
+
+function makeChartOptions(yCallback){
+  return {
     responsive:true, maintainAspectRatio:false,
     plugins:{ legend:{display:false}, tooltip:{backgroundColor:'#1e2330',titleColor:'#7a8294',bodyColor:'#f0f2f5',borderColor:'rgba(255,255,255,.13)',borderWidth:1} },
     scales:{
-      x:{ grid:{color:'rgba(255,255,255,.04)'}, ticks:{color:'#7a8294',font:{size:10},maxRotation:0} },
-      y:{ grid:{color:'rgba(255,255,255,.04)'}, ticks:{color:'#7a8294',font:{size:10}} }
+      x:{ grid:{color:'rgba(255,255,255,.04)'}, ticks:{color:'#7a8294',font:{size:11},maxRotation:0} },
+      y:{ grid:{color:'rgba(255,255,255,.04)'}, ticks:{color:'#7a8294',font:{size:10}, callback: yCallback || (v=>v) }, beginAtZero:true }
     }
   };
+}
 
-  if(chartAvg) chartAvg.destroy();
-  if(chartEra) chartEra.destroy();
+function renderMonthlyMode(){
+  const year = currentYear;
+  const labels = get12MonthLabels(year);
 
-  chartAvg = new Chart(document.getElementById('cAvg'),{
-    type:'line',
-    data:{ labels, datasets:[{ data:avgData, borderColor:'#e8ff47', backgroundColor:'rgba(232,255,71,.06)', borderWidth:2.5, pointBackgroundColor:'#e8ff47', pointRadius:4, tension:0.3, fill:true, spanGaps:true }] },
-    options:{...base, scales:{...base.scales, y:{...base.scales.y, ticks:{...base.scales.y.ticks, callback:v=>'.'+String(Math.round(v*1000)).padStart(3,'0')}}}}
-  });
+  // 연간 합산 KPI
+  const yearRecords = records.filter(r => (r.game_date||'').startsWith(String(year)));
+  const ys = calcStats(yearRecords);
 
-  chartEra = new Chart(document.getElementById('cEra'),{
-    type:'bar',
-    data:{ labels, datasets:[{ data:eraData, backgroundColor:'rgba(248,113,113,.5)', borderColor:'#f87171', borderWidth:1.5, borderRadius:5, borderSkipped:false }] },
-    options:{...base, scales:{...base.scales, y:{...base.scales.y, ticks:{...base.scales.y.ticks, callback:v=>v.toFixed(2)}}}}
+  const charts = [
+    { id:'cAvg',  title:'월별 타율',  color:'#e8ff47', fillColor:'rgba(232,255,71,.08)', type:'line',
+      data: getMonthData(year, 'avg', s=>parseFloat(s.avg.toFixed(3))),
+      yFmt: v => v == null ? '' : '.'+String(Math.round(v*1000)).padStart(3,'0') },
+    { id:'cH',    title:'월별 안타',  color:'#38bdf8', fillColor:'rgba(56,189,248,.08)', type:'bar',
+      data: getMonthData(year, 'h', s=>s.h),
+      yFmt: v => v },
+    { id:'cRbi',  title:'월별 타점',  color:'#a78bfa', fillColor:'rgba(167,139,250,.08)', type:'bar',
+      data: getMonthData(year, 'rbi', s=>s.rbi),
+      yFmt: v => v },
+    { id:'cR',    title:'월별 득점',  color:'#34d399', fillColor:'rgba(52,211,153,.08)', type:'bar',
+      data: getMonthData(year, 'r', s=>s.r),
+      yFmt: v => v },
+    { id:'cEra',  title:'월별 ERA',   color:'#f87171', fillColor:'rgba(248,113,113,.08)', type:'line',
+      data: getMonthData(year, 'era', s=>parseFloat(s.era.toFixed(2))),
+      yFmt: v => v == null ? '' : v.toFixed(2) },
+  ];
+
+  const chartsHTML = charts.map(c => `
+    <div class="chart-card">
+      <div class="chart-title">${c.title}</div>
+      <div class="chart-wrap"><canvas id="${c.id}"></canvas></div>
+    </div>
+  `).join('');
+
+  el('mainContent').innerHTML = `
+    <div class="year-sel">
+      <button class="year-nav" onclick="changeYear(-1)">‹</button>
+      <div class="year-label">${year}년</div>
+      <button class="year-nav" onclick="changeYear(1)">›</button>
+    </div>
+    <div class="month-kpi-grid">
+      <div class="month-kpi"><div class="v">${ys.g}</div><div class="l">경기수</div></div>
+      <div class="month-kpi"><div class="v">${fmt3(ys.avg)}</div><div class="l">타율</div></div>
+      <div class="month-kpi"><div class="v">${ys.h}</div><div class="l">안타</div></div>
+      <div class="month-kpi"><div class="v">${ys.rbi}</div><div class="l">타점</div></div>
+      <div class="month-kpi"><div class="v">${ys.r}</div><div class="l">득점</div></div>
+      <div class="month-kpi"><div class="v">${fmt2(ys.era)}</div><div class="l">ERA</div></div>
+    </div>
+    ${chartsHTML}
+  `;
+
+  // 기존 차트 destroy
+  Object.values(monthlyCharts).forEach(c => c.destroy());
+  monthlyCharts = {};
+
+  requestAnimationFrame(() => {
+    charts.forEach(c => {
+      const canvas = document.getElementById(c.id);
+      if(!canvas) return;
+      const dataset = c.type === 'line'
+        ? { data:c.data, borderColor:c.color, backgroundColor:c.fillColor, borderWidth:2.5, pointBackgroundColor:c.color, pointRadius:4, tension:0.3, fill:true, spanGaps:true }
+        : { data:c.data, backgroundColor:c.fillColor.replace('.08',',.55'), borderColor:c.color, borderWidth:1.5, borderRadius:5, borderSkipped:false };
+      monthlyCharts[c.id] = new Chart(canvas, {
+        type: c.type,
+        data: { labels, datasets:[dataset] },
+        options: makeChartOptions(c.yFmt)
+      });
+    });
   });
 }
 
@@ -326,29 +397,6 @@ function renderMain(){
   const s = calcStats(arr);
   const months = getMonths();
 
-  // 월별 모드: 선택한 월 성적 + 전체 월 추이 차트
-  if(mode === 'month'){
-    let trendHTML = '';
-    if(months.length > 1){
-      trendHTML = `
-        <div class="chart-card">
-          <div class="chart-title">월별 타율 추이</div>
-          <div class="chart-wrap"><canvas id="cAvg"></canvas></div>
-        </div>
-        <div class="chart-card">
-          <div class="chart-title">월별 ERA 추이</div>
-          <div class="chart-wrap"><canvas id="cEra"></canvas></div>
-        </div>
-      `;
-    }
-    el('mainContent').innerHTML = renderStats(s) + trendHTML;
-    if(months.length > 1){
-      // DOM이 완전히 그려진 후 차트 렌더
-      requestAnimationFrame(() => renderTrendCharts(months));
-    }
-    return;
-  }
-
   // 대회별 모드
   el('mainContent').innerHTML = renderStats(s);
 }
@@ -359,6 +407,14 @@ window.setMode = function(m){
   ['tour','month','cmp'].forEach(t => {
     el(`mode${t.charAt(0).toUpperCase()+t.slice(1)}`).classList.toggle('active', t === m);
   });
+  if(m === 'month'){
+    // 월별은 selA 불필요, 숨기고 바로 차트 렌더
+    el('selA').closest('.sel-wrap').classList.add('hidden');
+    el('selBWrap').classList.add('hidden');
+    renderMonthlyMode();
+    return;
+  }
+  el('selA').closest('.sel-wrap').classList.remove('hidden');
   populateSelects();
   renderMain();
 };
