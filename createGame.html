@@ -317,7 +317,7 @@ textarea{resize:none}
 const client = window.sb;
 const el = (id) => document.getElementById(id);
 
-const SCHOOL_CACHE_KEY = 'baseball_school_category_cache_v1';
+const SCHOOL_CACHE_KEY = 'baseball_school_category_cache_name_v1';
 
 let mode = 'create';
 let editingId = null;
@@ -426,9 +426,9 @@ function applySchoolOptions(names = [], selected = ''){
   sel.innerHTML = '<option value="">학교 선택</option>';
   sel.disabled = false;
 
-  // ✅ 문자열인지 확인 후 렌더
-  names.forEach(name => {
-    if(typeof name !== 'string') return; // 객체 들어오면 건너뜀
+  names.forEach(row => {
+    const name = typeof row === 'string' ? row : row.name;
+    if(!name) return;
     const opt = document.createElement('option');
     opt.value = name;
     opt.textContent = name;
@@ -453,21 +453,22 @@ async function ensureCategoryCache(cat){
     return schoolCategoryCache.get(cat);
   }
 
-  // ✅ .from() 대신 RPC 사용
-  const { data, error } = await client.rpc('baseball_schools_by_category', {
-    p_category: cat
-  });
+  const { data, error } = await client
+    .from('baseball_schools')
+    .select('name')
+    .eq('category', cat)
+    .order('name');
 
   if(error){
     console.error('학교 목록 조회 오류:', error);
     return [];
   }
 
-  // RPC는 [{name:'학교명'}, ...] 형태로 반환
-  const names = (data || []).map(x => x.name);
-  schoolCategoryCache.set(cat, names);
+  // { name } 객체 배열 그대로 캐시
+  const rows = data || [];
+  schoolCategoryCache.set(cat, rows);
   saveSchoolCacheToSession();
-  return names;
+  return rows;
 }
 
 function resetForm({ keepDate = false } = {}){
