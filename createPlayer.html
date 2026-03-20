@@ -195,11 +195,7 @@ textarea{resize:vertical;min-height:90px}
         <button type="button" class="toggle-btn" id="btnActiveOff">비활성</button>
       </div>
 
-      <button class="btn primary" id="btnSave">저장하기</button>
-      <div class="row2" style="margin-top:10px">
-        <button class="btn ghost" id="btnReset">초기화</button>
-        <button class="btn danger hidden" id="btnDelete">삭제</button>
-      </div>
+      <button class="btn primary" id="btnSave">저장하기</button> 
 
       <div class="msg" id="msg"></div>
     </div>
@@ -468,7 +464,6 @@ async function loadMyPlayer(){
     editingId = null;
     el('formTitle').textContent = '내 선수 등록';
     el('formSub').textContent = '1인 1계정 기준 · 첫 선수 정보를 등록하세요';
-    el('btnDelete').classList.add('hidden');
     resetForm();
     return;
   }
@@ -477,7 +472,6 @@ async function loadMyPlayer(){
   editingId = data.id;
   el('formTitle').textContent = '내 선수 정보 수정';
   el('formSub').textContent = `선수 ID #${data.id}`;
-  el('btnDelete').classList.remove('hidden');
 
   el('name').value = data.name ?? '';
   el('jersey').value = data.jersey_number ?? '';
@@ -558,11 +552,6 @@ function collectPayload(){
   };
 }
 
-el('btnReset').addEventListener('click', async () => {
-  if(mode === 'edit') await loadMyPlayer();
-  else resetForm();
-});
-
 el('btnSave').addEventListener('click', async () => {
   setMsg('저장 중...');
   const payload = collectPayload();
@@ -615,26 +604,6 @@ el('btnSave').addEventListener('click', async () => {
     
   try{ localStorage.removeItem('baseball_home_cache_v3'); }catch(e){}
   setMsg(`<span class="ok">✅ 수정 완료! ${data.name} (${data.grade})</span>`);
-});
-
-el('btnDelete').addEventListener('click', async () => {
-  if(mode !== 'edit' || !editingId) return;
-  if(!confirm('내 선수 정보를 삭제할까요?')) return;
-
-  setMsg('삭제 중...');
-  const { error } = await client.from('baseball_players').delete().eq('id', editingId);
-  if(error){
-    setMsg(`<span class="err">삭제 실패: ${error.message}</span>`);
-    return;
-  }
-
-  resetForm();
-  mode = 'create';
-  editingId = null;
-  el('formTitle').textContent = '내 선수 등록';
-  el('formSub').textContent = '1인 1계정 기준 · 첫 선수 정보를 등록하세요';
-  el('btnDelete').classList.add('hidden');
-  setMsg('<span class="ok">✅ 삭제 완료</span>');
 });
 
 (async function init(){
