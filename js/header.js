@@ -3,12 +3,15 @@ document.addEventListener('DOMContentLoaded', async function () {
   const target = document.getElementById('appHeader');
   if (!target) return;
 
-  // data-back 속성으로 뒤로가기 버튼 제어
-  // 예) <div id="appHeader" data-back="index.html" data-back-label="← 홈"></div>
-  const backHref  = target.dataset.back  || '';
-  const backLabel = target.dataset.backLabel || '← 홈';
-  const backBtn   = backHref
-    ? `<a href="${backHref}" style="padding:7px 16px;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:transparent;color:#f0f2f5;font-family:'Noto Sans KR',sans-serif;font-size:13px;font-weight:700;text-decoration:none;transition:all .15s" onmouseover="this.style.borderColor='#e8ff47';this.style.color='#e8ff47'" onmouseout="this.style.borderColor='rgba(255,255,255,.12)';this.style.color='#f0f2f5'">${backLabel}</a>`
+  // data-back   : 뒤로가기 링크 (없으면 버튼 미표시)
+  // data-back-label : 뒤로가기 텍스트 (기본값 "← 홈")
+  // data-auth   : "true" 일 때만 로그인/선수정보/로그아웃 버튼 표시 (기본 false)
+  const backHref   = target.dataset.back || '';
+  const backLabel  = target.dataset.backLabel || '← 홈';
+  const showAuth   = target.dataset.auth === 'true';
+
+  const backBtn = backHref
+    ? `<a href="${backHref}" class="_hbtn">${backLabel}</a>`
     : '';
 
   target.innerHTML = `
@@ -19,18 +22,18 @@ document.addEventListener('DOMContentLoaded', async function () {
         </div>
         <div style="display:flex;align-items:center;gap:8px">
           ${backBtn}
-          <div id="_headerAuthArea" style="display:flex;gap:8px"></div>
+          <div id="_headerAuthArea"></div>
         </div>
       </div>
     </header>
   `;
 
-  // ── 버튼 공통 스타일 ─────────────────────────────
+  // ── 공통 스타일 ──────────────────────────────────
   if (!document.getElementById('_headerStyle')) {
     const style = document.createElement('style');
     style.id = '_headerStyle';
     style.textContent = `
-      ._hbtn{padding:7px 16px;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:transparent;color:#f0f2f5;font-family:'Noto Sans KR',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s}
+      ._hbtn{padding:7px 16px;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:transparent;color:#f0f2f5;font-family:'Noto Sans KR',sans-serif;font-size:13px;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;transition:all .15s}
       ._hbtn:hover{border-color:#e8ff47;color:#e8ff47}
       ._hbtn.primary{background:#e8ff47;color:#0a0c10;border-color:#e8ff47}
       ._hbtn.primary:hover{background:#d4ea3a}
@@ -42,6 +45,13 @@ document.addEventListener('DOMContentLoaded', async function () {
 
   function renderButtons(session) {
     window._headerSession = session || null;
+
+    // data-auth="true" 인 페이지(index)에서만 인증 버튼 표시
+    if (!showAuth) {
+      authArea.innerHTML = '';
+      return;
+    }
+
     if (!session) {
       authArea.innerHTML = `<button class="_hbtn primary" onclick="location.href='auth.html'">로그인</button>`;
     } else {
