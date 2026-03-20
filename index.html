@@ -663,8 +663,8 @@ async function loadDashboard(){
     if(cached.recent_games) renderRecentGames(cached.recent_games);
   }
 
-  const summaryPromise = measuredRpc('baseball_dashboard_summary');
-  const recentPromise = measuredRpc('baseball_game_list_recent_my');
+  const summaryPromise = measuredRpc('baseball_dashboard_summary_home');
+  const recentPromise = measuredRpc('baseball_game_list_recent_home');
 
   const nextCache = {
     summary: cached?.summary || null,
