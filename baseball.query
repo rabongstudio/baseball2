@@ -1,5 +1,728 @@
 [
   {
+    "table_name": "baseball_game_player_records",
+    "column_name": "id",
+    "data_type": "bigint",
+    "is_nullable": "NO",
+    "column_default": null,
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_game_player_records",
+    "column_name": "game_id",
+    "data_type": "bigint",
+    "is_nullable": "NO",
+    "column_default": null,
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_game_player_records",
+    "column_name": "player_id",
+    "data_type": "bigint",
+    "is_nullable": "NO",
+    "column_default": null,
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_game_player_records",
+    "column_name": "is_starter",
+    "data_type": "boolean",
+    "is_nullable": "NO",
+    "column_default": "true",
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_game_player_records",
+    "column_name": "batting_order",
+    "data_type": "integer",
+    "is_nullable": "YES",
+    "column_default": null,
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_game_player_records",
+    "column_name": "position",
+    "data_type": "text",
+    "is_nullable": "YES",
+    "column_default": null,
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_game_player_records",
+    "column_name": "ab",
+    "data_type": "integer",
+    "is_nullable": "NO",
+    "column_default": "0",
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_game_player_records",
+    "column_name": "h",
+    "data_type": "integer",
+    "is_nullable": "NO",
+    "column_default": "0",
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_game_player_records",
+    "column_name": "rbi",
+    "data_type": "integer",
+    "is_nullable": "NO",
+    "column_default": "0",
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_game_player_records",
+    "column_name": "r",
+    "data_type": "integer",
+    "is_nullable": "NO",
+    "column_default": "0",
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_game_player_records",
+    "column_name": "bb",
+    "data_type": "integer",
+    "is_nullable": "NO",
+    "column_default": "0",
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_game_player_records",
+    "column_name": "so",
+    "data_type": "integer",
+    "is_nullable": "NO",
+    "column_default": "0",
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_game_player_records",
+    "column_name": "hbp",
+    "data_type": "integer",
+    "is_nullable": "NO",
+    "column_default": "0",
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_game_player_records",
+    "column_name": "sb",
+    "data_type": "integer",
+    "is_nullable": "NO",
+    "column_default": "0",
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_game_player_records",
+    "column_name": "doubles",
+    "data_type": "integer",
+    "is_nullable": "NO",
+    "column_default": "0",
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_game_player_records",
+    "column_name": "triples",
+    "data_type": "integer",
+    "is_nullable": "NO",
+    "column_default": "0",
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_game_player_records",
+    "column_name": "hr",
+    "data_type": "integer",
+    "is_nullable": "NO",
+    "column_default": "0",
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_game_player_records",
+    "column_name": "sf",
+    "data_type": "integer",
+    "is_nullable": "NO",
+    "column_default": "0",
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_game_player_records",
+    "column_name": "sh",
+    "data_type": "integer",
+    "is_nullable": "NO",
+    "column_default": "0",
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_game_player_records",
+    "column_name": "ip",
+    "data_type": "numeric",
+    "is_nullable": "NO",
+    "column_default": "0.0",
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_game_player_records",
+    "column_name": "er",
+    "data_type": "integer",
+    "is_nullable": "NO",
+    "column_default": "0",
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_game_player_records",
+    "column_name": "pk",
+    "data_type": "integer",
+    "is_nullable": "NO",
+    "column_default": "0",
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_game_player_records",
+    "column_name": "pbb",
+    "data_type": "integer",
+    "is_nullable": "NO",
+    "column_default": "0",
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_game_player_records",
+    "column_name": "ph",
+    "data_type": "integer",
+    "is_nullable": "NO",
+    "column_default": "0",
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_game_player_records",
+    "column_name": "pitches",
+    "data_type": "integer",
+    "is_nullable": "NO",
+    "column_default": "0",
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_game_player_records",
+    "column_name": "max_vel",
+    "data_type": "integer",
+    "is_nullable": "YES",
+    "column_default": null,
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_game_player_records",
+    "column_name": "e",
+    "data_type": "integer",
+    "is_nullable": "NO",
+    "column_default": "0",
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_game_player_records",
+    "column_name": "player_memo",
+    "data_type": "text",
+    "is_nullable": "YES",
+    "column_default": null,
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_game_player_records",
+    "column_name": "created_at",
+    "data_type": "timestamp with time zone",
+    "is_nullable": "NO",
+    "column_default": "now()",
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_game_player_records",
+    "column_name": "updated_at",
+    "data_type": "timestamp with time zone",
+    "is_nullable": "NO",
+    "column_default": "now()",
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_game_player_records",
+    "column_name": "gb",
+    "data_type": "integer",
+    "is_nullable": "NO",
+    "column_default": "0",
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_game_player_records",
+    "column_name": "fb",
+    "data_type": "integer",
+    "is_nullable": "NO",
+    "column_default": "0",
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_games",
+    "column_name": "id",
+    "data_type": "bigint",
+    "is_nullable": "NO",
+    "column_default": null,
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_games",
+    "column_name": "game_date",
+    "data_type": "date",
+    "is_nullable": "NO",
+    "column_default": null,
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_games",
+    "column_name": "game_time",
+    "data_type": "time without time zone",
+    "is_nullable": "YES",
+    "column_default": null,
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_games",
+    "column_name": "opponent",
+    "data_type": "text",
+    "is_nullable": "NO",
+    "column_default": null,
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_games",
+    "column_name": "tournament",
+    "data_type": "text",
+    "is_nullable": "YES",
+    "column_default": null,
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_games",
+    "column_name": "stadium",
+    "data_type": "text",
+    "is_nullable": "YES",
+    "column_default": null,
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_games",
+    "column_name": "is_home",
+    "data_type": "boolean",
+    "is_nullable": "NO",
+    "column_default": "true",
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_games",
+    "column_name": "innings",
+    "data_type": "integer",
+    "is_nullable": "NO",
+    "column_default": "7",
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_games",
+    "column_name": "weather",
+    "data_type": "text",
+    "is_nullable": "YES",
+    "column_default": null,
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_games",
+    "column_name": "is_cold",
+    "data_type": "boolean",
+    "is_nullable": "NO",
+    "column_default": "false",
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_games",
+    "column_name": "end_reason",
+    "data_type": "text",
+    "is_nullable": "YES",
+    "column_default": null,
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_games",
+    "column_name": "our_score",
+    "data_type": "integer",
+    "is_nullable": "NO",
+    "column_default": "0",
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_games",
+    "column_name": "opp_score",
+    "data_type": "integer",
+    "is_nullable": "NO",
+    "column_default": "0",
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_games",
+    "column_name": "result",
+    "data_type": "text",
+    "is_nullable": "YES",
+    "column_default": null,
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_games",
+    "column_name": "our_hits",
+    "data_type": "integer",
+    "is_nullable": "NO",
+    "column_default": "0",
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_games",
+    "column_name": "our_errors",
+    "data_type": "integer",
+    "is_nullable": "NO",
+    "column_default": "0",
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_games",
+    "column_name": "our_hr",
+    "data_type": "integer",
+    "is_nullable": "NO",
+    "column_default": "0",
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_games",
+    "column_name": "our_bb",
+    "data_type": "integer",
+    "is_nullable": "NO",
+    "column_default": "0",
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_games",
+    "column_name": "opp_bb",
+    "data_type": "integer",
+    "is_nullable": "NO",
+    "column_default": "0",
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_games",
+    "column_name": "our_k",
+    "data_type": "integer",
+    "is_nullable": "NO",
+    "column_default": "0",
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_games",
+    "column_name": "opp_k",
+    "data_type": "integer",
+    "is_nullable": "NO",
+    "column_default": "0",
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_games",
+    "column_name": "our_hbp",
+    "data_type": "integer",
+    "is_nullable": "NO",
+    "column_default": "0",
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_games",
+    "column_name": "opp_hbp",
+    "data_type": "integer",
+    "is_nullable": "NO",
+    "column_default": "0",
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_games",
+    "column_name": "our_sb",
+    "data_type": "integer",
+    "is_nullable": "NO",
+    "column_default": "0",
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_games",
+    "column_name": "opp_sb",
+    "data_type": "integer",
+    "is_nullable": "NO",
+    "column_default": "0",
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_games",
+    "column_name": "memo",
+    "data_type": "text",
+    "is_nullable": "YES",
+    "column_default": null,
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_games",
+    "column_name": "created_at",
+    "data_type": "timestamp with time zone",
+    "is_nullable": "NO",
+    "column_default": "now()",
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_games",
+    "column_name": "updated_at",
+    "data_type": "timestamp with time zone",
+    "is_nullable": "NO",
+    "column_default": "now()",
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_games",
+    "column_name": "school_id",
+    "data_type": "bigint",
+    "is_nullable": "YES",
+    "column_default": null,
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_players",
+    "column_name": "id",
+    "data_type": "bigint",
+    "is_nullable": "NO",
+    "column_default": null,
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_players",
+    "column_name": "name",
+    "data_type": "text",
+    "is_nullable": "NO",
+    "column_default": null,
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_players",
+    "column_name": "jersey_number",
+    "data_type": "integer",
+    "is_nullable": "YES",
+    "column_default": null,
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_players",
+    "column_name": "grade",
+    "data_type": "text",
+    "is_nullable": "NO",
+    "column_default": null,
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_players",
+    "column_name": "primary_position",
+    "data_type": "text",
+    "is_nullable": "NO",
+    "column_default": null,
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_players",
+    "column_name": "throws",
+    "data_type": "text",
+    "is_nullable": "NO",
+    "column_default": "'R'::text",
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_players",
+    "column_name": "bats",
+    "data_type": "text",
+    "is_nullable": "NO",
+    "column_default": "'R'::text",
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_players",
+    "column_name": "birth_year",
+    "data_type": "integer",
+    "is_nullable": "YES",
+    "column_default": null,
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_players",
+    "column_name": "height_cm",
+    "data_type": "integer",
+    "is_nullable": "YES",
+    "column_default": null,
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_players",
+    "column_name": "weight_kg",
+    "data_type": "integer",
+    "is_nullable": "YES",
+    "column_default": null,
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_players",
+    "column_name": "secondary_positions",
+    "data_type": "text",
+    "is_nullable": "YES",
+    "column_default": null,
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_players",
+    "column_name": "tags",
+    "data_type": "text",
+    "is_nullable": "YES",
+    "column_default": null,
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_players",
+    "column_name": "photo_url",
+    "data_type": "text",
+    "is_nullable": "YES",
+    "column_default": null,
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_players",
+    "column_name": "is_active",
+    "data_type": "boolean",
+    "is_nullable": "NO",
+    "column_default": "true",
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_players",
+    "column_name": "created_at",
+    "data_type": "timestamp with time zone",
+    "is_nullable": "NO",
+    "column_default": "now()",
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_players",
+    "column_name": "updated_at",
+    "data_type": "timestamp with time zone",
+    "is_nullable": "NO",
+    "column_default": "now()",
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_players",
+    "column_name": "school_id",
+    "data_type": "bigint",
+    "is_nullable": "YES",
+    "column_default": null,
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_players",
+    "column_name": "owner_user_id",
+    "data_type": "uuid",
+    "is_nullable": "YES",
+    "column_default": null,
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_profiles",
+    "column_name": "id",
+    "data_type": "uuid",
+    "is_nullable": "NO",
+    "column_default": null,
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_profiles",
+    "column_name": "display_name",
+    "data_type": "text",
+    "is_nullable": "YES",
+    "column_default": null,
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_profiles",
+    "column_name": "school_id",
+    "data_type": "bigint",
+    "is_nullable": "YES",
+    "column_default": null,
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_profiles",
+    "column_name": "role",
+    "data_type": "text",
+    "is_nullable": "NO",
+    "column_default": "'member'::text",
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_profiles",
+    "column_name": "created_at",
+    "data_type": "timestamp with time zone",
+    "is_nullable": "NO",
+    "column_default": "now()",
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_profiles",
+    "column_name": "updated_at",
+    "data_type": "timestamp with time zone",
+    "is_nullable": "NO",
+    "column_default": "now()",
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_profiles",
+    "column_name": "username",
+    "data_type": "text",
+    "is_nullable": "YES",
+    "column_default": null,
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_schools",
+    "column_name": "id",
+    "data_type": "bigint",
+    "is_nullable": "NO",
+    "column_default": null,
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_schools",
+    "column_name": "name",
+    "data_type": "text",
+    "is_nullable": "NO",
+    "column_default": null,
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_schools",
+    "column_name": "created_at",
+    "data_type": "timestamp with time zone",
+    "is_nullable": "NO",
+    "column_default": "now()",
+    "character_maximum_length": null
+  },
+  {
+    "table_name": "baseball_schools",
+    "column_name": "category",
+    "data_type": "text",
+    "is_nullable": "NO",
+    "column_default": "'기타'::text",
+    "character_maximum_length": null
+  }
+]
+
+[
+  {
     "schemaname": "public",
     "tablename": "baseball_game_player_records",
     "policyname": "baseball_records_delete_admin_or_owner",
