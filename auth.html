@@ -496,11 +496,8 @@ el('btnCheckId').onclick = async () => {
   hint.className = 'hint';
   hint.textContent = '확인 중...';
 
-  const { data, error } = await sb
-    .from('baseball_profiles')
-    .select('id')
-    .eq('username', username)
-    .maybeSingle();
+  // ✅ 기존 .from() 쿼리 대신 RPC 호출
+  const { data, error } = await sb.rpc('baseball_check_username', { p_username: username });
 
   el('btnCheckId').disabled = false;
 
@@ -510,12 +507,12 @@ el('btnCheckId').onclick = async () => {
     return;
   }
 
-  if(data){
+  if(data === true){
     hint.className = 'hint err';
     hint.textContent = '이미 사용 중인 아이디예요';
     input.className = 'err';
     idChecked = false;
-  }else{
+  } else {
     hint.className = 'hint ok';
     hint.textContent = '사용 가능한 아이디예요 ✓';
     input.className = 'ok';
