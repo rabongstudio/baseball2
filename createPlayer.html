@@ -189,11 +189,6 @@ textarea{resize:vertical;min-height:90px}
       <input id="photoUrl" placeholder="https://..." /> 
 
       <div class="divider"></div>
-      <div class="section-label">활성 상태</div>
-      <div class="toggle-row">
-        <button type="button" class="toggle-btn" id="btnActiveOn">활성 (재적)</button>
-        <button type="button" class="toggle-btn" id="btnActiveOff">비활성</button>
-      </div>
 
       <button class="btn primary" id="btnSave">저장하기</button> 
 
@@ -280,14 +275,6 @@ function toggleTag(tag, btn){
   btn.classList.toggle('active');
 }
 el('tags').addEventListener('input', syncChipsFromInput);
-
-function setActiveState(val){
-  isActive = val;
-  el('btnActiveOn').className = `toggle-btn${val ? ' active' : ''}`;
-  el('btnActiveOff').className = `toggle-btn${!val ? ' active-off' : ''}`;
-}
-el('btnActiveOn').addEventListener('click', () => setActiveState(true));
-el('btnActiveOff').addEventListener('click', () => setActiveState(false));
 
 function rebuildGradeOptions(level){
   const select = el('schoolGrade');
@@ -426,7 +413,6 @@ function resetForm(){
   el('tags').value = '';
   el('photoUrl').value = ''; 
   syncChipsFromInput();
-  setActiveState(true);
   el('gradeHint').textContent = '생년 입력 시 학년이 자동 추천돼요. 저장값은 초1 / 중2 / 고3 / 대1 형식으로 들어갑니다.';
   setMsg('');
 }
@@ -485,7 +471,6 @@ async function loadMyPlayer(){
   el('tags').value = data.tags ?? '';
   el('photoUrl').value = data.photo_url ?? ''; 
   syncChipsFromInput();
-  setActiveState(data.is_active !== false);
 
   const guessedCategory = guessCategoryFromGrade(data.grade);
   if(data.school_id){
@@ -611,7 +596,6 @@ el('btnSave').addEventListener('click', async () => {
   if(!session) return;
   loadSchoolCacheFromSession();
   renderTagChips();
-  setActiveState(true);
   showForm();
   await loadMyPlayer();
 })();
