@@ -136,7 +136,7 @@ textarea{resize:none}
       <select id="opponentInput" disabled>
         <option value="">구분을 먼저 선택해주세요</option>
       </select>
-      <div class="small">auth와 동일하게 구분을 고르면 학교 목록이 선택돼요.</div>
+      <div class="small">카테고리별 학교 목록은 최초 1회만 조회하고 이후에는 캐시를 사용해요.</div>
 
       <div class="row2">
         <div>
@@ -318,6 +318,8 @@ textarea{resize:none}
 const client = window.sb;
 const el = (id) => document.getElementById(id);
 
+const SCHOOL_CACHE_KEY = 'baseball_school_category_cache_v1';
+
 let mode = 'create';
 let editingId = null;
 let currentView = 'list';
@@ -349,6 +351,30 @@ function ymTitle(k){
   const [y, m] = k.split('-');
   return `${y}년 ${Number(m)}월`;
 }
+function todayKST(){
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+function loadSchoolCacheFromSession(){
+  try{
+    const raw = sessionStorage.getItem(SCHOOL_CACHE_KEY);
+    if(!raw) return;
+    const obj = JSON.parse(raw);
+    Object.entries(obj).forEach(([k, v]) => {
+      if(Array.isArray(v)) schoolCategoryCache.set(k, v);
+    });
+  }catch(e){}
+}
+function saveSchoolCacheToSession(){
+  try{
+    const obj = Object.fromEntries(schoolCategoryCache.entries());
+    sessionStorage.setItem(SCHOOL_CACHE_KEY, JSON.stringify(obj));
+  }catch(e){}
+}
 
 function showList(pushState = true){
   el('viewList').classList.remove('hidden');
@@ -369,14 +395,6 @@ function showForm(pushState = true){
     const url = mode === 'edit' && editingId ? `${location.pathname}?record=${editingId}` : location.pathname;
     history.pushState({ view:'form', recordId: editingId }, '', url);
   }
-}
-
-function todayKST(){
-  const d = new Date();
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${y}-${m}-${day}`;
 }
 
 function setButtonsDisabled(disabled){
@@ -429,7 +447,10 @@ function detectCategoryFromOpponent(opponent){
 
 async function ensureCategoryCache(cat){
   if(!cat) return [];
-  if(schoolCategoryCache.has(cat)) return schoolCategoryCache.get(cat);
+
+  if(schoolCategoryCache.has(cat)){
+    return schoolCategoryCache.get(cat);
+  }
 
   const { data, error } = await client
     .from('baseball_schools')
@@ -437,22 +458,22 @@ async function ensureCategoryCache(cat){
     .eq('category', cat)
     .order('name');
 
-  if(error) return [];
+  if(error){
+    console.error('학교 목록 조회 오류:', error);
+    return [];
+  }
 
   const names = (data || []).map(x => x.name);
   schoolCategoryCache.set(cat, names);
+  saveSchoolCacheToSession();
   return names;
-}
-
-async function preloadSchoolCategories(){
-  const cats = ['초등학교','리틀','중학교','고등학교','대학교'];
-  await Promise.all(cats.map(c => ensureCategoryCache(c)));
 }
 
 function resetForm({ keepDate = false } = {}){
   const savedDate = el('gameDate').value;
+  const today = todayKST();
 
-  el('gameDate').value = keepDate ? savedDate : todayKST();
+  el('gameDate').value = keepDate ? (savedDate || today) : today;
   el('gameTime').value = '';
   el('innings').value = '7';
 
@@ -462,6 +483,7 @@ function resetForm({ keepDate = false } = {}){
   el('tournament').value = '';
   el('stadium').value = '';
   el('weather').value = '';
+  el('endReason').value = '';
   el('ourScore').value = '0';
   el('oppScore').value = '0';
   el('gameMemo').value = '';
@@ -485,16 +507,17 @@ function resetForm({ keepDate = false } = {}){
   setMsg('');
 }
 
-function fillFormFromRecord(r){
-  el('gameDate').value = r.game_date ?? '';
+async function fillFormFromRecord(r){
+  el('gameDate').value = r.game_date ?? todayKST();
   el('gameTime').value = r.game_time ?? '';
   el('innings').value = r.innings ?? 7;
 
   const category = detectCategoryFromOpponent(r.opponent || '');
   el('opponentCategory').value = category || '';
 
-  if(category && schoolCategoryCache.has(category)){
-    applySchoolOptions(schoolCategoryCache.get(category), r.opponent || '');
+  if(category){
+    const names = await ensureCategoryCache(category);
+    applySchoolOptions(names, r.opponent || '');
   } else if(r.opponent){
     el('opponentInput').disabled = false;
     el('opponentInput').innerHTML = `<option value="${r.opponent}">${r.opponent}</option>`;
@@ -506,6 +529,7 @@ function fillFormFromRecord(r){
   el('tournament').value = r.tournament ?? '';
   el('stadium').value = r.stadium ?? '';
   el('weather').value = r.weather ?? '';
+  el('endReason').value = r.end_reason ?? '';
   el('ourScore').value = r.our_score ?? 0;
   el('oppScore').value = r.opp_score ?? 0;
   el('gameMemo').value = r.game_memo ?? '';
@@ -667,23 +691,19 @@ async function loadList(forceReload = false){
 
     el('listHint').textContent = '불러오는 중...';
 
-    const { data, error } = await client.rpc('baseball_record_list_recent_home');
-
-    if(error){
-      el('listHint').textContent = '불러오기 실패: ' + error.message;
-      return;
-    }
-
-    const recent = data || [];
-
-    const { data: moreRows, error: listError } = await client
+    const { data, error } = await client
       .from('baseball_records')
       .select('id,game_date,opponent,tournament,our_score,opp_score,result')
       .order('game_date', { ascending:false })
       .order('id', { ascending:false })
       .limit(100);
 
-    gameListCache = listError ? recent : (moreRows || []);
+    if(error){
+      el('listHint').textContent = '불러오기 실패: ' + error.message;
+      return;
+    }
+
+    gameListCache = data || [];
     renderGameList(gameListCache);
   } finally {
     loadingList = false;
@@ -726,8 +746,7 @@ async function openEdit(id){
       return;
     }
 
-    await preloadSchoolCategories();
-    fillFormFromRecord(data || {});
+    await fillFormFromRecord(data || {});
     setMsg('');
   } finally {
     loadingForm = false;
@@ -763,6 +782,7 @@ el('btnStarterNo').addEventListener('click', () => {
 
 el('opponentCategory').addEventListener('change', async () => {
   const cat = el('opponentCategory').value;
+
   if(!cat){
     resetOpponentSelect();
     return;
@@ -862,8 +882,8 @@ window.addEventListener('popstate', async (e) => {
     const user = await requireLogin();
     if(!user) return;
 
-    await preloadSchoolCategories();
-    el('gameDate').value = todayKST();
+    loadSchoolCacheFromSession();
+
     const params = new URLSearchParams(location.search);
     const recordId = Number(params.get('record'));
 
@@ -874,6 +894,7 @@ window.addEventListener('popstate', async (e) => {
 
     history.replaceState({ view:'list' }, '', location.pathname);
     showList(false);
+    resetForm();
     await loadList(false);
   } catch (err) {
     el('listHint').textContent = '초기화 오류: ' + (err?.message || err);
