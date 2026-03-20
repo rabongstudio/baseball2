@@ -89,7 +89,14 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--black);color:var(--t
 .sheet-box .v{font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--text)}
 .sheet-box .k{font-size:9px;color:var(--muted);margin-top:2px;font-weight:700}
 .close-btn{width:100%;margin-top:14px;padding:13px;border:1px solid var(--border2);border-radius:12px;background:transparent;color:var(--text);font-family:'Noto Sans KR',sans-serif;font-size:14px;font-weight:700;cursor:pointer}
-body.sheet-open{overflow:hidden}
+/* 재미 기록 그리드 */
+.fun-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
+.fun-item{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:14px 8px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:4px}
+.fun-emoji{font-size:22px;line-height:1}
+.fun-value{font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--brand);line-height:1}
+.fun-label{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.5px;word-break:keep-all;text-align:center}
+.fun-meta{font-size:10px;color:var(--muted2)}
+
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/config.js"></script>
@@ -221,19 +228,23 @@ function buildRecords(){
   const totalK    = records.reduce((s,r) => s+num(r.so), 0);
   const totalPK   = records.reduce((s,r) => s+num(r.pk), 0);
   const totalPit  = records.reduce((s,r) => s+num(r.pitches), 0);
+  const totalRBI  = records.reduce((s,r) => s+num(r.rbi), 0);
+  const totalR    = records.reduce((s,r) => s+num(r.r), 0);
   const avgScore  = records.length ? (records.reduce((s,r)=>s+num(r.our_score),0)/records.length).toFixed(1) : '-';
   const bigWin    = [...records].sort((a,b)=>(num(b.our_score)-num(b.opp_score))-(num(a.our_score)-num(a.opp_score)))[0];
   const bigLoss   = [...records].sort((a,b)=>(num(b.opp_score)-num(b.our_score))-(num(a.opp_score)-num(a.our_score)))[0];
 
   const funRecords = [
-    { id:'total_hr',  cat:'fun', emoji:'💣', label:'통산 홈런',        value: totalHR,  meta:'' },
-    { id:'total_sb',  cat:'fun', emoji:'💨', label:'통산 도루',        value: totalSB,  meta:'' },
-    { id:'total_k',   cat:'fun', emoji:'😵', label:'통산 삼진(타)',    value: totalK,   meta:'' },
-    { id:'total_pk',  cat:'fun', emoji:'🎳', label:'통산 탈삼진(투)', value: totalPK,  meta:'' },
-    { id:'total_pit', cat:'fun', emoji:'💪', label:'통산 투구수',      value: totalPit, meta:'' },
-    { id:'avg_score', cat:'fun', emoji:'📊', label:'경기당 평균 득점', value: avgScore, meta:`${records.length}경기 평균` },
-    { id:'big_win',   cat:'fun', emoji:'🎉', label:'최대 점수차 승리', value: bigWin ? `${num(bigWin.our_score)}-${num(bigWin.opp_score)}` : '-', meta: bigWin ? `vs ${bigWin.opponent} · ${bigWin.game_date}` : '' },
-    { id:'big_loss',  cat:'fun', emoji:'😢', label:'최대 점수차 패배', value: bigLoss ? `${num(bigLoss.our_score)}-${num(bigLoss.opp_score)}` : '-', meta: bigLoss ? `vs ${bigLoss.opponent} · ${bigLoss.game_date}` : '' },
+    { id:'total_hr',  emoji:'💣', label:'통산 홈런',      value: totalHR  },
+    { id:'total_rbi', emoji:'🎯', label:'통산 타점',      value: totalRBI },
+    { id:'total_r',   emoji:'🏃', label:'통산 득점',      value: totalR   },
+    { id:'total_sb',  emoji:'💨', label:'통산 도루',      value: totalSB  },
+    { id:'total_k',   emoji:'😵', label:'통산 삼진(타)',  value: totalK   },
+    { id:'total_pk',  emoji:'🎳', label:'통산 탈삼진',    value: totalPK  },
+    { id:'total_pit', emoji:'💪', label:'통산 투구수',    value: totalPit },
+    { id:'avg_score', emoji:'📊', label:'평균 득점',      value: avgScore, meta:`${records.length}경기` },
+    { id:'big_win',   emoji:'🎉', label:'최대점수차 승',  value: bigWin  ? `${num(bigWin.our_score)}-${num(bigWin.opp_score)}`  : '-', meta: bigWin  ? `vs ${bigWin.opponent}`  : '' },
+    { id:'big_loss',  emoji:'😢', label:'최대점수차 패',  value: bigLoss ? `${num(bigLoss.our_score)}-${num(bigLoss.opp_score)}` : '-', meta: bigLoss ? `vs ${bigLoss.opponent}` : '' },
   ];
 
   return { batRecords, pitRecords, streakRecords, funRecords, hitStreak };
@@ -313,16 +324,14 @@ function renderStreakCard(sr, hitStreak){
   return '';
 }
 
-// ── 재미 기록 카드 ────────────────────────────────
+// ── 재미 기록 카드 (그리드 아이템) ───────────────
 function renderFunCard(fr){
   return `
-    <div class="record-card">
-      <div class="record-badge fun">${fr.emoji}</div>
-      <div class="record-body">
-        <div class="record-label">${fr.label}</div>
-        <div class="record-value" style="font-size:26px">${fr.value}</div>
-        ${fr.meta ? `<div class="record-meta">${fr.meta}</div>` : ''}
-      </div>
+    <div class="fun-item">
+      <div class="fun-emoji">${fr.emoji}</div>
+      <div class="fun-value">${fr.value}</div>
+      <div class="fun-label">${fr.label}</div>
+      ${fr.meta ? `<div class="fun-meta">${fr.meta}</div>` : ''}
     </div>
   `;
 }
@@ -342,7 +351,7 @@ function render(){
     streakRecords.forEach(sr => { html += renderStreakCard(sr, hitStreak); });
   }
   if(currentCategory === 'all' || currentCategory === 'fun'){
-    html += `<div class="section-label">⭐ 재미 기록</div><div class="record-list">`;
+    html += `<div class="section-label">⭐ 재미 기록</div><div class="fun-grid">`;
     funRecords.forEach(fr => { html += renderFunCard(fr); });
     html += `</div>`;
   }
