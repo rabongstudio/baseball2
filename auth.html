@@ -1,4 +1,3 @@
-
 <!doctype html>
 <html lang="ko">
 <head>
@@ -15,44 +14,65 @@
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Noto Sans KR',sans-serif;background:var(--black);color:var(--text);min-height:100vh;padding-bottom:40px}
+
 .header{position:sticky;top:0;z-index:100;background:rgba(10,12,16,.85);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 16px}
-.header-inner{max-width:480px;margin:0 auto;height:56px;display:flex;align-items:center;justify-content:space-between}
+.header-inner{max-width:480px;margin:0 auto;height:56px;display:flex;align-items:center}
 .logo{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:1px;color:var(--brand);line-height:1}
 .logo span{color:var(--text)}
-.home-btn{padding:7px 14px;border-radius:8px;border:1px solid var(--border2);background:transparent;color:var(--text);font-size:13px;font-weight:700;cursor:pointer}
-.home-btn:hover{border-color:var(--brand);color:var(--brand)}
+
 .container{max-width:420px;margin:0 auto;padding:28px 16px 40px}
 .hero-label{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--brand);margin-bottom:10px}
 .hero-title{font-family:'Bebas Neue',sans-serif;font-size:38px;line-height:1;margin-bottom:8px}
 .hero-sub{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:24px}
+
 .card{background:var(--panel);border:1px solid var(--border);border-radius:20px;padding:20px;margin-top:16px}
+
 .tabs{display:flex;gap:8px;margin-bottom:20px}
-.tab{flex:1;padding:12px;border-radius:12px;border:1px solid var(--border2);background:transparent;color:var(--muted);font-size:14px;font-weight:700;cursor:pointer}
+.tab{flex:1;padding:12px;border-radius:12px;border:1px solid var(--border2);background:transparent;color:var(--muted);font-family:'Noto Sans KR',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all .15s}
 .tab.active{background:var(--brand);color:var(--black);border-color:var(--brand)}
+
 label{display:block;margin-top:16px;font-size:12px;font-weight:700;letter-spacing:.5px;color:var(--muted);text-transform:uppercase}
-.input-wrap,.id-wrap{position:relative;margin-top:6px}
-.input-wrap input,.id-wrap input,select,textarea{width:100%;padding:14px 16px;border:1px solid var(--border2);border-radius:12px;font-size:15px;background:rgba(255,255,255,.05);color:var(--text);font-family:'Noto Sans KR',sans-serif}
-.input-wrap input:focus,.id-wrap input:focus,select:focus,textarea:focus{outline:none;border-color:var(--brand)}
-select option{background:var(--panel);color:var(--text)}
-textarea{resize:vertical;min-height:88px}
-.id-wrap{display:flex;gap:8px}
-.id-wrap input{flex:1}
-.check-btn{padding:0 16px;border-radius:12px;border:1px solid var(--brand);background:var(--brand-dim);color:var(--brand);font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap}
+
+.input-wrap{position:relative;margin-top:6px}
+.input-wrap input{width:100%;padding:14px 16px;border:1px solid var(--border2);border-radius:12px;font-size:15px;background:rgba(255,255,255,.05);color:var(--text);font-family:'Noto Sans KR',sans-serif;transition:border-color .15s}
+.input-wrap input:focus{outline:none;border-color:var(--brand)}
+.input-wrap input.ok{border-color:var(--ok)}
+.input-wrap input.err{border-color:var(--err)}
+.input-wrap .eye-btn{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);font-size:18px;padding:0;line-height:1}
+
+.id-wrap{display:flex;gap:8px;margin-top:6px}
+.id-wrap input{flex:1;padding:14px 16px;border:1px solid var(--border2);border-radius:12px;font-size:15px;background:rgba(255,255,255,.05);color:var(--text);font-family:'Noto Sans KR',sans-serif;transition:border-color .15s}
+.id-wrap input:focus{outline:none;border-color:var(--brand)}
+.id-wrap input.ok{border-color:var(--ok)}
+.id-wrap input.err{border-color:var(--err)}
+.check-btn{padding:0 16px;border-radius:12px;border:1px solid var(--brand);background:var(--brand-dim);color:var(--brand);font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:'Noto Sans KR',sans-serif;transition:all .15s}
 .check-btn:hover{background:var(--brand);color:var(--black)}
 .check-btn:disabled{opacity:.4;cursor:not-allowed}
-.input-wrap .eye-btn{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);font-size:18px;line-height:1}
-.row2{display:flex;gap:10px}
-.row2>div{flex:1}
+
+input:not(.id-wrap input):not(.input-wrap input),select,textarea{
+  width:100%;margin-top:6px;padding:14px 16px;border:1px solid var(--border2);border-radius:12px;
+  font-size:15px;background:rgba(255,255,255,.05);color:var(--text);font-family:'Noto Sans KR',sans-serif
+}
+select option{background:var(--panel);color:var(--text)}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--brand)}
+textarea{resize:vertical;min-height:88px}
+
 .hint{font-size:12px;margin-top:4px;min-height:16px}
 .hint.ok{color:var(--ok)}
 .hint.err{color:var(--err)}
 .hint.warn{color:var(--warn)}
-.btn{width:100%;margin-top:20px;padding:15px;border:none;border-radius:14px;background:var(--brand);color:var(--black);font-size:15px;font-weight:700;cursor:pointer}
+
+.btn{width:100%;margin-top:20px;padding:15px;border:none;border-radius:14px;background:var(--brand);color:var(--black);font-family:'Noto Sans KR',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all .15s}
 .btn:hover{background:#d4ea3a}
 .btn:disabled{opacity:.5;cursor:not-allowed}
+
 .msg{margin-top:10px;font-size:13px;line-height:1.5}
-.msg.err{color:var(--err)} .msg.ok{color:var(--ok)} .msg.warn{color:var(--warn)}
+.msg.err{color:var(--err)}
+.msg.ok{color:var(--ok)}
+.msg.warn{color:var(--warn)}
 .small{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.5}
+.row2{display:flex;gap:10px}
+.row2>div{flex:1}
 .hidden{display:none!important}
 .divider{height:1px;background:var(--border);margin:16px 0}
 </style>
@@ -63,13 +83,13 @@ textarea{resize:vertical;min-height:88px}
 <header class="header">
   <div class="header-inner">
     <div class="logo">ELITE<span> BASEBALL</span></div>
-    <button class="home-btn" onclick="location.href='index.html'">홈</button>
   </div>
 </header>
+
 <div class="container">
   <div class="hero-label">엘리트 야구 기록 시스템</div>
-  <div class="hero-title">우리 아이 기록을<br>쉽게 관리하세요</div>
-  <div class="hero-sub">이제 학교 공유 없이 내 계정에서 내 선수와 경기 기록만 관리합니다.</div>
+  <div class="hero-title">선수의 기록을<br>시작하세요</div>
+  <div class="hero-sub">회원가입 후 내 선수 프로필을 만들고<br>경기와 기록을 직접 관리할 수 있어요.</div>
 
   <div class="card">
     <div class="tabs">
@@ -120,9 +140,9 @@ textarea{resize:vertical;min-height:88px}
       <label>보호자/회원 이름</label>
       <input id="displayName" placeholder="예: 홍길동 어머니" />
 
-      <label>학교 구분 (선택)</label>
+      <label>학교 구분</label>
       <select id="categorySel">
-        <option value="">선택 안 함</option>
+        <option value="">선택</option>
         <option value="초등학교">초등학교</option>
         <option value="리틀">리틀/클럽</option>
         <option value="중학교">중학교</option>
@@ -130,10 +150,11 @@ textarea{resize:vertical;min-height:88px}
         <option value="대학교">대학교/일반</option>
       </select>
 
-      <label>학교 선택 (선택)</label>
+      <label>학교 선택</label>
       <select id="schoolSel" disabled>
         <option value="">구분을 먼저 선택해주세요</option>
       </select>
+      <div class="hint" id="hintSchool">학교는 선수 프로필 정보로 저장되며, 권한과는 관계없어요.</div>
 
       <div class="divider"></div>
 
@@ -147,7 +168,7 @@ textarea{resize:vertical;min-height:88px}
         </div>
         <div>
           <label>생년</label>
-          <input id="birthYear" type="number" min="2000" max="2100" placeholder="예: 2014" />
+          <input id="birthYear" type="number" min="2000" max="2100" placeholder="예: 2013" />
         </div>
       </div>
 
@@ -189,28 +210,56 @@ textarea{resize:vertical;min-height:88px}
           </select>
         </div>
         <div>
-          <label>투/타</label>
+          <label>등/투타</label>
           <div class="row2" style="margin-top:6px">
-            <div><select id="throws"><option value="우">우투</option><option value="좌">좌투</option><option value="양">양투</option></select></div>
-            <div><select id="bats"><option value="우">우타</option><option value="좌">좌타</option><option value="양">양타</option></select></div>
+            <div>
+              <select id="throws">
+                <option value="우">우투</option>
+                <option value="좌">좌투</option>
+                <option value="양">양투</option>
+              </select>
+            </div>
+            <div>
+              <select id="bats">
+                <option value="우">우타</option>
+                <option value="좌">좌타</option>
+                <option value="양">양타</option>
+              </select>
+            </div>
           </div>
         </div>
       </div>
 
+      <div class="row2">
+        <div>
+          <label>키(cm)</label>
+          <input id="heightCm" type="number" min="50" max="250" step="0.1" placeholder="예: 145" />
+        </div>
+        <div>
+          <label>몸무게(kg)</label>
+          <input id="weightKg" type="number" min="10" max="200" step="0.1" placeholder="예: 38" />
+        </div>
+      </div>
+
+      <label>부가정보 / 메모</label>
+      <textarea id="playerNote" placeholder="예: 최근 포지션 변경, 성장기록 메모 등"></textarea>
+
       <button class="btn" id="btnSignup">회원가입</button>
       <div class="msg" id="signupMsg"></div>
-      <div class="small">가입 후 바로 로그인할 수 있고, 관리자 승인 단계는 없습니다.</div>
+      <div class="small">회원가입 후 바로 로그인해서 내 선수 프로필과 경기 기록을 직접 관리할 수 있어요.</div>
     </div>
   </div>
 </div>
+
 <script>
 const el = (id) => document.getElementById(id);
 const FAKE_DOMAIN = '@baseball.app';
 const ID_REGEX = /^[a-z0-9_]{3,20}$/;
-let idChecked = false;
 
-function toEmail(u){ return u.trim().toLowerCase() + FAKE_DOMAIN; }
-function nextUrl(){ return new URLSearchParams(location.search).get('next') || 'index.html'; }
+function toEmail(u){
+  return u.trim().toLowerCase() + FAKE_DOMAIN;
+}
+
 function showTab(mode){
   const login = mode === 'login';
   el('tabLogin').classList.toggle('active', login);
@@ -220,125 +269,373 @@ function showTab(mode){
 }
 el('tabLogin').onclick = () => showTab('login');
 el('tabSignup').onclick = () => showTab('signup');
-function toggleEye(inputId, btn){ const input = el(inputId); const show = input.type === 'password'; input.type = show ? 'text' : 'password'; btn.textContent = show ? '🙈' : '👁'; }
+
+function toggleEye(inputId, btn){
+  const input = el(inputId);
+  const show = input.type === 'password';
+  input.type = show ? 'text' : 'password';
+  btn.textContent = show ? '🙈' : '👁';
+}
 el('eyeLogin').onclick = () => toggleEye('loginPassword', el('eyeLogin'));
 el('eyePw').onclick = () => toggleEye('signupPassword', el('eyePw'));
 el('eyePwConfirm').onclick = () => toggleEye('signupPasswordConfirm', el('eyePwConfirm'));
 
-function getSchoolYearBase(){ const now = new Date(); return (now.getMonth()+1) >= 3 ? now.getFullYear() : now.getFullYear() - 1; }
+function getSchoolYearBase(){
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = now.getMonth() + 1;
+  return m >= 3 ? y : y - 1;
+}
+
 function fillGradeYearOptions(level){
   const sel = el('gradeYear');
-  const cur = sel.value;
+  const current = sel.value;
   sel.innerHTML = '<option value="">선택</option>';
+
   let max = 0;
-  if(level === '초') max = 6; else if(level === '중' || level === '고') max = 3; else if(level === '대') max = 4;
-  for(let i=1;i<=max;i++){ const o=document.createElement('option'); o.value=String(i); o.textContent=`${i}학년`; sel.appendChild(o); }
-  if(cur && Number(cur) <= max) sel.value = cur;
+  if(level === '초') max = 6;
+  else if(level === '중') max = 3;
+  else if(level === '고') max = 3;
+  else if(level === '대') max = 4;
+
+  for(let i = 1; i <= max; i++){
+    const opt = document.createElement('option');
+    opt.value = String(i);
+    opt.textContent = `${i}학년`;
+    sel.appendChild(opt);
+  }
+
+  if(current && Number(current) <= max){
+    sel.value = current;
+  }
 }
-function buildGradeText(){ const level = el('gradeLevel').value; const year = el('gradeYear').value; return level && year ? `${level}${year}` : ''; }
+
+function buildGradeText(){
+  const level = el('gradeLevel').value;
+  const year = el('gradeYear').value;
+  if(!level || !year) return '';
+  return `${level}${year}`;
+}
+
 function suggestGradeFromBirthYear(){
-  const raw = el('birthYear').value.trim(); const hint = el('hintGrade');
-  if(!raw){ hint.className='hint'; hint.textContent=''; return; }
-  const birthYear = Number(raw); if(!Number.isFinite(birthYear)){ hint.className='hint warn'; hint.textContent='생년을 정확히 입력해주세요.'; return; }
-  const ageYear = getSchoolYearBase() - birthYear + 1;
-  let level='', grade=0;
-  if(ageYear >= 8 && ageYear <= 13){ level='초'; grade=ageYear-7; }
-  else if(ageYear >= 14 && ageYear <= 16){ level='중'; grade=ageYear-13; }
-  else if(ageYear >= 17 && ageYear <= 19){ level='고'; grade=ageYear-16; }
-  else if(ageYear >= 20 && ageYear <= 23){ level='대'; grade=ageYear-19; }
-  else { hint.className='hint warn'; hint.textContent='자동 학년 추천 대상이 아니에요. 직접 선택해주세요.'; return; }
-  el('gradeLevel').value = level; fillGradeYearOptions(level); el('gradeYear').value = String(grade);
-  hint.className='hint ok'; hint.textContent=`생년 기준으로 ${level}${grade} 자동 추천했어요`;
+  const raw = el('birthYear').value.trim();
+  const hint = el('hintGrade');
+
+  if(!raw){
+    hint.className = 'hint';
+    hint.textContent = '';
+    return;
+  }
+
+  const birthYear = Number(raw);
+  if(!Number.isFinite(birthYear)){
+    hint.className = 'hint warn';
+    hint.textContent = '생년을 정확히 입력해주세요.';
+    return;
+  }
+
+  const baseYear = getSchoolYearBase();
+  const koreanAgeYear = baseYear - birthYear + 1;
+
+  let level = '';
+  let grade = 0;
+
+  if(koreanAgeYear >= 8 && koreanAgeYear <= 13){
+    level = '초';
+    grade = koreanAgeYear - 7;
+  }else if(koreanAgeYear >= 14 && koreanAgeYear <= 16){
+    level = '중';
+    grade = koreanAgeYear - 13;
+  }else if(koreanAgeYear >= 17 && koreanAgeYear <= 19){
+    level = '고';
+    grade = koreanAgeYear - 16;
+  }else if(koreanAgeYear >= 20 && koreanAgeYear <= 23){
+    level = '대';
+    grade = koreanAgeYear - 19;
+  }else{
+    hint.className = 'hint warn';
+    hint.textContent = '자동 학년 추천 대상이 아니에요. 직접 선택해주세요.';
+    return;
+  }
+
+  el('gradeLevel').value = level;
+  fillGradeYearOptions(level);
+  el('gradeYear').value = String(grade);
+  hint.className = 'hint ok';
+  hint.textContent = `생년 기준으로 ${level}${grade} 자동 추천했어요`;
 }
+
+let idChecked = false;
 
 el('signupUsername').addEventListener('input', () => {
   idChecked = false;
-  const val = el('signupUsername').value.trim(); const hint = el('hintUsername'); const input = el('signupUsername');
-  if(!val){ hint.className='hint'; hint.textContent=''; input.className=''; return; }
-  if(!ID_REGEX.test(val)){ hint.className='hint err'; hint.textContent='영문 소문자, 숫자, _ 만 가능 (3~20자)'; input.className=''; return; }
-  hint.className='hint warn'; hint.textContent='중복확인을 눌러주세요';
+  const val = el('signupUsername').value.trim();
+  const hint = el('hintUsername');
+  const input = el('signupUsername');
+
+  if(!val){
+    hint.className = 'hint';
+    hint.textContent = '';
+    input.className = '';
+    return;
+  }
+
+  if(!ID_REGEX.test(val)){
+    hint.className = 'hint err';
+    hint.textContent = '영문 소문자, 숫자, _ 만 가능 (3~20자)';
+    input.className = 'err';
+    return;
+  }
+
+  hint.className = 'hint warn';
+  hint.textContent = '중복확인을 눌러주세요';
+  input.className = '';
 });
 
 el('btnCheckId').onclick = async () => {
-  const username = el('signupUsername').value.trim(); const hint = el('hintUsername');
+  const username = el('signupUsername').value.trim();
+  const hint = el('hintUsername');
+  const input = el('signupUsername');
   idChecked = false;
-  if(!ID_REGEX.test(username)){ hint.className='hint err'; hint.textContent='올바른 아이디 형식이 아니에요'; return; }
-  el('btnCheckId').disabled = true; hint.className='hint'; hint.textContent='확인 중...';
-  const { data, error } = await sb.from('baseball_profiles').select('id').eq('username', username).maybeSingle();
+
+  if(!ID_REGEX.test(username)){
+    hint.className = 'hint err';
+    hint.textContent = '올바른 아이디 형식이 아니에요';
+    return;
+  }
+
+  el('btnCheckId').disabled = true;
+  hint.className = 'hint';
+  hint.textContent = '확인 중...';
+
+  const { data, error } = await sb
+    .from('baseball_profiles')
+    .select('id')
+    .eq('username', username)
+    .maybeSingle();
+
   el('btnCheckId').disabled = false;
-  if(error){ hint.className='hint err'; hint.textContent='확인 중 오류가 발생했어요'; return; }
-  if(data){ hint.className='hint err'; hint.textContent='이미 사용 중인 아이디예요'; }
-  else { hint.className='hint ok'; hint.textContent='사용 가능한 아이디예요 ✓'; idChecked = true; }
+
+  if(error){
+    hint.className = 'hint err';
+    hint.textContent = '확인 중 오류가 발생했어요';
+    return;
+  }
+
+  if(data){
+    hint.className = 'hint err';
+    hint.textContent = '이미 사용 중인 아이디예요';
+    input.className = 'err';
+    idChecked = false;
+  }else{
+    hint.className = 'hint ok';
+    hint.textContent = '사용 가능한 아이디예요 ✓';
+    input.className = 'ok';
+    idChecked = true;
+  }
 };
 
-function checkPasswordMatch(){
-  const pw = el('signupPassword').value, pw2 = el('signupPasswordConfirm').value;
-  el('hintPassword').className = pw.length > 0 && pw.length < 6 ? 'hint err' : 'hint';
-  el('hintPassword').textContent = pw.length > 0 && pw.length < 6 ? '6자 이상 입력해주세요' : '';
-  if(!pw2){ el('hintPasswordConfirm').className='hint'; el('hintPasswordConfirm').textContent=''; return; }
-  if(pw === pw2){ el('hintPasswordConfirm').className='hint ok'; el('hintPasswordConfirm').textContent='비밀번호가 일치해요 ✓'; }
-  else { el('hintPasswordConfirm').className='hint err'; el('hintPasswordConfirm').textContent='비밀번호가 일치하지 않아요'; }
-}
 el('signupPassword').addEventListener('input', checkPasswordMatch);
 el('signupPasswordConfirm').addEventListener('input', checkPasswordMatch);
-el('gradeLevel').addEventListener('change', () => fillGradeYearOptions(el('gradeLevel').value));
-el('birthYear').addEventListener('input', suggestGradeFromBirthYear);
+
+function checkPasswordMatch(){
+  const pw = el('signupPassword').value;
+  const pw2 = el('signupPasswordConfirm').value;
+  const hintPw = el('hintPassword');
+  const hintConf = el('hintPasswordConfirm');
+
+  if(pw.length > 0 && pw.length < 6){
+    hintPw.className = 'hint err';
+    hintPw.textContent = '6자 이상 입력해주세요';
+  }else{
+    hintPw.className = 'hint';
+    hintPw.textContent = '';
+  }
+
+  if(!pw2){
+    hintConf.className = 'hint';
+    hintConf.textContent = '';
+    el('signupPasswordConfirm').className = '';
+    return;
+  }
+
+  if(pw === pw2){
+    hintConf.className = 'hint ok';
+    hintConf.textContent = '비밀번호가 일치해요 ✓';
+    el('signupPasswordConfirm').className = 'ok';
+  }else{
+    hintConf.className = 'hint err';
+    hintConf.textContent = '비밀번호가 일치하지 않아요';
+    el('signupPasswordConfirm').className = 'err';
+  }
+}
 
 async function loadSchools(){
   el('categorySel').addEventListener('change', async () => {
-    const cat = el('categorySel').value; const sel = el('schoolSel'); sel.innerHTML = '<option value="">학교 선택</option>';
-    if(!cat){ sel.disabled = true; return; }
-    sel.disabled = false; sel.innerHTML = '<option value="">불러오는 중...</option>';
-    const { data, error } = await sb.from('baseball_schools').select('id,name').eq('category', cat).order('name');
+    const cat = el('categorySel').value;
+    const sel = el('schoolSel');
     sel.innerHTML = '<option value="">학교 선택</option>';
-    if(error){ el('signupMsg').className='msg err'; el('signupMsg').textContent='학교 목록 오류: ' + error.message; return; }
-    (data || []).forEach(s => { const opt=document.createElement('option'); opt.value=s.id; opt.textContent=s.name; sel.appendChild(opt); });
+
+    if(!cat){
+      sel.disabled = true;
+      return;
+    }
+
+    sel.disabled = false;
+    sel.innerHTML = '<option value="">불러오는 중...</option>';
+
+    const { data, error } = await sb
+      .from('baseball_schools')
+      .select('id,name')
+      .eq('category', cat)
+      .order('name');
+
+    sel.innerHTML = '<option value="">학교 선택</option>';
+
+    if(error){
+      el('signupMsg').className = 'msg err';
+      el('signupMsg').textContent = '학교 목록 오류: ' + error.message;
+      return;
+    }
+
+    (data || []).forEach(s => {
+      const opt = document.createElement('option');
+      opt.value = s.id;
+      opt.textContent = s.name;
+      sel.appendChild(opt);
+    });
   });
 }
 
+function nextUrl(){
+  const next = new URLSearchParams(location.search).get('next');
+  return next || 'index.html';
+}
+
+el('gradeLevel').addEventListener('change', () => {
+  fillGradeYearOptions(el('gradeLevel').value);
+});
+
+el('birthYear').addEventListener('input', suggestGradeFromBirthYear);
+
 el('btnLogin').onclick = async () => {
-  const msg = el('loginMsg'); msg.className='msg'; msg.textContent='로그인 중...';
+  const msg = el('loginMsg');
+  msg.className = 'msg';
+  msg.textContent = '로그인 중...';
+
   const username = el('loginUsername').value.trim();
-  if(!username){ msg.className='msg err'; msg.textContent='아이디를 입력해주세요.'; return; }
-  const { error } = await sb.auth.signInWithPassword({ email: toEmail(username), password: el('loginPassword').value });
-  if(error){ msg.className='msg err'; msg.textContent='아이디 또는 비밀번호가 틀렸어요.'; return; }
+  if(!username){
+    msg.className = 'msg err';
+    msg.textContent = '아이디를 입력해주세요.';
+    return;
+  }
+
+  const { error } = await sb.auth.signInWithPassword({
+    email: toEmail(username),
+    password: el('loginPassword').value
+  });
+
+  if(error){
+    msg.className = 'msg err';
+    msg.textContent = '아이디 또는 비밀번호가 틀렸어요.';
+    return;
+  }
+
   location.href = nextUrl();
 };
 
 el('btnSignup').onclick = async () => {
-  const msg = el('signupMsg'); msg.className='msg'; msg.textContent='';
+  const msg = el('signupMsg');
+  msg.className = 'msg';
+  msg.textContent = '';
+
   const username = el('signupUsername').value.trim();
-  const password = el('signupPassword').value; const password2 = el('signupPasswordConfirm').value;
+  const password = el('signupPassword').value;
+  const password2 = el('signupPasswordConfirm').value;
+  const schoolId = el('schoolSel').value ? Number(el('schoolSel').value) : null;
+  const gradeText = buildGradeText();
+
+  if(!username){
+    msg.className = 'msg err';
+    msg.textContent = '아이디를 입력해주세요.';
+    return;
+  }
+
+  if(!idChecked){
+    msg.className = 'msg err';
+    msg.textContent = '아이디 중복확인을 해주세요.';
+    return;
+  }
+
+  if(password.length < 6){
+    msg.className = 'msg err';
+    msg.textContent = '비밀번호는 6자 이상이어야 해요.';
+    return;
+  }
+
+  if(password !== password2){
+    msg.className = 'msg err';
+    msg.textContent = '비밀번호가 일치하지 않아요.';
+    return;
+  }
+
   const payload = {
     username,
     display_name: el('displayName').value.trim(),
-    school_id: el('schoolSel').value ? Number(el('schoolSel').value) : null,
+    school_id: schoolId,
     player_name: el('playerName').value.trim(),
     jersey_number: el('jerseyNumber').value === '' ? null : Number(el('jerseyNumber').value),
-    grade: buildGradeText(),
+    grade: gradeText,
     birth_year: el('birthYear').value === '' ? null : Number(el('birthYear').value),
     primary_position: el('primaryPos').value,
     throws: el('throws').value,
-    bats: el('bats').value
+    bats: el('bats').value,
+    height_cm: el('heightCm').value === '' ? null : Number(el('heightCm').value),
+    weight_kg: el('weightKg').value === '' ? null : Number(el('weightKg').value),
+    note: el('playerNote').value.trim()
   };
-  if(!username){ msg.className='msg err'; msg.textContent='아이디를 입력해주세요.'; return; }
-  if(!idChecked){ msg.className='msg err'; msg.textContent='아이디 중복확인을 해주세요.'; return; }
-  if(password.length < 6){ msg.className='msg err'; msg.textContent='비밀번호는 6자 이상이어야 해요.'; return; }
-  if(password !== password2){ msg.className='msg err'; msg.textContent='비밀번호가 일치하지 않아요.'; return; }
-  if(!payload.display_name || !payload.player_name || !payload.grade || !payload.primary_position){ msg.className='msg err'; msg.textContent='이름, 선수 이름, 학제/학년, 주 포지션은 필수예요.'; return; }
-  el('btnSignup').disabled = true; msg.textContent='회원가입 중...';
-  const { data, error } = await sb.auth.signUp({ email: toEmail(username), password, options: { data: payload } });
+
+  if(!payload.display_name || !payload.player_name || !payload.grade || !payload.primary_position){
+    msg.className = 'msg err';
+    msg.textContent = '이름, 선수 이름, 학제/학년, 주 포지션은 필수예요.';
+    return;
+  }
+
+  el('btnSignup').disabled = true;
+  msg.textContent = '회원가입 중...';
+
+  const { data, error } = await sb.auth.signUp({
+    email: toEmail(username),
+    password,
+    options: { data: payload }
+  });
+
   el('btnSignup').disabled = false;
-  if(error){ msg.className='msg err'; msg.textContent=error.message; return; }
-  if(data.session){ location.href = nextUrl(); return; }
-  msg.className='msg ok'; msg.textContent='회원가입이 완료됐어요. 이제 바로 로그인할 수 있어요.';
+
+  if(error){
+    msg.className = 'msg err';
+    msg.textContent = error.message;
+    return;
+  }
+
+  if(data.session){
+    location.href = nextUrl();
+    return;
+  }
+
+  msg.className = 'msg ok';
+  msg.textContent = '회원가입이 완료됐어요! 이제 로그인해서 바로 사용할 수 있어요.';
+  showTab('login');
 };
 
 (async function init(){
   fillGradeYearOptions('');
   await loadSchools();
+
   const { data:{ user } } = await sb.auth.getUser();
-  if(user) location.href = nextUrl();
+  if(user){
+    location.href = nextUrl();
+  }
 })();
 </script>
 </body>
