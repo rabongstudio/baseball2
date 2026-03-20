@@ -27,9 +27,10 @@ body.sheet-open{overflow:hidden}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/config.js"></script>
+<script src="js/header.js"></script>
 </head>
 <body>
-<header class="header"><div class="header-inner"><div class="logo">ELITE<span> BASEBALL</span></div><a href="index.html" class="back-btn">← 홈</a></div></header>
+<div id="appHeader" data-back="index.html"></div>
 <div class="container">
   <div id="viewTournaments"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px"><div><div class="page-title">대회 선택</div><div class="page-sub" id="playerHeader">-</div></div></div><div id="tourList"></div></div>
   <div id="viewStats" class="hidden"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px"><div><div class="page-title">상세 리포트</div><div class="page-sub" id="statsHeader">-</div></div><button class="back-btn" id="btnBackToTours">← 뒤로</button></div><div class="kpi-grid"><div class="kpi"><div class="v" id="kpiAVG">.000</div><div class="l">타율</div></div><div class="kpi"><div class="v" id="kpiOBP">.000</div><div class="l">출루율</div></div><div class="kpi"><div class="v" id="kpiSLG">.000</div><div class="l">장타율</div></div><div class="kpi"><div class="v" id="kpiOPS">.000</div><div class="l">OPS</div></div><div class="kpi"><div class="v" id="kpiERA">-</div><div class="l">ERA</div></div><div class="kpi"><div class="v" id="kpiWHIP">-</div><div class="l">WHIP</div></div><div class="kpi"><div class="v" id="kpiSO">-</div><div class="l">탈삼진</div></div><div class="kpi"><div class="v" id="kpiG">-</div><div class="l">경기수</div></div></div><div class="stat-section bat"><div class="stat-section-title">⚾ Batting</div><div class="stat-grid" id="batKV"></div></div><div class="stat-section pit"><div class="stat-section-title">🥎 Pitching</div><div class="stat-grid" id="pitKV"></div></div><div class="stat-section fld"><div class="stat-section-title">🧤 Fielding & Memo</div><div id="fldKV"></div></div><div class="section-label">경기별 기록</div><div class="hint-text">경기를 누르면 아래에서 상세 성적이 올라옵니다.</div><div id="gamesList"></div><button class="btn ghost" id="btnBackToToursBottom">← 대회 목록</button></div>
