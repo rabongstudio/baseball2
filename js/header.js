@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     const style = document.createElement('style');
     style.id = '_headerStyle';
     style.textContent = `
-      ._hbtn{padding:7px 16px;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:transparent;color:#f0f2f5;font-family:'Noto Sans KR',sans-serif;font-size:13px;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;transition:all .15s}
+      ._hbtn{padding:5px 11px;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:transparent;color:#f0f2f5;font-family:'Noto Sans KR',sans-serif;font-size:13px;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;transition:all .15s}
       ._hbtn:hover{border-color:#e8ff47;color:#e8ff47}
       ._hbtn.primary{background:#e8ff47;color:#0a0c10;border-color:#e8ff47}
       ._hbtn.primary:hover{background:#d4ea3a}
