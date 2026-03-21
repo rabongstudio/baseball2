@@ -779,6 +779,8 @@ el('btnSignup').onclick = async () => {
     note:            el('playerNote').value.trim()
   };
 
+  if(!el('categorySel').value){ msg.className='msg err'; msg.textContent='학교 구분을 선택해주세요.'; return; }
+  if(!schoolId){ msg.className='msg err'; msg.textContent='학교를 선택해주세요.'; return; }
   if(!payload.display_name || !payload.player_name || !payload.grade || !payload.primary_position){
     msg.className='msg err'; msg.textContent='이름, 선수 이름, 학교구분/학년, 주 포지션은 필수예요.'; return;
   }
