@@ -57,6 +57,7 @@ input:not(.id-wrap input):not(.input-wrap input),select,textarea{
 select option{background:var(--panel);color:var(--text)}
 input:focus,select:focus,textarea:focus{outline:none;border-color:var(--brand)}
 textarea{resize:vertical;min-height:88px}
+input[type="checkbox"],input[type="radio"]{width:auto !important;margin-top:0;padding:0;border:none;background:none;border-radius:0}
 
 .hint{font-size:12px;margin-top:4px;min-height:16px}
 .hint.ok{color:var(--ok)}
@@ -78,6 +79,14 @@ textarea{resize:vertical;min-height:88px}
 .row2>div{flex:1}
 .hidden{display:none!important}
 .divider{height:1px;background:var(--border);margin:16px 0}
+
+.consent-box{margin-top:18px;padding:14px 16px;border:1px solid var(--border2);border-radius:16px;background:rgba(255,255,255,.04)}
+.consent-box{overflow:hidden}
+.consent-label{display:flex;gap:10px;align-items:flex-start;cursor:pointer;flex-wrap:nowrap}
+.consent-label input{width:18px !important;min-width:18px !important;height:18px !important;accent-color:var(--brand);margin:2px 0 0 0 !important;flex:0 0 18px !important;padding:0 !important}
+.consent-label span{display:block;flex:1 1 auto;min-width:0;word-break:keep-all;white-space:normal}
+.consent-text{margin-top:10px;font-size:12px;line-height:1.7;color:var(--muted);word-break:keep-all;overflow-wrap:break-word}
+
 
 
 /* 비밀번호 찾기 단계 표시 */
@@ -289,6 +298,19 @@ textarea{resize:vertical;min-height:88px}
 
       <label>부가정보 / 메모</label>
       <textarea id="playerNote" placeholder="예: 최근 포지션 변경, 성장기록 메모 등"></textarea>
+
+      <div class="divider"></div>
+
+      <div class="consent-box">
+        <label class="consent-label" for="signupPrivacyConsent" style="margin-top:0;text-transform:none;letter-spacing:0;font-size:13px;color:var(--text);font-weight:600">
+          <input type="checkbox" id="signupPrivacyConsent" />
+          <span><b>[필수] 개인정보 수집 및 이용 동의</b></span>
+        </label>
+        <div class="consent-text">
+          본 서비스는 회원 식별 및 선수 기록 관리에 필요한 최소한의 정보(이름, 학교, 학년 등)만을 수집하며, 이메일 및 휴대전화번호와 같은 연락처 및 고유식별정보는 수집하지 않습니다.<br><br>
+          또한 수집된 정보는 서비스 제공 목적 외에는 사용되지 않으며, 접근 권한이 제한된 범위 내에서 안전하게 관리됩니다.
+        </div>
+      </div>
 
       <button class="btn" id="btnSignup">회원가입</button>
       <div class="msg" id="signupMsg"></div>
@@ -756,12 +778,14 @@ el('btnSignup').onclick = async () => {
   const gradeText = buildGradeText();
   const secQuestion = el('securityQuestion').value;
   const secAnswer   = el('securityAnswer').value.trim();
+  const privacyConsent = el('signupPrivacyConsent')?.checked;
 
   if(!username){ msg.className='msg err'; msg.textContent='아이디를 입력해주세요.'; return; }
   if(!idChecked){ msg.className='msg err'; msg.textContent='아이디 중복확인을 해주세요.'; return; }
   if(password.length < 6){ msg.className='msg err'; msg.textContent='비밀번호는 6자 이상이어야 해요.'; return; }
   if(password !== password2){ msg.className='msg err'; msg.textContent='비밀번호가 일치하지 않아요.'; return; }
   if(!secQuestion || !secAnswer){ msg.className='msg err'; msg.textContent='보안 질문과 답변을 입력해주세요. (비밀번호 찾기에 사용돼요)'; return; }
+  if(!privacyConsent){ msg.className='msg err'; msg.textContent='개인정보 수집 및 이용 동의는 필수입니다.'; return; }
 
   const payload = {
     username,
@@ -801,6 +825,18 @@ el('btnSignup').onclick = async () => {
       msg.className='msg err'; msg.textContent='계정 생성이 완료되지 않았어요. 다른 아이디로 다시 시도해주세요.'; return;
     }
 
+    let activeSession = data.session || null;
+
+    if(!activeSession){
+      const { data: signInData, error: signInErr } = await sb.auth.signInWithPassword({
+        email: toEmail(username),
+        password
+      });
+      if(!signInErr && signInData?.session){
+        activeSession = signInData.session;
+      }
+    }
+
     // 보안 질문/답변 저장 (로그인된 상태에서 RPC 호출)
     const { error: sqErr } = await sb.rpc('baseball_set_security_question', {
       p_question: secQuestion,
@@ -809,16 +845,26 @@ el('btnSignup').onclick = async () => {
 
     if(sqErr){
       console.warn('보안 질문 저장 실패:', sqErr);
-      // 회원가입 자체는 성공했으므로 경고만 표시
     }
 
-    if(data.session){
+    // 개인정보 수집 및 이용 동의 저장
+    const { error: consentErr } = await sb.rpc('baseball_record_privacy_consent', {
+      p_agreed: true,
+      p_consent_version: '2026-03-21',
+      p_source: 'signup'
+    });
+
+    if(consentErr){
+      console.warn('개인정보 동의 저장 실패:', consentErr);
+    }
+
+    if(activeSession){
       location.href = nextUrl();
       return;
     }
 
-    msg.className='msg ok';
-    msg.textContent='회원가입이 완료됐어요! 이제 로그인해서 바로 사용할 수 있어요.';
+    msg.className='msg warn';
+    msg.textContent='회원가입이 완료되었습니다.';
     showTab('login');
   }catch(err){
     console.error(err);
