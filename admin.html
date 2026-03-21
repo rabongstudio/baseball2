@@ -3,437 +3,730 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>관리자 권한 관리</title>
+<title>가입자 통계 관리자 · ELITEREC</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+KR:wght@400;600;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+KR:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
 :root{
   --black:#0a0c10;
   --dark:#11141a;
   --panel:#181c24;
-  --border:rgba(255,255,255,.07);
-  --border2:rgba(255,255,255,.12);
-  --text:#f0f2f5;
-  --muted:#7a8294;
+  --panel2:#202532;
+  --line:rgba(255,255,255,.08);
+  --line2:rgba(255,255,255,.14);
+  --text:#f3f5f7;
+  --muted:#8b93a7;
   --brand:#e8ff47;
+  --brand-dim:rgba(232,255,71,.12);
   --ok:#4ade80;
   --err:#f87171;
-  --warn:#fbbf24;
+  --shadow:0 12px 30px rgba(0,0,0,.28);
 }
-
-*{box-sizing:border-box;margin:0;padding:0}
-
-body{
-  font-family:'Noto Sans KR',sans-serif;
-  background:var(--black);
-  color:var(--text);
-}
-
-.header{
-  position:sticky;
-  top:0;
-  z-index:100;
-  background:rgba(10,12,16,.85);
-  backdrop-filter:blur(16px);
-  -webkit-backdrop-filter:blur(16px);
-  border-bottom:1px solid var(--border);
-}
-
-.header-inner{
-  max-width:480px;
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:linear-gradient(180deg,#0a0c10 0%,#11141a 100%);color:var(--text);font-family:'Noto Sans KR',sans-serif}
+body{min-height:100vh}
+button{font:inherit}
+.wrap{
+  max-width:820px;
   margin:0 auto;
-  height:56px;
+  padding:18px 14px 40px;
+}
+.topbar{
   display:flex;
   align-items:center;
   justify-content:space-between;
-  padding:0 16px;
+  gap:10px;
+  margin-bottom:14px;
 }
-
 .logo{
   font-family:'Bebas Neue',sans-serif;
-  font-size:28px;
+  font-size:34px;
+  letter-spacing:1px;
   line-height:1;
-  color:var(--brand);
 }
-.logo span{color:var(--text)}
-
-.top-actions{
+.sub{
+  color:var(--muted);
+  font-size:13px;
+  margin-top:2px;
+}
+.actions{
   display:flex;
   gap:8px;
 }
-
-.auth-btn{
-  padding:7px 16px;
-  border-radius:8px;
-  border:1px solid var(--border2);
-  background:transparent;
-  color:var(--text);
-  font-size:13px;
-  font-weight:700;
+.btn{
+  border:1px solid var(--line2);
+  background:#fff;
+  color:#0f1115;
+  border-radius:12px;
+  padding:10px 14px;
+  font-weight:800;
   cursor:pointer;
 }
-
-.auth-btn:hover{
-  border-color:var(--brand);
-  color:var(--brand);
+.btn.secondary{
+  background:transparent;
+  color:var(--text);
 }
-
-.container{
-  max-width:480px;
-  margin:0 auto;
-  padding:20px 16px 32px;
-}
-
 .hero{
-  background:var(--panel);
-  border:1px solid var(--border);
-  border-radius:20px;
-  padding:20px;
-  margin-bottom:16px;
+  background:linear-gradient(135deg,#1a1f29 0%,#151922 100%);
+  border:1px solid var(--line);
+  border-radius:22px;
+  padding:18px;
+  box-shadow:var(--shadow);
+  margin-bottom:14px;
 }
-
-.hero-title{
+.hero h1{
+  margin:0;
   font-size:24px;
+  line-height:1.2;
   font-weight:900;
-  margin-bottom:6px;
 }
+.hero p{
+  margin:8px 0 0;
+  color:var(--muted);
+  font-size:13px;
+}
+.filter-bar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin:14px 0 12px;
+  flex-wrap:wrap;
+}
+.segment{
+  display:inline-flex;
+  background:rgba(255,255,255,.04);
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:4px;
+  gap:4px;
+}
+.seg-btn{
+  border:0;
+  background:transparent;
+  color:var(--muted);
+  padding:10px 14px;
+  border-radius:10px;
+  font-weight:900;
+  cursor:pointer;
+}
+.seg-btn.active{
+  background:var(--brand);
+  color:#0f1115;
+}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+}
+.card{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:20px;
+  padding:16px;
+  box-shadow:var(--shadow);
+}
+.card.wide{grid-column:1/-1}
+.label{
+  color:var(--muted);
+  font-size:12px;
+  font-weight:700;
+}
+.value{
+  margin-top:8px;
+  font-size:30px;
+  line-height:1;
+  font-weight:900;
+}
+.delta{
+  margin-top:8px;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:6px 10px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:800;
+  background:rgba(255,255,255,.05);
+  border:1px solid var(--line);
+}
+.delta.up{color:var(--ok); background:rgba(74,222,128,.10)}
+.delta.down{color:var(--err); background:rgba(248,113,113,.10)}
+.delta.same{color:#cbd5e1}
 
-.hero-sub{
+.section-title{
+  margin:20px 2px 10px;
+  font-size:16px;
+  font-weight:900;
+}
+.cat-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+}
+.cat-card{
+  background:var(--panel2);
+  border:1px solid var(--line);
+  border-radius:18px;
+  padding:14px;
+}
+.cat-name{
   font-size:13px;
   color:var(--muted);
-  line-height:1.55;
+  font-weight:800;
 }
+.cat-count{
+  margin-top:6px;
+  font-size:24px;
+  font-weight:900;
+}
+.cat-diff{
+  margin-top:8px;
+  font-size:12px;
+  font-weight:800;
+}
+.cat-diff.up{color:var(--ok)}
+.cat-diff.down{color:var(--err)}
+.cat-diff.same{color:#cbd5e1}
 
-.msg{
-  display:none;
-  margin-bottom:12px;
-  padding:12px 14px;
-  border-radius:12px;
-  font-size:13px;
-  line-height:1.5;
+.chart-card{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:20px;
+  padding:16px;
+  margin-top:12px;
+  box-shadow:var(--shadow);
 }
-.msg.show{display:block}
-.msg.ok{
-  background:rgba(74,222,128,.1);
-  color:var(--ok);
+.chart-wrap{
+  margin-top:14px;
+  height:240px;
+  display:flex;
+  align-items:flex-end;
+  gap:6px;
+  overflow-x:auto;
+  padding-bottom:8px;
 }
-.msg.err{
-  background:rgba(248,113,113,.1);
-  color:var(--err);
-}
-.msg.warn{
-  background:rgba(251,191,36,.1);
-  color:var(--warn);
-}
-
-.user-list{
+.bar-col{
+  min-width:24px;
   display:flex;
   flex-direction:column;
-  gap:10px;
+  align-items:center;
+  justify-content:flex-end;
+  gap:8px;
 }
-
-.user-card{
+.bar{
+  width:100%;
+  min-height:4px;
+  border-radius:8px 8px 0 0;
+  background:linear-gradient(180deg,var(--brand) 0%, #b9cf32 100%);
+  box-shadow:0 0 0 1px rgba(0,0,0,.08) inset;
+}
+.bar-num{
+  font-size:10px;
+  color:#dfe4ea;
+  font-weight:800;
+}
+.bar-date{
+  font-size:9px;
+  color:var(--muted);
+  writing-mode:vertical-rl;
+  text-orientation:mixed;
+  height:56px;
+}
+.table-card{
   background:var(--panel);
-  border:1px solid var(--border);
-  border-radius:16px;
-  padding:12px;
+  border:1px solid var(--line);
+  border-radius:20px;
+  padding:0;
+  margin-top:12px;
+  overflow:hidden;
+  box-shadow:var(--shadow);
 }
-
-.user-row{
-  display:flex;
+.table-head, .row{
+  display:grid;
+  align-items:center;
+}
+.table-head{
+  background:#141821;
+  border-bottom:1px solid var(--line);
+  font-size:12px;
+  color:var(--muted);
+  font-weight:800;
+}
+.table-head > div, .row > div{
+  padding:12px 10px;
+  text-align:center;
+  white-space:nowrap;
+}
+.row{
+  font-size:12px;
+  border-bottom:1px solid rgba(255,255,255,.05);
+}
+.row:last-child{border-bottom:none}
+.left{text-align:left !important}
+.empty{
+  padding:24px 16px;
+  color:var(--muted);
+  text-align:center;
+}
+.msg{
+  margin-top:12px;
+  font-size:13px;
+  color:var(--muted);
+}
+.msg.err{color:var(--err)}
+.loading{
+  display:inline-flex;
   align-items:center;
   gap:8px;
 }
-
-.nick{
-  flex:1;
-  min-width:0;
-  font-size:14px;
-  font-weight:800;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
-}
-
-.me-badge{
-  flex-shrink:0;
-  font-size:11px;
-  font-weight:800;
-  color:#000;
+.dot{
+  width:8px;height:8px;border-radius:50%;
   background:var(--brand);
-  border-radius:999px;
-  padding:4px 8px;
+  box-shadow:0 0 18px var(--brand);
+  animation:blink 1s infinite alternate;
 }
-
-.role-select{
-  width:120px;
-  flex-shrink:0;
-  appearance:none;
-  border-radius:10px;
-  border:1px solid var(--border2);
-  background:var(--dark);
-  color:var(--text);
-  padding:10px 10px;
+.kicker{
   font-size:12px;
-  font-weight:700;
-  outline:none;
-}
-
-.role-select:focus{
-  border-color:var(--brand);
-}
-
-.save-btn{
-  flex-shrink:0;
-  padding:10px 12px;
-  border:none;
-  border-radius:10px;
-  background:var(--brand);
-  color:#000;
-  font-size:12px;
-  font-weight:800;
-  cursor:pointer;
-}
-
-.save-btn:disabled,
-.role-select:disabled{
-  opacity:.6;
-  cursor:default;
-}
-
-.empty{
-  text-align:center;
-  padding:30px;
   color:var(--muted);
-  font-size:14px;
+  font-weight:800;
 }
-
-@media (max-width:380px){
-  .role-select{width:104px;padding:10px 8px}
-  .save-btn{padding:10px 10px}
-  .nick{font-size:13px}
+@keyframes blink{
+  from{opacity:.35;transform:scale(.9)}
+  to{opacity:1;transform:scale(1.1)}
+}
+@media (max-width:640px){
+  .grid,.cat-grid{grid-template-columns:1fr 1fr}
+  .value{font-size:26px}
 }
 </style>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="js/config.js"></script>
 </head>
 <body>
-
-<header class="header">
-  <div class="header-inner">
-    <div class="logo">ELITE<span> BASEBALL</span></div>
-    <div class="top-actions">
-      <button class="auth-btn" onclick="location.href='index.html'">홈</button>
-      <button class="auth-btn" onclick="logout()">로그아웃</button>
+<div class="wrap">
+  <div class="topbar">
+    <div>
+      <div class="logo">ELITEREC</div>
+      <div class="sub">가입자 통계 관리자</div>
     </div>
-  </div>
-</header>
-
-<div class="container">
-  <div class="hero">
-    <div class="hero-title">권한 관리</div>
-    <div class="hero-sub">
-      학교 기준 첫 가입자는 admin 권한을 가집니다.<br>
-      이후 가입자는 pending 상태로 등록되며, admin 승인 후 member 또는 recorder로 변경할 수 있습니다.
+    <div class="actions">
+      <button class="btn" id="refreshBtn">새로고침</button>
     </div>
   </div>
 
-  <div id="msg" class="msg"></div>
+  <section class="hero">
+    <h1>가입 현황 대시보드</h1>
+    <p>총 가입자, 카테고리별 가입자, 어제 대비 증감, 일별/월별 가입 통계를 확인합니다.</p>
+  </section>
 
-  <div id="userList" class="user-list">
-    <div class="empty">불러오는 중...</div>
+  <div class="filter-bar">
+    <div class="segment" id="rangeSegment">
+      <button class="seg-btn active" data-days="7">최근 7일</button>
+      <button class="seg-btn" data-days="30">최근 30일</button>
+    </div>
+    <div class="kicker" id="rangeLabel">최근 7일 기준</div>
+  </div>
+
+  <div id="app">
+    <div class="card wide">
+      <div class="loading"><span class="dot"></span><span>불러오는 중...</span></div>
+    </div>
   </div>
 </div>
 
 <script>
-const client = window.sb;
-const el = (id) => document.getElementById(id);
+const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-let currentSession = null;
-let currentProfile = null;
-let currentUsers = [];
+const $app = document.getElementById('app');
+const $refreshBtn = document.getElementById('refreshBtn');
+const $rangeSegment = document.getElementById('rangeSegment');
+const $rangeLabel = document.getElementById('rangeLabel');
+
+let currentDays = 7;
 
 function escapeHtml(v=''){
-  return String(v)
-    .replaceAll('&','&amp;')
-    .replaceAll('<','&lt;')
-    .replaceAll('>','&gt;')
-    .replaceAll('"','&quot;')
-    .replaceAll("'","&#39;");
+  return String(v).replace(/[&<>"']/g, s => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[s]));
 }
 
-function showMsg(text, type='ok'){
-  const box = el('msg');
-  box.className = `msg show ${type}`;
-  box.textContent = text;
+function deltaClass(n){
+  if(n > 0) return 'up';
+  if(n < 0) return 'down';
+  return 'same';
+}
+function deltaText(n){
+  if(n > 0) return `어제 대비 +${n}명`;
+  if(n < 0) return `어제 대비 ${n}명`;
+  return '어제 대비 변동 없음';
 }
 
-function hideMsg(){
-  const box = el('msg');
-  box.className = 'msg';
-  box.textContent = '';
-}
-
-async function logout(){
-  await client.auth.signOut();
-  location.href = 'index.html';
-}
-
-function getMyId(){
-  return String(currentProfile?.user_id || currentProfile?.id || '');
-}
-
-async function requireAdmin(){
-  const { data, error } = await client.auth.getSession();
-  currentSession = (!error && data?.session) || null;
-
-  if(!currentSession){
-    location.href = 'auth.html?next=' + encodeURIComponent('admin.html');
-    return false;
-  }
-
-  const { data: ctx, error: ctxError } = await client.rpc('baseball_my_context');
-  if(ctxError){
-    showMsg('내 권한 정보를 불러오지 못했습니다.', 'err');
-    return false;
-  }
-
-  const me = Array.isArray(ctx) ? ctx[0] : ctx;
-
-  if(!me || me.role !== 'admin'){
-    alert('관리자만 접근할 수 있습니다.');
-    location.href = 'index.html';
-    return false;
-  }
-
-  currentProfile = me;
-  return true;
-}
-
-function renderRows(list){
-  const wrap = el('userList');
-
-  if(!Array.isArray(list) || !list.length){
-    wrap.innerHTML = '<div class="empty">사용자 없음</div>';
-    return;
-  }
-
-  const myId = getMyId();
-
-  wrap.innerHTML = list.map(user => {
-    const isMe = String(user.id) === myId;
-    const lockSelfAdmin = isMe && user.role === 'admin';
-
-    return `
-      <div class="user-card">
-        <div class="user-row">
-          <div class="nick">${escapeHtml(user.display_name || user.username || '-')}</div>
-          ${isMe ? '<div class="me-badge">나</div>' : ''}
-
-          <select class="role-select" id="role_${user.id}" ${lockSelfAdmin ? 'disabled' : ''}>
-            <option value="pending" ${user.role === 'pending' ? 'selected' : ''}>pending</option>
-            <option value="member" ${user.role === 'member' ? 'selected' : ''}>member</option>
-            <option value="recorder" ${user.role === 'recorder' ? 'selected' : ''}>recorder</option>
-            <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>admin</option>
-          </select>
-
-          <button
-            class="save-btn"
-            onclick="changeRole('${user.id}','${user.role}')"
-            ${lockSelfAdmin ? 'disabled title="관리자 본인 권한은 직접 변경할 수 없습니다."' : ''}
-          >
-            저장
-          </button>
-        </div>
+function barChartHtml(daily=[]){
+  const max = Math.max(...daily.map(x => Number(x.total || 0)), 1);
+  return `
+    <div class="chart-card">
+      <div class="label">일별 가입자 통계</div>
+      <div class="msg">최근 ${daily.length}일 기준</div>
+      <div class="chart-wrap">
+        ${daily.map(d => {
+          const total = Number(d.total || 0);
+          const h = Math.max(4, Math.round((total / max) * 180));
+          const mmdd = String(d.date).slice(5);
+          return `
+            <div class="bar-col" title="${escapeHtml(d.date)} / ${total}명">
+              <div class="bar-num">${total}</div>
+              <div class="bar" style="height:${h}px"></div>
+              <div class="bar-date">${escapeHtml(mmdd)}</div>
+            </div>
+          `;
+        }).join('')}
       </div>
+    </div>
+  `;
+}
+
+function lineChartSvgHtml(daily = []){
+  const values = daily.map(d => Number(d.cumulative_total || 0));
+  const width = Math.max(640, daily.length * 28);
+  const height = 240;
+  const padL = 36, padR = 12, padT = 16, padB = 30;
+  const innerW = width - padL - padR;
+  const innerH = height - padT - padB;
+  const max = Math.max(...values, 1);
+
+  const points = daily.map((d, i) => {
+    const x = padL + (daily.length === 1 ? innerW / 2 : (i * innerW / (daily.length - 1)));
+    const y = padT + innerH - ((Number(d.cumulative_total || 0) / max) * innerH);
+    return { x, y, label: d.date, value: Number(d.cumulative_total || 0) };
+  });
+
+  const polyline = points.map(p => `${p.x},${p.y}`).join(' ');
+  const area = points.length
+    ? `M ${padL} ${padT + innerH} L ${points.map(p => `${p.x} ${p.y}`).join(' L ')} L ${padL + innerW} ${padT + innerH} Z`
+    : '';
+
+  const yTicks = 4;
+  const grid = Array.from({ length: yTicks + 1 }, (_, i) => {
+    const v = Math.round(max * (yTicks - i) / yTicks);
+    const y = padT + (innerH * i / yTicks);
+    return `
+      <line x1="${padL}" y1="${y}" x2="${padL + innerW}" y2="${y}" stroke="rgba(255,255,255,.08)" stroke-width="1" />
+      <text x="${padL - 6}" y="${y + 4}" text-anchor="end" font-size="10" fill="#8b93a7">${v}</text>
     `;
   }).join('');
+
+  const circles = points.map((p) => `
+    <g>
+      <circle cx="${p.x}" cy="${p.y}" r="3.5" fill="#e8ff47"></circle>
+      <title>${p.label} / ${p.value}명</title>
+    </g>
+  `).join('');
+
+  const xLabels = points.map((p, i) => {
+    if (daily.length > 12 && i % Math.ceil(daily.length / 8) !== 0 && i !== daily.length - 1) return '';
+    return `<text x="${p.x}" y="${height - 8}" text-anchor="middle" font-size="10" fill="#8b93a7">${String(p.label).slice(5)}</text>`;
+  }).join('');
+
+  return `
+    <div class="chart-card">
+      <div class="label">누적 가입자 추이</div>
+      <div class="msg">선택 기간 기준 누적 그래프</div>
+      <div style="overflow-x:auto; margin-top:12px;">
+        <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-label="누적 가입자 추이 그래프">
+          ${grid}
+          ${area ? `<path d="${area}" fill="rgba(232,255,71,.10)"></path>` : ''}
+          ${polyline ? `<polyline points="${polyline}" fill="none" stroke="#e8ff47" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></polyline>` : ''}
+          ${circles}
+          ${xLabels}
+        </svg>
+      </div>
+    </div>
+  `;
 }
 
-async function loadUsers(){
-  hideMsg();
-
-  const { data, error } = await client.rpc('baseball_admin_list_profiles');
-  if(error){
-    el('userList').innerHTML = `<div class="empty">${escapeHtml(error.message)}</div>`;
-    return;
+function schoolTop10Html(items = []){
+  if(!items.length){
+    return `
+      <div class="chart-card">
+        <div class="label">학교별 가입자 TOP 10</div>
+        <div class="empty">표시할 데이터가 없습니다.</div>
+      </div>
+    `;
   }
 
-  currentUsers = Array.isArray(data) ? data : [];
-  renderRows(currentUsers);
+  const max = Math.max(...items.map(x => Number(x.count || 0)), 1);
+
+  return `
+    <div class="chart-card">
+      <div class="label">학교별 가입자 TOP 10</div>
+      <div class="msg">가입자 수 많은 순</div>
+      <div style="margin-top:14px; display:flex; flex-direction:column; gap:10px;">
+        ${items.map((item, idx) => {
+          const count = Number(item.count || 0);
+          const w = Math.max(6, Math.round((count / max) * 100));
+          return `
+            <div style="display:grid; grid-template-columns:36px 1fr 56px; gap:10px; align-items:center;">
+              <div style="font-weight:900; color:${idx < 3 ? '#e8ff47' : '#cbd5e1'};">#${idx + 1}</div>
+              <div>
+                <div style="font-size:13px; font-weight:800; color:#f3f5f7; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                  ${escapeHtml(item.school_name || '-')}
+                </div>
+                <div style="margin-top:6px; height:10px; background:rgba(255,255,255,.06); border-radius:999px; overflow:hidden; border:1px solid rgba(255,255,255,.05);">
+                  <div style="height:100%; width:${w}%; background:linear-gradient(90deg,#e8ff47 0%, #b9cf32 100%); border-radius:999px;"></div>
+                </div>
+              </div>
+              <div style="text-align:right; font-weight:900;">${count}명</div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    </div>
+  `;
 }
 
-async function changeRole(id, oldRole){
-  hideMsg();
-
-  const select = document.getElementById(`role_${id}`);
-  if(!select) return;
-
-  const newRole = select.value;
-  const isMe = String(id) === getMyId();
-  const currentAdmin = currentUsers.find(u => u.role === 'admin');
-  const targetUser = currentUsers.find(u => String(u.id) === String(id));
-
-  if(isMe && oldRole === 'admin' && newRole !== 'admin'){
-    showMsg('관리자 본인 권한은 직접 변경할 수 없습니다.', 'err');
-    select.value = oldRole;
-    return;
+function monthlyStatsHtml(monthly = []){
+  if(!monthly.length){
+    return `
+      <div class="chart-card">
+        <div class="label">월별 가입자 통계</div>
+        <div class="empty">표시할 데이터가 없습니다.</div>
+      </div>
+    `;
   }
 
-  if(newRole === oldRole){
-    showMsg('변경된 내용이 없습니다.', 'warn');
-    return;
+  const max = Math.max(...monthly.map(x => Number(x.total || 0)), 1);
+
+  return `
+    <div class="chart-card">
+      <div class="label">월별 가입자 통계</div>
+      <div class="msg">최근 ${monthly.length}개월 기준</div>
+      <div style="margin-top:14px; display:flex; flex-direction:column; gap:10px;">
+        ${monthly.map((m) => {
+          const count = Number(m.total || 0);
+          const cumulative = Number(m.cumulative_total || 0);
+          const w = Math.max(6, Math.round((count / max) * 100));
+          return `
+            <div style="display:grid; grid-template-columns:74px 1fr 68px 68px; gap:10px; align-items:center;">
+              <div style="font-weight:900;">${escapeHtml(m.month)}</div>
+              <div>
+                <div style="height:10px; background:rgba(255,255,255,.06); border-radius:999px; overflow:hidden; border:1px solid rgba(255,255,255,.05);">
+                  <div style="height:100%; width:${w}%; background:linear-gradient(90deg,#e8ff47 0%, #b9cf32 100%); border-radius:999px;"></div>
+                </div>
+              </div>
+              <div style="text-align:right; font-weight:900;">${count}명</div>
+              <div style="text-align:right; color:#cbd5e1;">누적 ${cumulative}</div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function dailyTableHtml(daily=[]){
+  if(!daily.length){
+    return `<div class="table-card"><div class="empty">표시할 일별 데이터가 없습니다.</div></div>`;
   }
 
-  if(newRole === 'admin' && currentAdmin && String(currentAdmin.id) !== String(id)){
-    const ok = confirm('admin은 1명만 될 수 있습니다. 변경하시겠습니까?');
-    if(!ok){
-      select.value = oldRole;
-      return;
-    }
+  const header = `
+    <div class="table-head" style="grid-template-columns:92px 56px 56px 56px 56px 56px 56px 64px;">
+      <div class="left">날짜</div>
+      <div>전체</div>
+      <div>대학</div>
+      <div>고등</div>
+      <div>중학</div>
+      <div>초등</div>
+      <div>리틀</div>
+      <div>누적</div>
+    </div>
+  `;
+
+  const rows = [...daily].reverse().map(d => `
+    <div class="row" style="grid-template-columns:92px 56px 56px 56px 56px 56px 56px 64px;">
+      <div class="left">${escapeHtml(d.date)}</div>
+      <div>${Number(d.total||0)}</div>
+      <div>${Number(d.college||0)}</div>
+      <div>${Number(d.high||0)}</div>
+      <div>${Number(d.middle||0)}</div>
+      <div>${Number(d.elementary||0)}</div>
+      <div>${Number(d.little||0)}</div>
+      <div>${Number(d.cumulative_total||0)}</div>
+    </div>
+  `).join('');
+
+  return `<div class="table-card">${header}${rows}</div>`;
+}
+
+function monthlyTableHtml(monthly=[]){
+  if(!monthly.length){
+    return `<div class="table-card"><div class="empty">표시할 월별 데이터가 없습니다.</div></div>`;
   }
 
-  const btn = select.parentElement.querySelector('.save-btn');
+  const header = `
+    <div class="table-head" style="grid-template-columns:84px 56px 56px 56px 56px 56px 56px 64px;">
+      <div class="left">월</div>
+      <div>전체</div>
+      <div>대학</div>
+      <div>고등</div>
+      <div>중학</div>
+      <div>초등</div>
+      <div>리틀</div>
+      <div>누적</div>
+    </div>
+  `;
+
+  const rows = [...monthly].reverse().map(m => `
+    <div class="row" style="grid-template-columns:84px 56px 56px 56px 56px 56px 56px 64px;">
+      <div class="left">${escapeHtml(m.month)}</div>
+      <div>${Number(m.total||0)}</div>
+      <div>${Number(m.college||0)}</div>
+      <div>${Number(m.high||0)}</div>
+      <div>${Number(m.middle||0)}</div>
+      <div>${Number(m.elementary||0)}</div>
+      <div>${Number(m.little||0)}</div>
+      <div>${Number(m.cumulative_total||0)}</div>
+    </div>
+  `).join('');
+
+  return `<div class="table-card">${header}${rows}</div>`;
+}
+
+function render(data){
+  const summary = data?.summary || {};
+  const diff = data?.diff || {};
+  const daily = Array.isArray(data?.daily) ? data.daily : [];
+  const schoolTop10 = Array.isArray(data?.school_top10) ? data.school_top10 : [];
+  const monthly = Array.isArray(data?.monthly) ? data.monthly : [];
+
+  $rangeLabel.textContent = `최근 ${currentDays}일 기준`;
+
+  $app.innerHTML = `
+    <section class="grid">
+      <div class="card">
+        <div class="label">총 가입자</div>
+        <div class="value">${Number(summary.total || 0)}명</div>
+        <div class="delta ${deltaClass(Number(diff.vs_yesterday_total || 0))}">
+          ${escapeHtml(deltaText(Number(diff.vs_yesterday_total || 0)))}
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="label">오늘 가입자</div>
+        <div class="value">${Number(diff.today_total || 0)}명</div>
+        <div class="delta same">어제 ${Number(diff.yesterday_total || 0)}명</div>
+      </div>
+    </section>
+
+    <div class="section-title">카테고리별 가입자</div>
+    <section class="cat-grid">
+      <div class="cat-card">
+        <div class="cat-name">대학생</div>
+        <div class="cat-count">${Number(summary.college || 0)}명</div>
+        <div class="cat-diff ${deltaClass(Number(diff.vs_yesterday_college || 0))}">
+          ${escapeHtml(deltaText(Number(diff.vs_yesterday_college || 0)))}
+        </div>
+      </div>
+
+      <div class="cat-card">
+        <div class="cat-name">고등학생</div>
+        <div class="cat-count">${Number(summary.high || 0)}명</div>
+        <div class="cat-diff ${deltaClass(Number(diff.vs_yesterday_high || 0))}">
+          ${escapeHtml(deltaText(Number(diff.vs_yesterday_high || 0)))}
+        </div>
+      </div>
+
+      <div class="cat-card">
+        <div class="cat-name">중학생</div>
+        <div class="cat-count">${Number(summary.middle || 0)}명</div>
+        <div class="cat-diff ${deltaClass(Number(diff.vs_yesterday_middle || 0))}">
+          ${escapeHtml(deltaText(Number(diff.vs_yesterday_middle || 0)))}
+        </div>
+      </div>
+
+      <div class="cat-card">
+        <div class="cat-name">초등학생</div>
+        <div class="cat-count">${Number(summary.elementary || 0)}명</div>
+        <div class="cat-diff ${deltaClass(Number(diff.vs_yesterday_elementary || 0))}">
+          ${escapeHtml(deltaText(Number(diff.vs_yesterday_elementary || 0)))}
+        </div>
+      </div>
+
+      <div class="cat-card">
+        <div class="cat-name">리틀</div>
+        <div class="cat-count">${Number(summary.little || 0)}명</div>
+        <div class="cat-diff ${deltaClass(Number(diff.vs_yesterday_little || 0))}">
+          ${escapeHtml(deltaText(Number(diff.vs_yesterday_little || 0)))}
+        </div>
+      </div>
+    </section>
+
+    ${barChartHtml(daily)}
+    ${lineChartSvgHtml(daily)}
+    ${schoolTop10Html(schoolTop10)}
+    ${monthlyStatsHtml(monthly)}
+
+    <div class="section-title">일별 가입자 상세</div>
+    ${dailyTableHtml(daily)}
+
+    <div class="section-title">월별 가입자 상세</div>
+    ${monthlyTableHtml(monthly)}
+  `;
+}
+
+async function loadDashboard(){
+  $app.innerHTML = `
+    <div class="card wide">
+      <div class="loading"><span class="dot"></span><span>불러오는 중...</span></div>
+    </div>
+  `;
 
   try{
-    select.disabled = true;
-    if(btn) btn.disabled = true;
+    const { data: authData } = await client.auth.getUser();
+    const user = authData?.user;
 
-    const { error } = await client.rpc('baseball_admin_update_role', {
-      p_user_id: id,
-      p_role: newRole
+    if(!user){
+      $app.innerHTML = `<div class="card wide"><div class="msg err">로그인이 필요합니다.</div></div>`;
+      return;
+    }
+
+    const { data, error } = await client.rpc('baseball_admin_signup_dashboard', {
+      p_days: currentDays,
+      p_months: 12
     });
 
     if(error) throw error;
 
-    if(oldRole === 'pending' && (newRole === 'member' || newRole === 'recorder')){
-      showMsg(`${targetUser?.display_name || '선택한 사용자'} 승인 완료`, 'ok');
-    }else if(newRole === 'admin' && currentAdmin && String(currentAdmin.id) !== String(id)){
-      showMsg(`관리자가 ${targetUser?.display_name || '선택한 사용자'}(으)로 변경되었습니다.`, 'ok');
-    }else{
-      showMsg('권한 변경 완료', 'ok');
-    }
-
-    await loadUsers();
+    render(data);
   }catch(err){
-    showMsg(err.message || '권한 변경 실패', 'err');
-    select.value = oldRole;
-    select.disabled = false;
-    if(btn) btn.disabled = false;
+    console.error(err);
+    $app.innerHTML = `
+      <div class="card wide">
+        <div class="msg err">불러오기 실패: ${escapeHtml(err?.message || '알 수 없는 오류')}</div>
+      </div>
+    `;
   }
 }
 
-async function init(){
-  const ok = await requireAdmin();
-  if(!ok) return;
-  await loadUsers();
-}
+$refreshBtn.addEventListener('click', loadDashboard);
 
-init();
+$rangeSegment.addEventListener('click', (e) => {
+  const btn = e.target.closest('.seg-btn');
+  if(!btn) return;
+
+  const days = Number(btn.dataset.days || 7);
+  currentDays = days;
+
+  document.querySelectorAll('.seg-btn').forEach(el => el.classList.remove('active'));
+  btn.classList.add('active');
+
+  loadDashboard();
+});
+
+loadDashboard();
 </script>
-
 </body>
 </html>
