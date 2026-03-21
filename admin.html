@@ -3,19 +3,15 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>가입자 통계 관리자</title>
-<meta property="og:title" content="ELITE BASEBALL" />
-<meta property="og:description" content="가입자 통계 관리자 페이지" />
-<meta property="og:url" content="https://elitebaseball.infobox.kr/admin-signup.html" />
+<title>관리자 통계 대시보드</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+KR:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 :root{
-  --black:#0a0c10; --dark:#11141a; --panel:#181c24; --panel2:#202532;
+  --black:#0a0c10; --panel:#181c24; --panel2:#202532;
   --border:rgba(255,255,255,.07); --border2:rgba(255,255,255,.12);
   --text:#f0f2f5; --muted:#7a8294; --muted2:#4a5060;
-  --brand:#e8ff47; --brand-dim:rgba(232,255,71,.12);
-  --ok:#4ade80; --ok-bg:rgba(74,222,128,.1);
+  --brand:#e8ff47; --ok:#4ade80; --ok-bg:rgba(74,222,128,.1);
   --err:#f87171; --err-bg:rgba(248,113,113,.1);
   --same:#94a3b8; --same-bg:rgba(148,163,184,.12);
 }
@@ -25,28 +21,27 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--black);color:var(--t
 .hero{background:var(--panel);border:1px solid var(--border);border-radius:20px;padding:24px;margin-bottom:16px;position:relative;overflow:hidden}
 .hero::before{content:'📊';position:absolute;right:-10px;top:-10px;font-size:100px;opacity:.04;transform:rotate(15deg)}
 .hero-label{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--brand);margin-bottom:8px}
-.hero-title{font-family:'Bebas Neue',sans-serif;font-size:42px;line-height:1;margin-bottom:8px}
+.hero-title{font-family:'Bebas Neue',sans-serif;font-size:40px;line-height:1;margin-bottom:8px}
 .hero-sub{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:18px}
 .hero-btns{display:flex;gap:10px}
 .hero-btn{flex:1;padding:13px;border-radius:12px;border:none;font-size:14px;font-weight:700;cursor:pointer}
 .hero-btn.solid{background:var(--brand);color:var(--black)}
 .hero-btn.ghost{background:transparent;border:1px solid var(--border2);color:var(--text)}
 
+.tabbar{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
+.tab-btn{border:1px solid var(--border);background:var(--panel);color:var(--muted);padding:13px 10px;border-radius:14px;font-weight:900;cursor:pointer}
+.tab-btn.active{background:var(--brand);color:#0a0c10;border-color:transparent}
+
+.section-title{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin:24px 0 12px}
 .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
 .stat-card{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:16px}
 .stat-label{font-size:11px;font-weight:700;color:var(--muted);margin-bottom:10px}
 .stat-value{font-family:'Bebas Neue',sans-serif;font-size:34px;line-height:1}
 .stat-sub{font-size:11px;color:var(--muted2);margin-top:6px}
-.stat-delta{
-  display:inline-flex;align-items:center;gap:6px;
-  margin-top:10px;padding:7px 10px;border-radius:999px;
-  font-size:11px;font-weight:800;border:1px solid var(--border)
-}
+.stat-delta{display:inline-flex;align-items:center;gap:6px;margin-top:10px;padding:7px 10px;border-radius:999px;font-size:11px;font-weight:800;border:1px solid var(--border)}
 .stat-delta.up{background:var(--ok-bg);color:var(--ok)}
 .stat-delta.down{background:var(--err-bg);color:var(--err)}
 .stat-delta.same{background:var(--same-bg);color:var(--same)}
-
-.section-title{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin:24px 0 12px}
 
 .category-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .category-card{background:var(--panel2);border:1px solid var(--border);border-radius:16px;padding:14px}
@@ -90,6 +85,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--black);color:var(--t
 .loading-card{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:18px}
 .loading{display:inline-flex;align-items:center;gap:8px}
 .dot{width:8px;height:8px;border-radius:50%;background:var(--brand);box-shadow:0 0 18px var(--brand);animation:blink 1s infinite alternate}
+.hidden{display:none}
 @keyframes blink{from{opacity:.35;transform:scale(.9)}to{opacity:1;transform:scale(1.1)}}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -97,18 +93,22 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--black);color:var(--t
 <script src="js/header.js"></script>
 </head>
 <body>
-
 <div id="appHeader" data-auth="true"></div>
 
 <div class="container">
   <div class="hero">
     <div class="hero-label">엘리트 야구 기록 시스템</div>
-    <div class="hero-title">가입자 통계<br>관리자</div>
-    <div class="hero-sub">총 가입자, 학교급별 가입자, 전체 기간 일별 가입 추이, 학교별 TOP 10을 확인합니다.</div>
+    <div class="hero-title">관리자 통계<br>대시보드</div>
+    <div class="hero-sub">가입자 통계와 게임 등록 통계를 탭으로 나눠 확인합니다.</div>
     <div class="hero-btns">
       <button class="hero-btn solid" id="btnRefresh">새로고침</button>
       <button class="hero-btn ghost" onclick="location.href='index.html'">홈으로</button>
     </div>
+  </div>
+
+  <div class="tabbar">
+    <button class="tab-btn active" data-tab="signup">가입자</button>
+    <button class="tab-btn" data-tab="games">게임등록수</button>
   </div>
 
   <div id="dashboardApp">
@@ -121,34 +121,28 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--black);color:var(--t
 <script>
 const client = window.sb;
 const el = (id) => document.getElementById(id);
+let activeTab = 'signup';
 
 function escapeHtml(v=''){
   return String(v).replace(/[&<>"']/g, s => ({
     '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
   }[s]));
 }
-
-function deltaClass(n){
-  if (n > 0) return 'up';
-  if (n < 0) return 'down';
-  return 'same';
-}
-
-function deltaArrow(n){
-  if (n > 0) return '▲';
-  if (n < 0) return '▼';
-  return '•';
-}
-
+function deltaClass(n){ return n > 0 ? 'up' : n < 0 ? 'down' : 'same'; }
+function deltaArrow(n){ return n > 0 ? '▲' : n < 0 ? '▼' : '•'; }
 function deltaText(n){
+  if (n > 0) return `어제 대비 +${n}개`;
+  if (n < 0) return `어제 대비 ${n}개`;
+  return '어제 대비 변동 없음';
+}
+function deltaTextUsers(n){
   if (n > 0) return `어제 대비 +${n}명`;
   if (n < 0) return `어제 대비 ${n}명`;
   return '어제 대비 변동 없음';
 }
-
 function readCache(){
   try{
-    const raw = localStorage.getItem('baseball_admin_signup_cache_all_v1');
+    const raw = localStorage.getItem('baseball_admin_overview_cache_v1');
     if(!raw) return null;
     const cached = JSON.parse(raw);
     if(!cached?.at || !cached?.data) return null;
@@ -156,28 +150,24 @@ function readCache(){
     return cached.data;
   }catch(e){ return null; }
 }
-
 function writeCache(data){
   try{
-    localStorage.setItem('baseball_admin_signup_cache_all_v1', JSON.stringify({
-      at: Date.now(),
-      data
-    }));
+    localStorage.setItem('baseball_admin_overview_cache_v1', JSON.stringify({ at: Date.now(), data }));
   }catch(e){}
 }
 
-function barChartHtml(daily=[]){
+function barChartHtml(title, sub, daily=[]){
   const max = Math.max(...daily.map(x => Number(x.total || 0)), 1);
   return `
     <div class="chart-card">
-      <div class="chart-title">일별 가입자 통계</div>
-      <div class="chart-sub">전체 기간 (${daily.length}일)</div>
+      <div class="chart-title">${title}</div>
+      <div class="chart-sub">${sub}</div>
       <div class="bar-chart-wrap">
         ${daily.map(d => {
           const total = Number(d.total || 0);
           const h = Math.max(4, Math.round((total / max) * 170));
           return `
-            <div class="bar-col" title="${escapeHtml(d.date)} / ${total}명">
+            <div class="bar-col" title="${escapeHtml(d.date)} / ${total}">
               <div class="bar-num">${total}</div>
               <div class="bar" style="height:${h}px"></div>
               <div class="bar-date">${escapeHtml(String(d.date).slice(5))}</div>
@@ -189,7 +179,7 @@ function barChartHtml(daily=[]){
   `;
 }
 
-function cumulativeLineHtml(daily=[]){
+function cumulativeLineHtml(title, sub, daily=[]){
   const values = daily.map(d => Number(d.cumulative_total || 0));
   const width = Math.max(640, daily.length * 28);
   const height = 220;
@@ -221,7 +211,7 @@ function cumulativeLineHtml(daily=[]){
   const dots = points.map(p => `
     <g>
       <circle cx="${p.x}" cy="${p.y}" r="3.5" fill="#e8ff47"></circle>
-      <title>${p.label} / 누적 ${p.value}명</title>
+      <title>${p.label} / 누적 ${p.value}</title>
     </g>
   `).join('');
 
@@ -232,10 +222,10 @@ function cumulativeLineHtml(daily=[]){
 
   return `
     <div class="chart-card">
-      <div class="chart-title">누적 가입자 추이</div>
-      <div class="chart-sub">전체 기간 누적</div>
+      <div class="chart-title">${title}</div>
+      <div class="chart-sub">${sub}</div>
       <div style="overflow-x:auto;margin-top:12px">
-        <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-label="누적 가입자 추이">
+        <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
           ${grid}
           ${area ? `<path d="${area}" fill="rgba(232,255,71,.10)"></path>` : ''}
           ${polyline ? `<polyline points="${polyline}" fill="none" stroke="#e8ff47" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></polyline>` : ''}
@@ -247,27 +237,27 @@ function cumulativeLineHtml(daily=[]){
   `;
 }
 
-function schoolTop10Html(items=[]){
+function rankCardHtml(title, sub, items=[], keyName='school_name'){
   if(!items.length){
-    return `<div class="chart-card"><div class="chart-title">학교별 가입자 TOP 10</div><div class="empty">표시할 데이터가 없습니다.</div></div>`;
+    return `<div class="chart-card"><div class="chart-title">${title}</div><div class="empty">표시할 데이터가 없습니다.</div></div>`;
   }
   const max = Math.max(...items.map(x => Number(x.count || 0)), 1);
   return `
     <div class="chart-card">
-      <div class="chart-title">학교별 가입자 TOP 10</div>
-      <div class="chart-sub">가입자 수 많은 순</div>
+      <div class="chart-title">${title}</div>
+      <div class="chart-sub">${sub}</div>
       <div class="rank-list">
         ${items.map((item, idx) => {
           const count = Number(item.count || 0);
           const w = Math.max(6, Math.round((count / max) * 100));
           return `
             <div class="rank-item">
-              <div class="rank-num ${idx < 3 ? 'top3' : ''}">#${idx+1}</div>
+              <div class="rank-num ${idx < 3 ? 'top3' : ''}">#${idx + 1}</div>
               <div>
-                <div class="rank-name">${escapeHtml(item.school_name || '-')}</div>
+                <div class="rank-name">${escapeHtml(item[keyName] || '-')}</div>
                 <div class="rank-bar-bg"><div class="rank-bar" style="width:${w}%"></div></div>
               </div>
-              <div class="rank-count">${count}명</div>
+              <div class="rank-count">${count}</div>
             </div>
           `;
         }).join('')}
@@ -276,15 +266,15 @@ function schoolTop10Html(items=[]){
   `;
 }
 
-function monthlyStatsHtml(monthly=[]){
+function monthlyStatsHtml(title, sub, monthly=[]){
   if(!monthly.length){
-    return `<div class="chart-card"><div class="chart-title">월별 가입자 통계</div><div class="empty">표시할 데이터가 없습니다.</div></div>`;
+    return `<div class="chart-card"><div class="chart-title">${title}</div><div class="empty">표시할 데이터가 없습니다.</div></div>`;
   }
   const max = Math.max(...monthly.map(x => Number(x.total || 0)), 1);
   return `
     <div class="chart-card">
-      <div class="chart-title">월별 가입자 통계</div>
-      <div class="chart-sub">최근 ${monthly.length}개월</div>
+      <div class="chart-title">${title}</div>
+      <div class="chart-sub">${sub}</div>
       <div class="rank-list">
         ${monthly.map(m => {
           const total = Number(m.total || 0);
@@ -292,10 +282,8 @@ function monthlyStatsHtml(monthly=[]){
           return `
             <div class="rank-item" style="grid-template-columns:70px 1fr 56px;">
               <div class="rank-num" style="color:#f0f2f5">${escapeHtml(m.month)}</div>
-              <div>
-                <div class="rank-bar-bg"><div class="rank-bar" style="width:${w}%"></div></div>
-              </div>
-              <div class="rank-count">${total}명</div>
+              <div><div class="rank-bar-bg"><div class="rank-bar" style="width:${w}%"></div></div></div>
+              <div class="rank-count">${total}</div>
             </div>
           `;
         }).join('')}
@@ -304,21 +292,15 @@ function monthlyStatsHtml(monthly=[]){
   `;
 }
 
-function dailyTableHtml(daily=[]){
+function detailTableHtml(title, daily=[]){
   if(!daily.length){
-    return `<div class="table-card"><div class="empty">표시할 일별 데이터가 없습니다.</div></div>`;
+    return `<div class="table-card"><div class="empty">표시할 데이터가 없습니다.</div></div>`;
   }
   return `
+    <div class="section-title">${title}</div>
     <div class="table-card">
       <div class="table-head" style="grid-template-columns:86px 44px 44px 44px 44px 44px 44px 58px;">
-        <div class="left">날짜</div>
-        <div>전체</div>
-        <div>대학</div>
-        <div>고등</div>
-        <div>중학</div>
-        <div>초등</div>
-        <div>리틀</div>
-        <div>누적</div>
+        <div class="left">날짜</div><div>전체</div><div>대학</div><div>고등</div><div>중학</div><div>초등</div><div>리틀</div><div>누적</div>
       </div>
       ${[...daily].reverse().map(d => `
         <div class="table-row" style="grid-template-columns:86px 44px 44px 44px 44px 44px 44px 58px;">
@@ -336,142 +318,104 @@ function dailyTableHtml(daily=[]){
   `;
 }
 
-function monthlyTableHtml(monthly=[]){
-  if(!monthly.length){
-    return `<div class="table-card"><div class="empty">표시할 월별 데이터가 없습니다.</div></div>`;
-  }
-  return `
-    <div class="table-card">
-      <div class="table-head" style="grid-template-columns:74px 44px 44px 44px 44px 44px 44px 58px;">
-        <div class="left">월</div>
-        <div>전체</div>
-        <div>대학</div>
-        <div>고등</div>
-        <div>중학</div>
-        <div>초등</div>
-        <div>리틀</div>
-        <div>누적</div>
-      </div>
-      ${[...monthly].reverse().map(m => `
-        <div class="table-row" style="grid-template-columns:74px 44px 44px 44px 44px 44px 44px 58px;">
-          <div class="left">${escapeHtml(m.month)}</div>
-          <div>${Number(m.total||0)}</div>
-          <div>${Number(m.college||0)}</div>
-          <div>${Number(m.high||0)}</div>
-          <div>${Number(m.middle||0)}</div>
-          <div>${Number(m.elementary||0)}</div>
-          <div>${Number(m.little||0)}</div>
-          <div>${Number(m.cumulative_total||0)}</div>
-        </div>
-      `).join('')}
-    </div>
-  `;
-}
-
-function renderError(msg){
-  el('dashboardApp').innerHTML = `
-    <div class="loading-card">
-      <div class="msg err">불러오기 실패: ${escapeHtml(msg || '알 수 없는 오류')}</div>
-    </div>
-  `;
-}
-
-function renderNoAccess(){
-  el('dashboardApp').innerHTML = `
-    <div class="empty">
-      <div class="empty-icon">⛔</div>
-      관리자만 접근할 수 있습니다.
-    </div>
-  `;
-}
-
-function renderDashboard(data){
+function renderTab(data, kind){
   const summary = data?.summary || {};
   const diff = data?.diff || {};
   const daily = Array.isArray(data?.daily) ? data.daily : [];
-  const schoolTop10 = Array.isArray(data?.school_top10) ? data.school_top10 : [];
   const monthly = Array.isArray(data?.monthly) ? data.monthly : [];
-
   const totalDelta = Number(diff.vs_yesterday_total || 0);
+  const noun = kind === 'signup' ? '명' : '개';
+  const diffText = kind === 'signup' ? deltaTextUsers(totalDelta) : deltaText(totalDelta);
+  const schoolTop = Array.isArray(data?.school_top10) ? data.school_top10 : [];
+  const playerTop = Array.isArray(data?.player_top10) ? data.player_top10 : [];
 
-  el('dashboardApp').innerHTML = `
-    <div class="section-title">가입 요약</div>
+  return `
+    <div class="section-title">${kind === 'signup' ? '가입자 요약' : '게임등록 요약'}</div>
     <div class="stats-grid">
       <div class="stat-card">
-        <div class="stat-label">총 가입자</div>
+        <div class="stat-label">${kind === 'signup' ? '총 가입자' : '총 게임 등록수'}</div>
         <div class="stat-value">${Number(summary.total || 0)}</div>
-        <div class="stat-sub">전체 누적 회원</div>
+        <div class="stat-sub">전체 누적 ${kind === 'signup' ? '회원' : '등록'}</div>
       </div>
-
       <div class="stat-card">
-        <div class="stat-label">오늘 가입자</div>
+        <div class="stat-label">${kind === 'signup' ? '오늘 가입자' : '오늘 게임 등록수'}</div>
         <div class="stat-value">${Number(diff.today_total || 0)}</div>
-        <div class="stat-sub">어제 ${Number(diff.yesterday_total || 0)}명</div>
+        <div class="stat-sub">어제 ${Number(diff.yesterday_total || 0)}${noun}</div>
         <div class="stat-delta ${deltaClass(totalDelta)}">
           <span>${deltaArrow(totalDelta)}</span>
-          <span>${escapeHtml(deltaText(totalDelta))}</span>
+          <span>${escapeHtml(diffText)}</span>
         </div>
       </div>
     </div>
 
-    <div class="section-title">학교급별 가입자</div>
+    <div class="section-title">${kind === 'signup' ? '학교급별 가입자' : '학교급별 게임등록수'}</div>
     <div class="category-grid">
       <div class="category-card">
         <div class="category-name">대학교</div>
         <div class="category-count">${Number(summary.college || 0)}</div>
         <div class="category-diff ${deltaClass(Number(diff.vs_yesterday_college || 0))}">
-          ${escapeHtml(deltaText(Number(diff.vs_yesterday_college || 0)))}
+          ${escapeHtml((kind === 'signup' ? deltaTextUsers : deltaText)(Number(diff.vs_yesterday_college || 0)))}
         </div>
       </div>
-
       <div class="category-card">
         <div class="category-name">고등학교</div>
         <div class="category-count">${Number(summary.high || 0)}</div>
         <div class="category-diff ${deltaClass(Number(diff.vs_yesterday_high || 0))}">
-          ${escapeHtml(deltaText(Number(diff.vs_yesterday_high || 0)))}
+          ${escapeHtml((kind === 'signup' ? deltaTextUsers : deltaText)(Number(diff.vs_yesterday_high || 0)))}
         </div>
       </div>
-
       <div class="category-card">
         <div class="category-name">중학교</div>
         <div class="category-count">${Number(summary.middle || 0)}</div>
         <div class="category-diff ${deltaClass(Number(diff.vs_yesterday_middle || 0))}">
-          ${escapeHtml(deltaText(Number(diff.vs_yesterday_middle || 0)))}
+          ${escapeHtml((kind === 'signup' ? deltaTextUsers : deltaText)(Number(diff.vs_yesterday_middle || 0)))}
         </div>
       </div>
-
       <div class="category-card">
         <div class="category-name">초등학교</div>
         <div class="category-count">${Number(summary.elementary || 0)}</div>
         <div class="category-diff ${deltaClass(Number(diff.vs_yesterday_elementary || 0))}">
-          ${escapeHtml(deltaText(Number(diff.vs_yesterday_elementary || 0)))}
+          ${escapeHtml((kind === 'signup' ? deltaTextUsers : deltaText)(Number(diff.vs_yesterday_elementary || 0)))}
         </div>
       </div>
-
       <div class="category-card">
         <div class="category-name">리틀</div>
         <div class="category-count">${Number(summary.little || 0)}</div>
         <div class="category-diff ${deltaClass(Number(diff.vs_yesterday_little || 0))}">
-          ${escapeHtml(deltaText(Number(diff.vs_yesterday_little || 0)))}
+          ${escapeHtml((kind === 'signup' ? deltaTextUsers : deltaText)(Number(diff.vs_yesterday_little || 0)))}
         </div>
       </div>
     </div>
 
     <div class="section-title">추이 그래프</div>
-    ${barChartHtml(daily)}
-    ${cumulativeLineHtml(daily)}
+    ${barChartHtml(kind === 'signup' ? '일별 가입자 통계' : '일별 게임 등록 통계', `전체 기간 (${daily.length}${kind === 'signup' ? '일' : '일'})`, daily)}
+    ${cumulativeLineHtml(kind === 'signup' ? '누적 가입자 추이' : '누적 게임등록 추이', '전체 기간 누적', daily)}
 
-    <div class="section-title">학교별 순위</div>
-    ${schoolTop10Html(schoolTop10)}
+    ${kind === 'games' ? `
+      <div class="section-title">TOP 10</div>
+      ${rankCardHtml('학교별 게임 등록 TOP 10', '등록 많은 순', schoolTop, 'school_name')}
+      ${rankCardHtml('선수별 게임 기록 TOP 10', '기록 건수 많은 순', playerTop, 'player_name')}
+    ` : ''}
 
     <div class="section-title">월별 통계</div>
-    ${monthlyStatsHtml(monthly)}
+    ${monthlyStatsHtml(kind === 'signup' ? '월별 가입자 통계' : '월별 게임 등록 통계', `최근 ${monthly.length}개월`, monthly)}
 
-    <div class="section-title">일별 상세</div>
-    ${dailyTableHtml(daily)}
+    ${detailTableHtml(kind === 'signup' ? '일별 가입자 상세' : '일별 게임 등록 상세', daily)}
+  `;
+}
 
-    <div class="section-title">월별 상세</div>
-    ${monthlyTableHtml(monthly)}
+function renderError(msg){
+  el('dashboardApp').innerHTML = `<div class="loading-card"><div class="msg err">불러오기 실패: ${escapeHtml(msg || '알 수 없는 오류')}</div></div>`;
+}
+function renderNoAccess(){
+  el('dashboardApp').innerHTML = `<div class="empty"><div class="empty-icon">⛔</div>관리자만 접근할 수 있습니다.</div>`;
+}
+function renderDashboard(payload){
+  const signupHtml = renderTab(payload?.signup || {}, 'signup');
+  const gameHtml = renderTab(payload?.games || {}, 'games');
+  el('dashboardApp').innerHTML = `
+    <div id="tab-signup" class="${activeTab === 'signup' ? '' : 'hidden'}">${signupHtml}</div>
+    <div id="tab-games" class="${activeTab === 'games' ? '' : 'hidden'}">${gameHtml}</div>
   `;
 }
 
@@ -479,10 +423,9 @@ async function requireAdmin(){
   const { data: authData } = await client.auth.getUser();
   const user = authData?.user;
   if (!user) {
-    location.href = `auth.html?next=${encodeURIComponent('admin-signup.html')}`;
+    location.href = `auth.html?next=${encodeURIComponent('admin-overview.html')}`;
     return false;
   }
-
   const { data, error } = await client.rpc('baseball_is_admin_home');
   if (error) throw error;
   if (!data) {
@@ -495,18 +438,9 @@ async function requireAdmin(){
 async function loadDashboard(){
   const cached = readCache();
   if (cached) renderDashboard(cached);
-  else {
-    el('dashboardApp').innerHTML = `
-      <div class="loading-card">
-        <div class="loading"><span class="dot"></span><span>불러오는 중...</span></div>
-      </div>
-    `;
-  }
+  else el('dashboardApp').innerHTML = `<div class="loading-card"><div class="loading"><span class="dot"></span><span>불러오는 중...</span></div></div>`;
 
-  const { data, error } = await client.rpc('baseball_admin_signup_dashboard_home', {
-    p_months: 12
-  });
-
+  const { data, error } = await client.rpc('baseball_admin_overview_dashboard_home', { p_months: 12 });
   if (error) throw error;
 
   const payload = Array.isArray(data) ? (data[0] || {}) : (data || {});
@@ -520,36 +454,40 @@ async function init(){
       renderError('Supabase 설정을 확인하세요.');
       return;
     }
-
     let waited = 0;
     while (window._headerSession === undefined && waited < 2000) {
       await new Promise(r => setTimeout(r, 50));
       waited += 50;
     }
-
     const ok = await requireAdmin();
     if (!ok) return;
-
     await loadDashboard();
   }catch(e){
-    console.error('[ADMIN SIGNUP INIT ERROR]', e);
+    console.error('[ADMIN OVERVIEW INIT ERROR]', e);
     renderError(e?.message || '알 수 없는 오류');
   }
 }
 
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    activeTab = btn.dataset.tab;
+    document.querySelectorAll('.tab-btn').forEach(x => x.classList.remove('active'));
+    btn.classList.add('active');
+    const a = document.getElementById('tab-signup');
+    const b = document.getElementById('tab-games');
+    if (a && b) {
+      a.classList.toggle('hidden', activeTab !== 'signup');
+      b.classList.toggle('hidden', activeTab !== 'games');
+    }
+  });
+});
+
 el('btnRefresh').addEventListener('click', async () => {
-  try{
-    localStorage.removeItem('baseball_admin_signup_cache_all_v1');
-  }catch(e){}
-  try{
-    await loadDashboard();
-  }catch(err){
-    console.error(err);
-    renderError(err?.message || '알 수 없는 오류');
-  }
+  try { localStorage.removeItem('baseball_admin_overview_cache_v1'); } catch(e){}
+  try { await loadDashboard(); } catch(err){ renderError(err?.message || '알 수 없는 오류'); }
 });
 
 document.addEventListener('DOMContentLoaded', init);
-</script> 
+</script>
 </body>
 </html>
