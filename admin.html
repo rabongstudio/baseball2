@@ -31,12 +31,6 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--black);color:var(--t
 .hero-btn{flex:1;padding:13px;border-radius:12px;border:none;font-size:14px;font-weight:700;cursor:pointer}
 .hero-btn.solid{background:var(--brand);color:var(--black)}
 .hero-btn.ghost{background:transparent;border:1px solid var(--border2);color:var(--text)}
-.section-title{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin:24px 0 12px}
-.filter-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
-.segment{display:inline-flex;background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:4px;gap:4px}
-.seg-btn{border:none;background:transparent;color:var(--muted);padding:10px 14px;border-radius:10px;font-size:13px;font-weight:800;cursor:pointer}
-.seg-btn.active{background:var(--brand);color:var(--black)}
-.filter-caption{font-size:12px;color:var(--muted)}
 
 .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
 .stat-card{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:16px}
@@ -51,6 +45,8 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--black);color:var(--t
 .stat-delta.up{background:var(--ok-bg);color:var(--ok)}
 .stat-delta.down{background:var(--err-bg);color:var(--err)}
 .stat-delta.same{background:var(--same-bg);color:var(--same)}
+
+.section-title{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin:24px 0 12px}
 
 .category-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .category-card{background:var(--panel2);border:1px solid var(--border);border-radius:16px;padding:14px}
@@ -108,19 +104,11 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--black);color:var(--t
   <div class="hero">
     <div class="hero-label">엘리트 야구 기록 시스템</div>
     <div class="hero-title">가입자 통계<br>관리자</div>
-    <div class="hero-sub">총 가입자, 학교급별 가입자, 일별/월별 가입 추이, 학교별 TOP 10을 확인합니다.</div>
+    <div class="hero-sub">총 가입자, 학교급별 가입자, 전체 기간 일별 가입 추이, 학교별 TOP 10을 확인합니다.</div>
     <div class="hero-btns">
       <button class="hero-btn solid" id="btnRefresh">새로고침</button>
       <button class="hero-btn ghost" onclick="location.href='index.html'">홈으로</button>
     </div>
-  </div>
-
-  <div class="filter-row">
-    <div class="segment" id="rangeSegment">
-      <button class="seg-btn active" data-days="7">최근 7일</button>
-      <button class="seg-btn" data-days="30">최근 30일</button>
-    </div>
-    <div class="filter-caption" id="rangeCaption">최근 7일 기준</div>
   </div>
 
   <div id="dashboardApp">
@@ -133,7 +121,6 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--black);color:var(--t
 <script>
 const client = window.sb;
 const el = (id) => document.getElementById(id);
-let currentDays = 7;
 
 function escapeHtml(v=''){
   return String(v).replace(/[&<>"']/g, s => ({
@@ -161,11 +148,10 @@ function deltaText(n){
 
 function readCache(){
   try{
-    const raw = localStorage.getItem('baseball_admin_signup_cache_v3');
+    const raw = localStorage.getItem('baseball_admin_signup_cache_all_v1');
     if(!raw) return null;
     const cached = JSON.parse(raw);
-    if(!cached?.at || !cached?.data || !cached?.days) return null;
-    if(cached.days !== currentDays) return null;
+    if(!cached?.at || !cached?.data) return null;
     if(Date.now() - cached.at > 15000) return null;
     return cached.data;
   }catch(e){ return null; }
@@ -173,9 +159,8 @@ function readCache(){
 
 function writeCache(data){
   try{
-    localStorage.setItem('baseball_admin_signup_cache_v3', JSON.stringify({
+    localStorage.setItem('baseball_admin_signup_cache_all_v1', JSON.stringify({
       at: Date.now(),
-      days: currentDays,
       data
     }));
   }catch(e){}
@@ -186,7 +171,7 @@ function barChartHtml(daily=[]){
   return `
     <div class="chart-card">
       <div class="chart-title">일별 가입자 통계</div>
-      <div class="chart-sub">최근 ${daily.length}일</div>
+      <div class="chart-sub">전체 기간 (${daily.length}일)</div>
       <div class="bar-chart-wrap">
         ${daily.map(d => {
           const total = Number(d.total || 0);
@@ -248,7 +233,7 @@ function cumulativeLineHtml(daily=[]){
   return `
     <div class="chart-card">
       <div class="chart-title">누적 가입자 추이</div>
-      <div class="chart-sub">선택 기간 기준 누적</div>
+      <div class="chart-sub">전체 기간 누적</div>
       <div style="overflow-x:auto;margin-top:12px">
         <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-label="누적 가입자 추이">
           ${grid}
@@ -409,8 +394,6 @@ function renderDashboard(data){
 
   const totalDelta = Number(diff.vs_yesterday_total || 0);
 
-  el('rangeCaption').textContent = `최근 ${currentDays}일 기준`;
-
   el('dashboardApp').innerHTML = `
     <div class="section-title">가입 요약</div>
     <div class="stats-grid">
@@ -521,7 +504,6 @@ async function loadDashboard(){
   }
 
   const { data, error } = await client.rpc('baseball_admin_signup_dashboard_home', {
-    p_days: currentDays,
     p_months: 12
   });
 
@@ -557,24 +539,8 @@ async function init(){
 
 el('btnRefresh').addEventListener('click', async () => {
   try{
-    localStorage.removeItem('baseball_admin_signup_cache_v3');
+    localStorage.removeItem('baseball_admin_signup_cache_all_v1');
   }catch(e){}
-  try{
-    await loadDashboard();
-  }catch(err){
-    console.error(err);
-    renderError(err?.message || '알 수 없는 오류');
-  }
-});
-
-el('rangeSegment').addEventListener('click', async (e) => {
-  const btn = e.target.closest('.seg-btn');
-  if(!btn) return;
-
-  currentDays = Number(btn.dataset.days || 7);
-  document.querySelectorAll('.seg-btn').forEach(x => x.classList.remove('active'));
-  btn.classList.add('active');
-
   try{
     await loadDashboard();
   }catch(err){
