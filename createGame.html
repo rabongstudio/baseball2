@@ -296,7 +296,14 @@ textarea{resize:none}
       <label>선수 메모</label>
       <textarea id="playerMemo" rows="3" placeholder="예: 찬스에서 집중력 좋았음, 수비 위치선정 아쉬움"></textarea>
 
-      <button class="btn primary" id="btnSave">저장하기</button>
+      <div class="divider"></div>
+      <div class="section-label">경기 영상</div>
+
+      <label>영상 주소 (URL)</label>
+      <input id="videoUrl" type="url" placeholder="예: https://youtube.com/watch?v=..." />
+      <div class="small">YouTube, 네이버TV 등 영상 링크를 입력하면 리포트에서 바로 확인할 수 있어요.</div>
+
+      <button class="btn primary" id="btnSave" style="margin-top:20px">저장하기</button>
       <button class="btn ghost" id="btnBack" style="margin-top:8px">← 목록으로</button>
 
       <div class="form-err" id="formErr"></div>
@@ -489,6 +496,7 @@ function resetForm({ keepDate = false } = {}){
 
   el('maxVel').value = '';
   el('playerMemo').value = '';
+  el('videoUrl').value = '';
   setFormErr('');
 }
 
@@ -554,6 +562,7 @@ async function fillFormFromRecord(r){
   el('maxVel').value = r.max_vel ?? '';
   el('e').value = r.e ?? 0;
   el('playerMemo').value = r.player_memo ?? '';
+  el('videoUrl').value = r.video_url ?? '';
 }
 
 // ── 페이로드 수집 ────────────────────────────────
@@ -588,7 +597,8 @@ function collectPayload(){
     p_ph: numVal('ph'), p_pitches: numVal('pitches'),
     p_max_vel: el('maxVel').value === '' ? null : Number(el('maxVel').value),
     p_e: numVal('e'),
-    p_player_memo: textVal('playerMemo') || null
+    p_player_memo: textVal('playerMemo') || null,
+    p_video_url: textVal('videoUrl') || null
   };
 }
 
