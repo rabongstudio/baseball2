@@ -387,15 +387,18 @@ function renderTab(data, kind){
       </div>
     </div>
 
-    <div class="section-title">추이 그래프</div>
-    ${barChartHtml(kind === 'signup' ? '일별 가입자 통계' : '일별 게임 등록 통계', `전체 기간 (${daily.length}${kind === 'signup' ? '일' : '일'})`, daily)}
-    ${cumulativeLineHtml(kind === 'signup' ? '누적 가입자 추이' : '누적 게임등록 추이', '전체 기간 누적', daily)}
-
-    ${kind === 'games' ? `
+    ${kind === 'signup' ? `
+      <div class="section-title">학교 TOP 10</div>
+      ${rankCardHtml('학교별 가입자 TOP 10', '가입자 수 많은 순', schoolTop, 'school_name')}
+    ` : `
       <div class="section-title">TOP 10</div>
       ${rankCardHtml('학교별 게임 등록 TOP 10', '등록 많은 순', schoolTop, 'school_name')}
       ${rankCardHtml('선수별 게임 기록 TOP 10', '기록 건수 많은 순', playerTop, 'player_name')}
-    ` : ''}
+    `}
+
+    <div class="section-title">추이 그래프</div>
+    ${barChartHtml(kind === 'signup' ? '일별 가입자 통계' : '일별 게임 등록 통계', `전체 기간 (${daily.length}일)`, daily)}
+    ${cumulativeLineHtml(kind === 'signup' ? '누적 가입자 추이' : '누적 게임등록 추이', '전체 기간 누적', daily)}
 
     <div class="section-title">월별 통계</div>
     ${monthlyStatsHtml(kind === 'signup' ? '월별 가입자 통계' : '월별 게임 등록 통계', `최근 ${monthly.length}개월`, monthly)}
@@ -423,7 +426,7 @@ async function requireAdmin(){
   const { data: authData } = await client.auth.getUser();
   const user = authData?.user;
   if (!user) {
-    location.href = `auth.html?next=${encodeURIComponent('admin-overview.html')}`;
+    location.href = \`auth.html?next=\${encodeURIComponent('admin-overview.html')}\`;
     return false;
   }
   const { data, error } = await client.rpc('baseball_is_admin_home');
