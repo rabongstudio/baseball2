@@ -426,7 +426,7 @@ async function requireAdmin(){
   const { data: authData } = await client.auth.getUser();
   const user = authData?.user;
   if (!user) {
-    location.href = `auth.html?next=${encodeURIComponent('admin-overview.html')}`;
+    location.href = `auth.html?next=${encodeURIComponent('admin.html')}`;
     return false;
   }
   const { data, error } = await client.rpc('baseball_is_admin_home');
