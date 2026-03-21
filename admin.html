@@ -6,7 +6,7 @@
 <title>가입자 통계 관리자</title>
 <meta property="og:title" content="ELITE BASEBALL" />
 <meta property="og:description" content="가입자 통계 관리자 페이지" />
-<meta property="og:url" content="https://elitebaseball.infobox.kr/admin.html" />
+<meta property="og:url" content="https://elitebaseball.infobox.kr/admin-signup.html" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+KR:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <style>
@@ -17,6 +17,7 @@
   --brand:#e8ff47; --brand-dim:rgba(232,255,71,.12);
   --ok:#4ade80; --ok-bg:rgba(74,222,128,.1);
   --err:#f87171; --err-bg:rgba(248,113,113,.1);
+  --same:#94a3b8; --same-bg:rgba(148,163,184,.12);
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Noto Sans KR',sans-serif;background:var(--black);color:var(--text);min-height:100vh;padding-bottom:40px}
@@ -36,15 +37,21 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--black);color:var(--t
 .seg-btn{border:none;background:transparent;color:var(--muted);padding:10px 14px;border-radius:10px;font-size:13px;font-weight:800;cursor:pointer}
 .seg-btn.active{background:var(--brand);color:var(--black)}
 .filter-caption{font-size:12px;color:var(--muted)}
+
 .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
 .stat-card{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:16px}
 .stat-label{font-size:11px;font-weight:700;color:var(--muted);margin-bottom:10px}
 .stat-value{font-family:'Bebas Neue',sans-serif;font-size:34px;line-height:1}
 .stat-sub{font-size:11px;color:var(--muted2);margin-top:6px}
-.stat-delta{display:inline-flex;align-items:center;gap:6px;margin-top:10px;padding:6px 10px;border-radius:999px;font-size:11px;font-weight:800;border:1px solid var(--border)}
+.stat-delta{
+  display:inline-flex;align-items:center;gap:6px;
+  margin-top:10px;padding:7px 10px;border-radius:999px;
+  font-size:11px;font-weight:800;border:1px solid var(--border)
+}
 .stat-delta.up{background:var(--ok-bg);color:var(--ok)}
 .stat-delta.down{background:var(--err-bg);color:var(--err)}
-.stat-delta.same{background:rgba(148,163,184,.1);color:#cbd5e1}
+.stat-delta.same{background:var(--same-bg);color:var(--same)}
+
 .category-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .category-card{background:var(--panel2);border:1px solid var(--border);border-radius:16px;padding:14px}
 .category-name{font-size:12px;color:var(--muted);font-weight:800}
@@ -53,6 +60,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--black);color:var(--t
 .category-diff.up{color:var(--ok)}
 .category-diff.down{color:var(--err)}
 .category-diff.same{color:#cbd5e1}
+
 .chart-card{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:12px}
 .chart-title{font-size:12px;font-weight:800;color:var(--text)}
 .chart-sub{font-size:11px;color:var(--muted);margin-top:4px}
@@ -61,6 +69,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--black);color:var(--t
 .bar-num{font-size:10px;color:#dfe4ea;font-weight:800}
 .bar{width:100%;min-height:4px;border-radius:8px 8px 0 0;background:linear-gradient(180deg,var(--brand) 0%, #b9cf32 100%)}
 .bar-date{font-size:9px;color:var(--muted);writing-mode:vertical-rl;text-orientation:mixed;height:56px}
+
 .rank-list{margin-top:14px;display:flex;flex-direction:column;gap:10px}
 .rank-item{display:grid;grid-template-columns:36px 1fr 56px;gap:10px;align-items:center}
 .rank-num{font-weight:900;color:#cbd5e1}
@@ -69,6 +78,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--black);color:var(--t
 .rank-bar-bg{margin-top:6px;height:10px;background:rgba(255,255,255,.06);border-radius:999px;overflow:hidden;border:1px solid rgba(255,255,255,.05)}
 .rank-bar{height:100%;background:linear-gradient(90deg,#e8ff47 0%, #b9cf32 100%);border-radius:999px}
 .rank-count{text-align:right;font-weight:900}
+
 .table-card{background:var(--panel);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:12px}
 .table-head,.table-row{display:grid;align-items:center}
 .table-head{background:#141821;border-bottom:1px solid var(--border);font-size:11px;color:var(--muted);font-weight:800}
@@ -76,6 +86,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--black);color:var(--t
 .table-row{font-size:11px;border-bottom:1px solid rgba(255,255,255,.05)}
 .table-row:last-child{border-bottom:none}
 .left{text-align:left !important}
+
 .empty{text-align:center;padding:32px 0;color:var(--muted);font-size:13px;line-height:1.6}
 .empty-icon{font-size:32px;margin-bottom:10px}
 .msg{font-size:13px;color:var(--muted);line-height:1.6}
@@ -136,6 +147,12 @@ function deltaClass(n){
   return 'same';
 }
 
+function deltaArrow(n){
+  if (n > 0) return '▲';
+  if (n < 0) return '▼';
+  return '•';
+}
+
 function deltaText(n){
   if (n > 0) return `어제 대비 +${n}명`;
   if (n < 0) return `어제 대비 ${n}명`;
@@ -144,7 +161,7 @@ function deltaText(n){
 
 function readCache(){
   try{
-    const raw = localStorage.getItem('baseball_admin_signup_cache_v2');
+    const raw = localStorage.getItem('baseball_admin_signup_cache_v3');
     if(!raw) return null;
     const cached = JSON.parse(raw);
     if(!cached?.at || !cached?.data || !cached?.days) return null;
@@ -156,7 +173,7 @@ function readCache(){
 
 function writeCache(data){
   try{
-    localStorage.setItem('baseball_admin_signup_cache_v2', JSON.stringify({
+    localStorage.setItem('baseball_admin_signup_cache_v3', JSON.stringify({
       at: Date.now(),
       days: currentDays,
       data
@@ -390,6 +407,8 @@ function renderDashboard(data){
   const schoolTop10 = Array.isArray(data?.school_top10) ? data.school_top10 : [];
   const monthly = Array.isArray(data?.monthly) ? data.monthly : [];
 
+  const totalDelta = Number(diff.vs_yesterday_total || 0);
+
   el('rangeCaption').textContent = `최근 ${currentDays}일 기준`;
 
   el('dashboardApp').innerHTML = `
@@ -399,43 +418,59 @@ function renderDashboard(data){
         <div class="stat-label">총 가입자</div>
         <div class="stat-value">${Number(summary.total || 0)}</div>
         <div class="stat-sub">전체 누적 회원</div>
-        <div class="stat-delta ${deltaClass(Number(diff.vs_yesterday_total || 0))}">
-          ${escapeHtml(deltaText(Number(diff.vs_yesterday_total || 0)))}
-        </div>
       </div>
+
       <div class="stat-card">
         <div class="stat-label">오늘 가입자</div>
         <div class="stat-value">${Number(diff.today_total || 0)}</div>
         <div class="stat-sub">어제 ${Number(diff.yesterday_total || 0)}명</div>
+        <div class="stat-delta ${deltaClass(totalDelta)}">
+          <span>${deltaArrow(totalDelta)}</span>
+          <span>${escapeHtml(deltaText(totalDelta))}</span>
+        </div>
       </div>
     </div>
 
     <div class="section-title">학교급별 가입자</div>
     <div class="category-grid">
       <div class="category-card">
-        <div class="category-name">대학생</div>
+        <div class="category-name">대학교</div>
         <div class="category-count">${Number(summary.college || 0)}</div>
-        <div class="category-diff ${deltaClass(Number(diff.vs_yesterday_college || 0))}">${escapeHtml(deltaText(Number(diff.vs_yesterday_college || 0)))}</div>
+        <div class="category-diff ${deltaClass(Number(diff.vs_yesterday_college || 0))}">
+          ${escapeHtml(deltaText(Number(diff.vs_yesterday_college || 0)))}
+        </div>
       </div>
+
       <div class="category-card">
-        <div class="category-name">고등학생</div>
+        <div class="category-name">고등학교</div>
         <div class="category-count">${Number(summary.high || 0)}</div>
-        <div class="category-diff ${deltaClass(Number(diff.vs_yesterday_high || 0))}">${escapeHtml(deltaText(Number(diff.vs_yesterday_high || 0)))}</div>
+        <div class="category-diff ${deltaClass(Number(diff.vs_yesterday_high || 0))}">
+          ${escapeHtml(deltaText(Number(diff.vs_yesterday_high || 0)))}
+        </div>
       </div>
+
       <div class="category-card">
-        <div class="category-name">중학생</div>
+        <div class="category-name">중학교</div>
         <div class="category-count">${Number(summary.middle || 0)}</div>
-        <div class="category-diff ${deltaClass(Number(diff.vs_yesterday_middle || 0))}">${escapeHtml(deltaText(Number(diff.vs_yesterday_middle || 0)))}</div>
+        <div class="category-diff ${deltaClass(Number(diff.vs_yesterday_middle || 0))}">
+          ${escapeHtml(deltaText(Number(diff.vs_yesterday_middle || 0)))}
+        </div>
       </div>
+
       <div class="category-card">
-        <div class="category-name">초등학생</div>
+        <div class="category-name">초등학교</div>
         <div class="category-count">${Number(summary.elementary || 0)}</div>
-        <div class="category-diff ${deltaClass(Number(diff.vs_yesterday_elementary || 0))}">${escapeHtml(deltaText(Number(diff.vs_yesterday_elementary || 0)))}</div>
+        <div class="category-diff ${deltaClass(Number(diff.vs_yesterday_elementary || 0))}">
+          ${escapeHtml(deltaText(Number(diff.vs_yesterday_elementary || 0)))}
+        </div>
       </div>
+
       <div class="category-card">
         <div class="category-name">리틀</div>
         <div class="category-count">${Number(summary.little || 0)}</div>
-        <div class="category-diff ${deltaClass(Number(diff.vs_yesterday_little || 0))}">${escapeHtml(deltaText(Number(diff.vs_yesterday_little || 0)))}</div>
+        <div class="category-diff ${deltaClass(Number(diff.vs_yesterday_little || 0))}">
+          ${escapeHtml(deltaText(Number(diff.vs_yesterday_little || 0)))}
+        </div>
       </div>
     </div>
 
@@ -522,7 +557,7 @@ async function init(){
 
 el('btnRefresh').addEventListener('click', async () => {
   try{
-    localStorage.removeItem('baseball_admin_signup_cache_v2');
+    localStorage.removeItem('baseball_admin_signup_cache_v3');
   }catch(e){}
   try{
     await loadDashboard();
@@ -549,22 +584,6 @@ el('rangeSegment').addEventListener('click', async (e) => {
 });
 
 document.addEventListener('DOMContentLoaded', init);
-</script>
-
-<footer style="max-width:480px;margin:0 auto;padding:28px 16px 40px;border-top:1px solid rgba(255,255,255,.07);margin-top:32px">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-    <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;color:#e8ff47">ELITE<span style="color:#f0f2f5"> BASEBALL</span></div>
-  </div>
-  <div style="display:flex;gap:16px;margin-bottom:14px;flex-wrap:wrap">
-    <a href="privacy.html" style="font-size:12px;color:#7a8294;text-decoration:none">개인정보처리방침</a>
-    <a href="terms.html" style="font-size:12px;color:#7a8294;text-decoration:none">이용약관</a>
-    <a href="mailto:kelitebaseball@gmail.com" style="font-size:12px;color:#7a8294;text-decoration:none">문의하기</a>
-  </div>
-  <div style="font-size:11px;color:#4a5060;line-height:1.7">
-    운영자: 엘리트베이스볼<br>
-    문의: kelitebaseball@gmail.com<br>
-    © 2026 ELITEBASEBALL. All rights reserved.
-  </div>
-</footer>
+</script> 
 </body>
 </html>
