@@ -92,8 +92,9 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--black);color:var(--t
   background:rgba(255,255,255,.03);
   color:var(--muted);
   font-size:12px;
-  line-height:1.6;
+  line-height:1.7;
   display:none;
+  white-space:pre-line;
 }
 </style>
 
@@ -199,8 +200,18 @@ const client = window.sb;
 const el = (id) => document.getElementById(id);
 
 let deferredPrompt = null;
-const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
+
+const ua = navigator.userAgent || '';
+const isIos = /iphone|ipad|ipod/i.test(ua);
+const isAndroid = /android/i.test(ua);
 const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+
+const isNaverInApp = /NAVER/i.test(ua);
+const isKakaoInApp = /KAKAOTALK/i.test(ua);
+const isInstagramInApp = /Instagram/i.test(ua);
+const isFacebookInApp = /FBAN|FBAV/i.test(ua);
+const isLineInApp = /Line/i.test(ua);
+const isInAppBrowser = isNaverInApp || isKakaoInApp || isInstagramInApp || isFacebookInApp || isLineInApp;
 
 function goProtected(path) {
   if (!window._headerSession) {
@@ -418,6 +429,26 @@ function hideInstallTip() {
   tip.style.display = 'none';
 }
 
+function getInAppInstallMessage() {
+  if (isNaverInApp) {
+    return '네이버앱에서는 설치 팝업이 잘 뜨지 않습니다.\n네이버 브라우저 메뉴에서 "외부 브라우저로 열기"를 누른 뒤\n크롬에서 다시 접속해서 앱 설치를 진행해주세요.';
+  }
+  if (isKakaoInApp) {
+    return '카카오톡 내부 브라우저에서는 설치 팝업이 제한될 수 있습니다.\n우측 상단 메뉴 → 외부 브라우저 열기 후\n크롬에서 다시 접속해서 앱 설치를 진행해주세요.';
+  }
+  if (isInstagramInApp || isFacebookInApp || isLineInApp) {
+    return '현재 앱 내부 브라우저에서는 설치가 제한될 수 있습니다.\n외부 브라우저(크롬/사파리)로 연 뒤 앱 설치를 진행해주세요.';
+  }
+  return '현재 브라우저에서는 설치 팝업이 제한될 수 있습니다.\n외부 브라우저(크롬/사파리)에서 다시 시도해주세요.';
+}
+
+function getGenericInstallMessage() {
+  if (isAndroid) {
+    return '이 브라우저에서는 자동 설치창이 바로 뜨지 않았습니다.\n브라우저 메뉴에서 "앱 설치" 또는 "홈 화면에 추가"를 선택해주세요.';
+  }
+  return '이 브라우저에서는 자동 설치창이 바로 뜨지 않았습니다.\n브라우저 메뉴에서 "홈 화면에 추가"를 선택해주세요.';
+}
+
 function setupInstallUI() {
   const btn = el('installBtn');
   if (!btn) return;
@@ -445,11 +476,16 @@ function setupInstallUI() {
     }
 
     if (isIos) {
-      showInstallTip('아이폰/아이패드는 사파리 공유 버튼 → "홈 화면에 추가"로 설치할 수 있어요.');
+      showInstallTip('아이폰/아이패드는 사파리에서 접속한 뒤\n공유 버튼 → "홈 화면에 추가"로 설치할 수 있어요.');
       return;
     }
 
-    showInstallTip('앱 설치 준비가 아직 완료되지 않았어요. /icons/icon-192.png, /icons/icon-512.png 파일이 있는지 확인 후 다시 시도해주세요.');
+    if (isInAppBrowser) {
+      showInstallTip(getInAppInstallMessage());
+      return;
+    }
+
+    showInstallTip(getGenericInstallMessage());
   });
 }
 
