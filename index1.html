@@ -449,10 +449,10 @@ function updateInstallButton(installed) {
 
 function getInAppInstallMessage() {
   if (isNaverInApp) {
-    return '네이버앱에서는 설치 팝업이 제한될 수 있습니다.\n브라우저 메뉴에서 "외부 브라우저로 열기"를 누른 뒤\n크롬에서 다시 접속해서 앱 설치를 진행해주세요.';
+    return '네이버앱에서는 설치 팝업이 제한될 수 있습니다.\n URL 복사 후 크롬에서 다시 접속해서 앱 설치를 진행해주세요.';
   }
   if (isKakaoInApp) {
-    return '카카오톡 내부 브라우저에서는 설치 팝업이 제한될 수 있습니다.\n우측 상단 메뉴 → 외부 브라우저 열기 후\n크롬에서 다시 접속해서 앱 설치를 진행해주세요.';
+    return '카카오톡 내부 브라우저에서는 설치 팝업이 제한될 수 있습니다.\n URL 복사 후 크롬에서 다시 접속해서 앱 설치를 진행해주세요.';
   }
   if (isInstagramInApp || isFacebookInApp || isLineInApp) {
     return '현재 앱 내부 브라우저에서는 설치가 제한될 수 있습니다.\n외부 브라우저(크롬/사파리)로 연 뒤 앱 설치를 진행해주세요.';

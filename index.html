@@ -3,24 +3,42 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>야구기록</title>
+<title>ELITE BASEBALL HOME</title>
 <meta property="og:title" content="ELITE BASEBALL" />
-<meta property="og:description" content="아이의 야구 기록과 성장을 함께 남기는 기록 웹" /> 
+<meta property="og:description" content="아이의 야구 기록과 성장을 함께 남기는 기록 웹" />
 <meta property="og:url" content="https://elitebaseball.infobox.kr" />
+
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#0a0c10">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="야구기록">
+<link rel="apple-touch-icon" href="/icons/icon-192.png">
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+KR:wght@400;600;700;900&display=swap" rel="stylesheet">
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8226060642438570" crossorigin="anonymous"></script>
-<!-- Google tag (gtag.js) -->
+
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-RQTEB5NNLM"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
-
   gtag('config', 'G-RQTEB5NNLM');
 </script>
+
 <style>
-:root { --black:#0a0c10; --dark:#11141a; --panel:#181c24; --border:rgba(255,255,255,.07); --border2:rgba(255,255,255,.12); --text:#f0f2f5; --muted:#7a8294; --muted2:#4a5060; --brand:#e8ff47; --brand-dim:rgba(232,255,71,.12); --win:#4ade80; --win-bg:rgba(74,222,128,.1); --loss:#f87171; --loss-bg:rgba(248,113,113,.1); --draw:#94a3b8; --draw-bg:rgba(148,163,184,.1); }
+:root{
+  --black:#0a0c10; --dark:#11141a; --panel:#181c24;
+  --border:rgba(255,255,255,.07); --border2:rgba(255,255,255,.12);
+  --text:#f0f2f5; --muted:#7a8294; --muted2:#4a5060;
+  --brand:#e8ff47; --brand-dim:rgba(232,255,71,.12);
+  --win:#4ade80; --win-bg:rgba(74,222,128,.1);
+  --loss:#f87171; --loss-bg:rgba(248,113,113,.1);
+  --draw:#94a3b8; --draw-bg:rgba(148,163,184,.1);
+  --err:#f87171;
+}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Noto Sans KR',sans-serif;background:var(--black);color:var(--text);min-height:100vh;padding-bottom:40px}
 .container{max-width:480px;margin:0 auto;padding:20px 16px}
@@ -28,11 +46,11 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--black);color:var(--t
 .hero::before{content:'⚾';position:absolute;right:-10px;top:-10px;font-size:100px;opacity:.04;transform:rotate(20deg)}
 .hero-label{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--brand);margin-bottom:8px}
 .hero-title{font-family:'Bebas Neue',sans-serif;font-size:42px;line-height:1;margin-bottom:8px}
-.hero-sub{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:18px}
 .hero-btns{display:flex;gap:10px}
 .hero-btn{flex:1;padding:13px;border-radius:12px;border:none;font-size:14px;font-weight:700;cursor:pointer}
 .hero-btn.solid{background:var(--brand);color:var(--black)}
 .hero-btn.ghost{background:transparent;border:1px solid var(--border2);color:var(--text)}
+
 .section-title{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin:24px 0 12px}
 .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
 .stat-card{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:16px}
@@ -40,9 +58,8 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--black);color:var(--t
 .stat-value{font-family:'Bebas Neue',sans-serif;font-size:34px;line-height:1}
 .stat-sub{font-size:11px;color:var(--muted2);margin-top:6px}
 
-/* 바로가기 4열 그리드 */
 .shortcut-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:4px}
-.shortcut-card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:14px 4px;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;transition:border-color .15s}
+.shortcut-card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:14px 4px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer;transition:border-color .15s;min-height:82px}
 .shortcut-card:hover{border-color:var(--brand)}
 .shortcut-emoji{font-size:22px;line-height:1}
 .shortcut-name{font-size:10px;font-weight:700;text-align:center;color:var(--text);line-height:1.3;word-break:keep-all}
@@ -62,7 +79,6 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--black);color:var(--t
 .empty-icon{font-size:32px;margin-bottom:10px}
 .view-all{width:100%;margin-top:10px;padding:13px;border-radius:12px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:13px;font-weight:700;cursor:pointer}
 
-/* 개인정보 동의 팝업 */
 .privacy-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.68);z-index:9998;display:none}
 .privacy-sheet{position:fixed;left:0;right:0;bottom:0;z-index:9999;display:none;padding:0 14px 14px}
 .privacy-card{max-width:480px;margin:0 auto;background:var(--panel);border:1px solid var(--border2);border-radius:22px 22px 18px 18px;padding:18px 16px calc(18px + env(safe-area-inset-bottom));box-shadow:0 -18px 50px rgba(0,0,0,.45)}
@@ -76,7 +92,20 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--black);color:var(--t
 .privacy-btn{width:100%;padding:15px;border:none;border-radius:14px;background:var(--brand);color:var(--black);font-family:'Noto Sans KR',sans-serif;font-size:15px;font-weight:800;cursor:pointer}
 .privacy-msg{min-height:18px;margin-top:10px;font-size:12px;color:var(--err)}
 
+.install-tip{
+  margin-top:10px;
+  padding:12px 14px;
+  border:1px solid var(--border);
+  border-radius:12px;
+  background:rgba(255,255,255,.03);
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.7;
+  display:none;
+  white-space:pre-line;
+}
 </style>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/config.js"></script>
 <script src="js/header.js"></script>
@@ -88,8 +117,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--black);color:var(--t
 <div class="container">
   <div class="hero">
     <div class="hero-label">엘리트 야구 기록 시스템</div>
-    <div class="hero-title">내 선수 기록을<br>한눈에</div>
-    <!--<div class="hero-sub"> 경기와 선수 기록을 직접 관리합니다.</div>-->
+    <div class="hero-title">나의 경기 기록을<br>한눈에</div>
     <div class="hero-btns">
       <button class="hero-btn solid" onclick="goProtected('playerreport.html')">경기 리포트</button>
       <button class="hero-btn ghost" onclick="goProtected('createGame.html')">기록 입력</button>
@@ -145,9 +173,14 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--black);color:var(--t
       <div class="shortcut-emoji">👤</div>
       <div class="shortcut-name">선수 관리</div>
     </div>
+    <div class="shortcut-card" id="installBtn">
+      <div class="shortcut-emoji">📲</div>
+      <div class="shortcut-name">앱 설치</div>
+    </div>
   </div>
-</div>
 
+  <div id="installTip" class="install-tip"></div>
+</div>
 
 <div id="privacyBackdrop" class="privacy-backdrop"></div>
 <div id="privacySheet" class="privacy-sheet" role="dialog" aria-modal="true" aria-labelledby="privacyTitle">
@@ -173,6 +206,20 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--black);color:var(--t
 const client = window.sb;
 const el = (id) => document.getElementById(id);
 
+let deferredPrompt = null;
+const ua = navigator.userAgent || '';
+
+const isIos = /iphone|ipad|ipod/i.test(ua);
+const isAndroid = /android/i.test(ua);
+const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+
+const isNaverInApp = /NAVER/i.test(ua);
+const isKakaoInApp = /KAKAOTALK/i.test(ua);
+const isInstagramInApp = /Instagram/i.test(ua);
+const isFacebookInApp = /FBAN|FBAV/i.test(ua);
+const isLineInApp = /Line/i.test(ua);
+const isInAppBrowser = isNaverInApp || isKakaoInApp || isInstagramInApp || isFacebookInApp || isLineInApp;
+
 function goProtected(path) {
   if (!window._headerSession) {
     location.href = `auth.html?next=${encodeURIComponent(path)}`;
@@ -181,7 +228,9 @@ function goProtected(path) {
   location.href = path;
 }
 
-function badgeClass(r) { return r === 'W' ? 'W' : r === 'L' ? 'L' : 'D'; }
+function badgeClass(r) {
+  return r === 'W' ? 'W' : r === 'L' ? 'L' : 'D';
+}
 
 function openPrivacyConsentPopup() {
   const backdrop = el('privacyBackdrop');
@@ -214,10 +263,12 @@ async function savePrivacyConsent() {
   const chk = el('privacyAgreeCheck');
   const msg = el('privacyMsg');
   const btn = el('privacyAgreeBtn');
+
   if (!chk?.checked) {
     if (msg) msg.textContent = '동의 체크 후 진행해주세요.';
     return;
   }
+
   if (msg) msg.textContent = '';
   if (btn) btn.disabled = true;
 
@@ -238,10 +289,11 @@ async function savePrivacyConsent() {
   closePrivacyConsentPopup();
 }
 
-
 function renderGuestHome() {
-  el('yWLD').textContent = '—'; el('yearLabel').textContent = '로그인 후 표시';
-  el('mWLD').textContent = '—'; el('monthLabel').textContent = '로그인 후 표시';
+  el('yWLD').textContent = '—';
+  el('yearLabel').textContent = '로그인 후 표시';
+  el('mWLD').textContent = '—';
+  el('monthLabel').textContent = '로그인 후 표시';
   el('recentHint').style.display = 'block';
   el('recentHint').innerHTML = `<div class="empty-icon">⚾</div>로그인하면 최근 경기 목록을<br>확인할 수 있어요.`;
   el('recentList').innerHTML = '';
@@ -249,33 +301,38 @@ function renderGuestHome() {
 }
 
 function renderSummary(summary) {
-  el('yWLD').textContent = `${Number(summary?.year_w||0)}·${Number(summary?.year_l||0)}·${Number(summary?.year_d||0)}`;
+  el('yWLD').textContent = `${Number(summary?.year_w || 0)}·${Number(summary?.year_l || 0)}·${Number(summary?.year_d || 0)}`;
   el('yearLabel').textContent = `${summary?.year || '-'}년 기준`;
-  el('mWLD').textContent = `${Number(summary?.month_w||0)}·${Number(summary?.month_l||0)}·${Number(summary?.month_d||0)}`;
+  el('mWLD').textContent = `${Number(summary?.month_w || 0)}·${Number(summary?.month_l || 0)}·${Number(summary?.month_d || 0)}`;
   el('monthLabel').textContent = `${summary?.month || '-'} 기준`;
 }
 
 function renderRecentGames(list) {
-  const hint = el('recentHint'), wrap = el('recentList'), btn = el('btnViewAll');
+  const hint = el('recentHint');
+  const wrap = el('recentList');
+  const btn = el('btnViewAll');
   wrap.innerHTML = '';
+
   if (!Array.isArray(list) || !list.length) {
     hint.style.display = 'block';
     hint.innerHTML = `<div class="empty-icon">⚾</div>등록된 경기가 없어요.`;
     btn.style.display = 'none';
     return;
   }
+
   hint.style.display = 'none';
   btn.style.display = 'block';
+
   list.forEach(g => {
     const item = document.createElement('div');
     item.className = 'game-item';
     item.innerHTML = `
-      <div class="result-badge ${badgeClass(g.result||'D')}">${g.result||'D'}</div>
+      <div class="result-badge ${badgeClass(g.result || 'D')}">${g.result || 'D'}</div>
       <div class="game-info">
-        <div class="game-vs">vs ${g.opponent||'-'}</div>
-        <div class="game-meta">${g.game_date||''}${g.tournament ? ' · ' + g.tournament : ''}</div>
+        <div class="game-vs">vs ${g.opponent || '-'}</div>
+        <div class="game-meta">${g.game_date || ''}${g.tournament ? ' · ' + g.tournament : ''}</div>
       </div>
-      <div class="game-score">${Number(g.our_score||0)}<span style="color:var(--muted);font-size:16px">:</span>${Number(g.opp_score||0)}</div>
+      <div class="game-score">${Number(g.our_score || 0)}<span style="color:var(--muted);font-size:16px">:</span>${Number(g.opp_score || 0)}</div>
     `;
     item.onclick = () => location.href = `report.html?game=${g.id}`;
     wrap.appendChild(item);
@@ -290,11 +347,15 @@ function readCache() {
     if (!cached?.at || !cached?.data) return null;
     if (Date.now() - cached.at > 15000) return null;
     return cached.data;
-  } catch(e) { return null; }
+  } catch(e) {
+    return null;
+  }
 }
 
 function writeCache(data) {
-  try { localStorage.setItem('baseball_home_cache_v4', JSON.stringify({at: Date.now(), data})); } catch(e) {}
+  try {
+    localStorage.setItem('baseball_home_cache_v4', JSON.stringify({ at: Date.now(), data }));
+  } catch(e) {}
 }
 
 async function loadDashboard() {
@@ -313,6 +374,7 @@ async function loadDashboard() {
     const current = readCache() || {};
     writeCache({ summary, recent: current.recent || [] });
   }
+
   if (!rRes.error) {
     const recent = Array.isArray(rRes.data) ? rRes.data : [];
     renderRecentGames(recent);
@@ -320,12 +382,13 @@ async function loadDashboard() {
     writeCache({ summary: current.summary || null, recent });
   }
 }
-  // 계좌 복사 + 토스트
-function copyAccount(){
+
+function copyAccount() {
   const account = '1000-6029-7721';
+
   const copy = () => {
     let t = document.getElementById('_copyToast');
-    if(!t){
+    if (!t) {
       t = document.createElement('div');
       t.id = '_copyToast';
       t.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);background:#181c24;border:1px solid #4ade80;border-radius:14px;padding:12px 22px;font-size:14px;font-weight:700;color:#4ade80;opacity:0;transition:opacity .25s,transform .25s;pointer-events:none;z-index:999;white-space:nowrap;box-shadow:0 8px 32px rgba(0,0,0,.5)';
@@ -343,7 +406,7 @@ function copyAccount(){
     }, 2500);
   };
 
-  if(navigator.clipboard){
+  if (navigator.clipboard) {
     navigator.clipboard.writeText(account).then(copy).catch(() => {
       const ta = document.createElement('textarea');
       ta.value = account;
@@ -364,41 +427,158 @@ function copyAccount(){
   }
 }
 
+function showInstallTip(message) {
+  const tip = el('installTip');
+  if (!tip) return;
+  tip.textContent = message;
+  tip.style.display = 'block';
+}
+
+function hideInstallTip() {
+  const tip = el('installTip');
+  if (!tip) return;
+  tip.textContent = '';
+  tip.style.display = 'none';
+}
+
+function updateInstallButton(installed) {
+  const name = document.querySelector('#installBtn .shortcut-name');
+  if (!name) return;
+  name.textContent = installed ? '앱 실행' : '앱 설치';
+}
+
+function getInAppInstallMessage() {
+  if (isNaverInApp) {
+    return '네이버앱에서는 설치 팝업이 제한될 수 있습니다.\n URL 복사 후 크롬에서 다시 접속해서 앱 설치를 진행해주세요.';
+  }
+  if (isKakaoInApp) {
+    return '카카오톡 내부 브라우저에서는 설치 팝업이 제한될 수 있습니다.\n URL 복사 후 크롬에서 다시 접속해서 앱 설치를 진행해주세요.';
+  }
+  if (isInstagramInApp || isFacebookInApp || isLineInApp) {
+    return '현재 앱 내부 브라우저에서는 설치가 제한될 수 있습니다.\n외부 브라우저(크롬/사파리)로 연 뒤 앱 설치를 진행해주세요.';
+  }
+  return '현재 브라우저에서는 설치 팝업이 제한될 수 있습니다.\n외부 브라우저에서 다시 시도해주세요.';
+}
+
+function getGenericInstallMessage() {
+  if (isAndroid) {
+    return '이미 설치했거나\n이 브라우저에서는 자동 설치창이 바로 뜨지 않을 수 있습니다.\n브라우저 메뉴에서 "앱 설치" 또는 "홈 화면에 추가"를 이용해주세요.';
+  }
+  return '이미 설치했거나\n이 브라우저에서는 자동 설치창이 바로 뜨지 않을 수 있습니다.\n브라우저 메뉴에서 "홈 화면에 추가"를 이용해주세요.';
+}
+
+function setupInstallUI() {
+  const btn = el('installBtn');
+  if (!btn) return;
+
+  if (isStandalone) {
+    updateInstallButton(true);
+  }
+
+  btn.addEventListener('click', async () => {
+    if (isStandalone) {
+      showInstallTip('이미 앱으로 설치되어 있습니다.\n홈 화면 또는 앱 목록에서 실행해주세요.');
+      return;
+    }
+
+    if (deferredPrompt) {
+      try {
+        deferredPrompt.prompt();
+        const choice = await deferredPrompt.userChoice;
+
+        if (choice?.outcome === 'accepted') {
+          hideInstallTip();
+        }
+
+        deferredPrompt = null;
+      } catch (e) {
+        console.error('[PWA install error]', e);
+        showInstallTip('앱 설치 중 문제가 발생했습니다.');
+      }
+      return;
+    }
+
+    if (isIos) {
+      showInstallTip('아이폰은 사파리에서 접속 후\n공유 버튼 → "홈 화면에 추가"를 눌러주세요.');
+      return;
+    }
+
+    if (isInAppBrowser) {
+      showInstallTip(getInAppInstallMessage());
+      return;
+    }
+
+    showInstallTip(getGenericInstallMessage());
+  });
+}
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  console.log('✅ 설치 가능 상태');
+});
+
+window.addEventListener('appinstalled', () => {
+  deferredPrompt = null;
+  hideInstallTip();
+  updateInstallButton(true);
+  console.log('✅ 앱 설치 완료');
+});
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', async () => {
+    try {
+      await navigator.serviceWorker.register('/service-worker.js');
+      console.log('✅ PWA Service Worker 등록 완료');
+    } catch (e) {
+      console.error('❌ SW 등록 실패', e);
+    }
+  });
+}
+
 async function init() {
   try {
-    if (!client?.auth) { renderGuestHome(); return; }
+    setupInstallUI();
+
+    if (!client?.auth) {
+      renderGuestHome();
+      return;
+    }
+
     let waited = 0;
     while (window._headerSession === undefined && waited < 2000) {
       await new Promise(r => setTimeout(r, 50));
       waited += 50;
     }
-    if (!window._headerSession) { renderGuestHome(); return; }
+
+    if (!window._headerSession) {
+      renderGuestHome();
+      return;
+    }
+
     await checkPrivacyConsent();
     await loadDashboard();
-  } catch(e) {
+  } catch (e) {
     console.error('[HOME INIT ERROR]', e);
     renderGuestHome();
   }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  if (el('privacyAgreeBtn')) el('privacyAgreeBtn').addEventListener('click', savePrivacyConsent);
+  if (el('privacyAgreeBtn')) {
+    el('privacyAgreeBtn').addEventListener('click', savePrivacyConsent);
+  }
   init();
 });
 </script>
 
 <footer style="max-width:480px;margin:0 auto;padding:28px 16px 40px;border-top:1px solid rgba(255,255,255,.07);margin-top:32px">
-  <!--<div style="margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid rgba(255,255,255,.07)">
-    <p style="font-size:12px;color:#4a5060;line-height:1.8">이 서비스는 무료로 운영됩니다. <br>
-      따뜻한 후원은 서비스 운영에 큰 도움이 됩니다. <br>
-      토스뱅크 <span style="color:#7a8294">1000-6029-7721</span> <button onclick="copyAccount()" id="copyBtn" style="margin-left:6px;padding:3px 10px;border-radius:6px;border:1px solid rgba(255,255,255,.15);background:transparent;color:#7a8294;font-size:11px;font-weight:700;cursor:pointer;vertical-align:middle;font-family:'Noto Sans KR',sans-serif">복사</button></p>
-  </div>-->
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
     <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;color:#e8ff47">ELITE<span style="color:#f0f2f5"> BASEBALL</span></div>
   </div>
   <div style="display:flex;gap:16px;margin-bottom:14px;flex-wrap:wrap">
     <a href="privacy.html" style="font-size:12px;color:#7a8294;text-decoration:none">개인정보처리방침</a>
-    <a href="terms.html"   style="font-size:12px;color:#7a8294;text-decoration:none">이용약관</a>
+    <a href="terms.html" style="font-size:12px;color:#7a8294;text-decoration:none">이용약관</a>
     <a href="mailto:kelitebaseball@gmail.com" style="font-size:12px;color:#7a8294;text-decoration:none">문의하기</a>
   </div>
   <div style="font-size:11px;color:#4a5060;line-height:1.7">
@@ -407,5 +587,6 @@ document.addEventListener('DOMContentLoaded', () => {
     © 2026 ELITEBASEBALL. All rights reserved.
   </div>
 </footer>
+
 </body>
 </html>
