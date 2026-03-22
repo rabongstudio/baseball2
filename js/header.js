@@ -47,6 +47,17 @@ document.addEventListener('DOMContentLoaded', async function () {
   function renderButtons(session) {
     window._headerSession = session || null;
 
+    // ── GA user_id 연동 ────────────────────────────
+    if (session?.user && typeof window.gtag === 'function') {
+      window.gtag('set', {
+        user_id: session.user.id
+      });
+    } else if (typeof window.gtag === 'function') {
+      window.gtag('set', {
+        user_id: null
+      });
+    }
+
     if (!showAuth) {
       authArea.innerHTML = '';
       return;
@@ -64,6 +75,11 @@ document.addEventListener('DOMContentLoaded', async function () {
 
   window._headerLogout = async function () {
     try { localStorage.removeItem('baseball_home_cache_v4'); } catch (e) {}
+
+    if (typeof window.gtag === 'function') {
+      window.gtag('set', { user_id: null });
+    }
+
     await window.sb.auth.signOut();
     location.href = 'index.html';
   };
